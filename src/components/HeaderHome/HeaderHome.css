@@ -1,0 +1,29 @@
+.header-home {
+  display: flex;
+  justify-content: space-between;
+  padding: 3vh 3vh;
+  align-items: center;
+  background-color: white;
+  border-bottom: 1px solid white;
+}
+@media screen and (max-width: 768px) {
+  .header-home {
+    display: none;
+  }
+}
+.header-home-left,
+.header-home-right {
+  display: flex;
+  align-items: center;
+}
+.header-home-link {
+  margin-left: 1vh;
+  margin-right: 1vh;
+  color: #343434;
+  text-decoration: none;
+  font-size: 13px;
+  text-align: center;
+}
+.header-home-link:hover {
+  text-decoration: underline;
+}

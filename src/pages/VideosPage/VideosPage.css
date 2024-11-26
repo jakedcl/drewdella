@@ -1,0 +1,61 @@
+.video-results-container {
+}
+
+.video-result-item {
+  max-height: 100%;
+  max-width: 100%;
+  display: flex;
+  align-items: top;
+  margin-bottom: 24px;
+  overflow: hidden;
+}
+
+.video-iframe {
+  width: 300px;
+  height: auto;
+  max-width: 20vw;;
+  max-height: auto;
+  height: 18vh;
+  width: 30vh;
+  margin-right: 8px;
+}
+
+.video-content {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  margin-left: 8px;
+}
+
+.video-title {
+  margin-top: .05rem;
+  font-size: 1.2rem;
+  color: #1a0dab;
+  text-decoration: underline;
+  margin-bottom: 5px;
+  
+}
+
+.video-description {
+  margin-top: .25rem;
+  font-size: 1rem;
+  color: #4d5156;
+  max-width: 35vw;
+}
+
+
+/* For mobile devices, just scale down the iframe proportionally */
+@media (max-width: 768px) {
+  .video-iframe {
+    max-height: 100%; /* Set the iframe to take up the full width of its container */
+    max-width: 45vw;
+    height: auto; /* Maintain the aspect ratio */
+    width: 40vw;
+  }
+
+  .video-result-item {
+    max-height: 12vh;
+  }
+
+
+}

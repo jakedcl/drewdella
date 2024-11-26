@@ -1,0 +1,35 @@
+/* GoogleLogo.css */
+.logo-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 0;
+  min-width: 20vh;
+  max-width: 25vh;
+}
+
+/* For small screens (sm) */
+@media (min-width: 600) {
+  /* Adjust the pixel value based on your preferred sm breakpoint */
+  .logo-container {
+    margin-left: 5vh;
+    margin-right: 5vh;
+  }
+}
+
+/* For medium screens (md) */
+@media (min-width: 960) {
+  /* Adjust the pixel value based on your preferred md breakpoint */
+  .logo-container {
+    padding-left: 0rem;
+    padding-right: 0rem;
+  }
+}
+
+.logo {
+  max-width: 100%;
+  min-height: 100%;
+  height: auto;
+}

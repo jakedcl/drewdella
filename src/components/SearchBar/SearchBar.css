@@ -1,0 +1,112 @@
+* {
+  box-sizing: border-box;
+}
+
+/* searchbar attributes */
+
+.searchbar-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  margin: auto;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  max-width: 80vh;
+}
+.searchbar-input {
+  width: 100%;
+  height: 44px;
+  padding: 10px 20px;
+  font-size: 16px;
+  border: 1px solid #dfe1e5;
+  border-radius: 22px;
+  box-shadow: none;
+  outline: none;
+  box-shadow: 0 0.5px 1px rgba(32, 33, 36, 0.28);
+}
+
+/* searchbar when focused */
+
+.searchbar-input:focus {
+  border-color: #4d90fe;
+  border-bottom: 0px solid #dfe1e5;
+  border-radius: 22px 22px 0px 0px;
+}
+.searchbar-dropdown {
+  position: absolute;
+  width: 90%;
+  display: block;
+}
+
+/* dropdown menu */
+
+.dropdown-menu {
+  position: absolute;
+  width: 100%;
+  background: white;
+  overflow: hidden;
+  border: 1px solid #4d90fe;
+  border-radius: 0 0 22px 22px;
+  border-top: 1px solid #dfe1e5;
+  margin-top: 0px;
+  margin-bottom: 0px;
+  box-shadow: 0 1px 1px rgba(32, 33, 36, 0.28);
+  background-color: white;
+  z-index: 1;
+}
+.dropdown-item {
+  position: relative;
+  text-align: left;
+  display: block;
+  padding: 14px 20px;
+  font-size: 14px;
+  line-height: 0.8;
+  color: #3b3b3b;
+  border-bottom: 1px solid #dfe1e5;
+  text-decoration: none;
+  color: purple;
+  background-image: url("/recentsearch.png"); /* Path to your icon image */
+  background-repeat: no-repeat;
+  background-size: 20px 20px; /* Adjust size as needed */
+  background-position: left center;
+  padding-left: 30px; /* Adjust padding to make room for the icon */
+  margin-left: 10px;
+}
+.dropdown-item:hover {
+  /* dropdownmenu option hovering attributes */
+  background-color: #f8f9fa;
+  cursor: pointer;
+}
+
+.search-icon {
+  display: none; /* hide search icon by default */
+}
+@media (max-width: 768px) {
+  /* hide input search bar on mobile */
+  .searchbar-dropdown {
+    display: none;
+  }
+  /* display search icon on mobile */
+  .search-icon {
+    display: block;
+  }
+}
+
+/* searchbar buttons (im feeling lucky) */
+.searchbar-buttons {
+  margin-top: 0vh;
+}
+.searchbar-button {
+  margin: 0 4px;
+  padding: 1.5vh 1.5vh;
+  margin: 2vw;
+  font-size: 14px;
+  color: #5f6368;
+  background: #f4f4f5;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
