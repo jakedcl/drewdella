@@ -1,0 +1,34 @@
+/* HomePage.css */
+.home-div {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin-bottom: 6vh;
+  overflow: visible; /* allows searchbar dropdown menu to show and not have a scroll THANK GOD I FIXED THIS */
+}
+
+.home-hero {
+  margin: 2rem;
+  min-height: 30vh;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 4vh;
+}
+
+.home-div .search-icon {
+  display: none; /* hide search icon by default */
+}
+
+@media (max-width: 768px) {
+  /* hide input search bar on mobile */
+  .home-div .searchbar-dropdown {
+    display: block;
+  }
+  .home-div .searchbar-buttons {
+    display: block;
+  }
+  /* display search icon on mobile */
+  .home-div .search-icon {
+    display: none;
+  }
+}

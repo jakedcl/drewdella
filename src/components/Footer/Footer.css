@@ -1,0 +1,28 @@
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 10px; /* Adding padding for breathing room */
+  background-color: #ececec;
+  border-top: 1px solid white;
+  height: 45px;
+  position: fixed; /* Or 'absolute' if you want it at the bottom of the content */
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  z-index: 2;
+}
+.footer_left,
+.footer_right {
+  display: flex;
+  align-items: center;
+}
+.footer_link {
+  margin: 0 20px; /* Removed the top margin */
+  color: #343434;
+  text-decoration: none;
+  font-size: 13px;
+}
+.footer_link:hover {
+  text-decoration: underline;
+}
