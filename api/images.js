@@ -1,3 +1,7 @@
+export const config = {
+  runtime: 'edge',
+};
+
 import { v2 as cloudinary } from 'cloudinary';
 
 // Configure Cloudinary
@@ -7,29 +11,59 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-export default async function handler(req, res) {
-  // Set CORS headers
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  
-  // Handle preflight requests
-  if (req.method === 'OPTIONS') {
-    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    return res.status(200).end();
-  }
-
-  if (req.method !== 'GET') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
+export default async function handler(req) {
   try {
+    // Log the request method and environment variables (safely)
+    console.log('Request method:', req.method);
+    console.log('Environment check:', {
+      hasCloudName: !!process.env.CLOUDINARY_CLOUD_NAME,
+      hasApiKey: !!process.env.CLOUDINARY_API_KEY,
+      hasApiSecret: !!process.env.CLOUDINARY_API_SECRET
+    });
+
+    // Handle preflight requests
+    if (req.method === 'OPTIONS') {
+      return new Response(null, {
+        status: 204,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET,OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
+          'Access-Control-Max-Age': '86400'
+        }
+      });
+    }
+
+    if (req.method !== 'GET') {
+      return new Response(
+        JSON.stringify({ error: 'Method not allowed' }),
+        {
+          status: 405,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+          }
+        }
+      );
+    }
+
+    // Verify Cloudinary configuration
+    if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+      console.error('Missing Cloudinary configuration');
+      throw new Error('Missing Cloudinary configuration');
+    }
+
     const result = await cloudinary.search
       .expression("folder:drewdella")
       .sort_by("public_id", "desc")
       .max_results(30)
       .execute();
     
+    console.log('Cloudinary response received:', {
+      resourceCount: result.resources.length,
+      totalCount: result.total_count
+    });
+
     const images = result.resources.map((file) => ({
       url: file.secure_url,
       publicId: file.public_id,
@@ -38,12 +72,35 @@ export default async function handler(req, res) {
       format: file.format,
     }));
 
-    return res.status(200).json({ images });
+    return new Response(
+      JSON.stringify({ images }),
+      {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        }
+      }
+    );
   } catch (error) {
-    console.error("Failed to retrieve images:", error);
-    return res.status(500).json({ 
-      error: "Failed to retrieve images",
-      message: process.env.NODE_ENV === 'development' ? error.message : undefined
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
     });
+
+    return new Response(
+      JSON.stringify({
+        error: "Failed to retrieve images",
+        details: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+      }),
+      {
+        status: 500,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        }
+      }
+    );
   }
 } 
