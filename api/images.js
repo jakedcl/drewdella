@@ -1,44 +1,18 @@
 export const config = {
-  runtime: 'edge',
+  runtime: 'edge'
 };
-
-import { v2 as cloudinary } from 'cloudinary';
-
-// Configure Cloudinary
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
 
 export default async function handler(req) {
   try {
-    // Log the request method and environment variables (safely)
-    console.log('Request method:', req.method);
-    console.log('Environment check:', {
-      hasCloudName: !!process.env.CLOUDINARY_CLOUD_NAME,
-      hasApiKey: !!process.env.CLOUDINARY_API_KEY,
-      hasApiSecret: !!process.env.CLOUDINARY_API_SECRET
-    });
+    const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+    const apiKey = process.env.CLOUDINARY_API_KEY;
+    const apiSecret = process.env.CLOUDINARY_API_SECRET;
 
-    // Handle preflight requests
-    if (req.method === 'OPTIONS') {
-      return new Response(null, {
-        status: 204,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'GET,OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type',
-          'Access-Control-Max-Age': '86400'
-        }
-      });
-    }
-
-    if (req.method !== 'GET') {
+    if (!cloudName || !apiKey || !apiSecret) {
       return new Response(
-        JSON.stringify({ error: 'Method not allowed' }),
+        JSON.stringify({ error: 'Missing Cloudinary configuration' }),
         {
-          status: 405,
+          status: 500,
           headers: {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*'
@@ -47,29 +21,37 @@ export default async function handler(req) {
       );
     }
 
-    // Verify Cloudinary configuration
-    if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
-      console.error('Missing Cloudinary configuration');
-      throw new Error('Missing Cloudinary configuration');
-    }
+    // Cloudinary API endpoint
+    const url = `https://api.cloudinary.com/v1_1/${cloudName}/resources/search`;
+    const auth = Buffer.from(`${apiKey}:${apiSecret}`).toString('base64');
 
-    const result = await cloudinary.search
-      .expression("folder:drewdella")
-      .sort_by("public_id", "desc")
-      .max_results(30)
-      .execute();
-    
-    console.log('Cloudinary response received:', {
-      resourceCount: result.resources.length,
-      totalCount: result.total_count
+    const searchParams = {
+      expression: "folder:drewdella",
+      sort_by: [{ public_id: "desc" }],
+      max_results: 30
+    };
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Basic ${auth}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(searchParams)
     });
 
+    if (!response.ok) {
+      throw new Error(`Cloudinary API error: ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    
     const images = result.resources.map((file) => ({
       url: file.secure_url,
       publicId: file.public_id,
       width: file.width,
       height: file.height,
-      format: file.format,
+      format: file.format
     }));
 
     return new Response(
@@ -83,16 +65,11 @@ export default async function handler(req) {
       }
     );
   } catch (error) {
-    console.error('Error details:', {
-      message: error.message,
-      stack: error.stack,
-      name: error.name
-    });
-
+    console.error('Error:', error);
     return new Response(
       JSON.stringify({
         error: "Failed to retrieve images",
-        details: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+        message: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
       }),
       {
         status: 500,
