@@ -7,7 +7,8 @@ export default function ConnectPage() {
       url: 'https://www.instagram.com/thedrewdella',
       description: 'Drew Della (@thedrewdella) on Instagram: "A kid on the ferry thought I was spider-man..."',
     },
-    {  title: 'YouTube - Drew Della',
+    {
+      title: 'YouTube - Drew Della',
       url: 'https://www.youtube.com/drew-della',
       description: 'Drew Della LIVE @ ECONO LODGE | Music videos · Releases · Videos · Shorts · WAKE UP AND GRIND 13 #albumnew #music',
     },
@@ -16,7 +17,7 @@ export default function ConnectPage() {
       url: 'https://soundcloud.com/drew-della',
       description: 'Play Drew Della on SoundCloud and discover followers on SoundCloud | Stream tracks, albums, playlists on desktop and mobile.',
     },
-    
+
     {
       title: 'Twitter - thedrewdella',
       url: 'https://www.x.com/drewdella',
