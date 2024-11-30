@@ -1,21 +1,33 @@
 export const config = {
-  runtime: '@vercel/node@3.0.0'
+  runtime: 'edge'
 };
 
-export default async function handler(req, res) {
+export default async function handler(request) {
   // Handle CORS preflight
-  if (req.method === 'OPTIONS') {
-    return res.status(204).set({
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
-      'Access-Control-Max-Age': '86400'
-    }).end();
+  if (request.method === 'OPTIONS') {
+    return new Response(null, {
+      status: 204,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Max-Age': '86400'
+      }
+    });
   }
 
   // Only allow GET requests
-  if (req.method !== 'GET') {
-    return res.status(405).json({ error: 'Method not allowed' });
+  if (request.method !== 'GET') {
+    return new Response(
+      JSON.stringify({ error: 'Method not allowed' }),
+      {
+        status: 405,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        }
+      }
+    );
   }
 
   try {
@@ -27,7 +39,6 @@ export default async function handler(req, res) {
       throw new Error('Missing Cloudinary configuration');
     }
 
-    // Use node-fetch in Node.js environment
     const response = await fetch(
       `https://api.cloudinary.com/v1_1/${cloudName}/resources/search`,
       {
@@ -53,21 +64,39 @@ export default async function handler(req, res) {
     const data = await response.json();
     console.log(`Found ${data.resources.length} images`);
 
-    return res.status(200).json({
-      images: data.resources.map(file => ({
-        url: file.secure_url,
-        publicId: file.public_id,
-        width: file.width,
-        height: file.height,
-        format: file.format
-      }))
-    });
+    return new Response(
+      JSON.stringify({
+        images: data.resources.map(file => ({
+          url: file.secure_url,
+          publicId: file.public_id,
+          width: file.width,
+          height: file.height,
+          format: file.format
+        }))
+      }),
+      {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        }
+      }
+    );
 
   } catch (error) {
     console.error('API Error:', error);
-    return res.status(500).json({
-      error: 'Failed to fetch images',
-      details: error.message
-    });
+    return new Response(
+      JSON.stringify({
+        error: 'Failed to fetch images',
+        details: error.message
+      }),
+      {
+        status: 500,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        }
+      }
+    );
   }
 } 
