@@ -1,56 +1,106 @@
-import { useEffect, useState } from 'react';
-import axios from 'axios';
-import './VideosPage.css';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { Box, Grid, Card, CardMedia, CardContent, Typography, CircularProgress, Alert } from "@mui/material";
 
-
-export default function VideosPage() {
+function VideosPage() {
   const [videos, setVideos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Replace this with your YouTube channel ID or search term
-  const CHANNEL_ID = import.meta.env.VITE_YOUTUBE_CHANNEL_ID; // Example channel ID
-  const API_KEY = import.meta.env.VITE_YOUTUBE_API_KEY;
-
-  // Fetch videos from the YouTube API
   useEffect(() => {
     const fetchVideos = async () => {
       try {
-        const response = await axios.get(
-          `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&channelId=${CHANNEL_ID}&part=snippet,id&order=date&maxResults=10`
-        );
-        setVideos(response.data.items);
+        setLoading(true);
+        setError(null);
+
+        const response = await axios.get('/api/videos');
+        console.log('API Response:', response.data);
+
+        if (!response.data || !response.data.videos) {
+          throw new Error('Invalid response format');
+        }
+
+        setVideos(response.data.videos);
       } catch (error) {
-        console.error('Error fetching videos: ', error);
+        console.error("Error fetching videos:", error);
+        setError(
+          error.response?.data?.error ||
+          error.response?.data?.details ||
+          error.message ||
+          "Failed to load videos. Please try again later."
+        );
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchVideos();
   }, []);
 
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box p={2}>
+        <Alert severity="error">{error}</Alert>
+      </Box>
+    );
+  }
+
+  if (!videos.length) {
+    return (
+      <Box p={2}>
+        <Alert severity="info">No videos found</Alert>
+      </Box>
+    );
+  }
+
   return (
-    <div className="video-results-container">
-      {videos.map((video, index) => (
-        <div key={index} className="video-result-item">
-          <iframe
-            className="video-iframe"
-            src={`https://www.youtube.com/embed/${video.id.videoId}`}
-            title={video.snippet.title}
-            frameBorder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          ></iframe>
-          <div className="video-content">
-            <a
-              href={`https://www.youtube.com/watch?v=${video.id.videoId}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="video-title"
-            >
-              {video.snippet.title}
-            </a>
-            <p className="video-description">{video.snippet.description}</p>
-          </div>
-        </div>
-      ))}
-    </div>
+    <Box p={2}>
+      <Grid container spacing={2}>
+        {videos.map((video) => (
+          <Grid item xs={12} sm={6} md={4} lg={3} key={video.id}>
+            <Card>
+              <CardMedia
+                component="img"
+                image={video.thumbnail}
+                alt={video.title}
+                sx={{
+                  height: 180,
+                  objectFit: 'cover'
+                }}
+                onClick={() => window.open(`https://www.youtube.com/watch?v=${video.id}`, '_blank')}
+                style={{ cursor: 'pointer' }}
+              />
+              <CardContent>
+                <Typography variant="h6" noWrap title={video.title}>
+                  {video.title}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis'
+                }}>
+                  {video.description}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {new Date(video.publishedAt).toLocaleDateString()}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
+    </Box>
   );
 }
+
+export default VideosPage;
