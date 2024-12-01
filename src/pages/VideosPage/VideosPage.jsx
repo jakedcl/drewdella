@@ -105,12 +105,12 @@ function VideosPage() {
               sx={{
                 fontSize: { xs: '16px', sm: '18px' },
                 color: '#1a0dab',
-                textDecoration: 'none',
+                textDecoration: 'underline',
                 display: 'block',
                 mb: 1,
                 width: '100%',
                 '&:hover': {
-                  textDecoration: 'underline'
+                  opacity: 0.8
                 }
               }}
             >
