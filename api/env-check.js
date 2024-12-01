@@ -1,16 +1,12 @@
 import { handleCors, handleMethodNotAllowed, createSuccessResponse, createErrorResponse } from './utils/apiHelpers';
 
-export const config = {
-  runtime: 'edge'
-};
-
-export default async function handler(request) {
-  if (request.method === 'OPTIONS') {
-    return handleCors();
+export default async function handler(req, res) {
+  if (req.method === 'OPTIONS') {
+    return handleCors(res);
   }
 
-  if (request.method !== 'GET') {
-    return handleMethodNotAllowed();
+  if (req.method !== 'GET') {
+    return handleMethodNotAllowed(res);
   }
 
   try {
@@ -35,13 +31,13 @@ export default async function handler(request) {
     if (!envStatus.youtube.apiKey) missing.push('YOUTUBE_API_KEY');
     if (!envStatus.youtube.channelId) missing.push('YOUTUBE_CHANNEL_ID');
 
-    return createSuccessResponse({
+    return createSuccessResponse(res, {
       status: missing.length === 0 ? 'ok' : 'missing_vars',
       environment: envStatus,
       missing,
       timestamp: new Date().toISOString()
     });
   } catch (error) {
-    return createErrorResponse(error);
+    return createErrorResponse(res, error);
   }
 } 
