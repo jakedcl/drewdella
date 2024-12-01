@@ -46,61 +46,71 @@ function VideosPage() {
   }
 
   return (
-    <Box sx={{ p: 2 }}>
-      <Box sx={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-        gap: 2
-      }}>
-        {videos.map((video) => (
+    <Box sx={{ p: 2, maxWidth: '1000px' }}>
+      {videos.map((video) => (
+        <Box
+          key={video.id}
+          sx={{
+            display: 'flex',
+            alignItems: 'flex-start',
+            mb: 4,
+            pb: 2,
+            borderBottom: '1px solid #dfe1e5'
+          }}
+        >
           <Box
-            key={video.id}
             onClick={() => window.open(`https://www.youtube.com/watch?v=${video.id}`, '_blank')}
             sx={{
               cursor: 'pointer',
-              '&:hover': {
-                '.video-title': {
-                  color: '#1a0dab'
-                }
-              }
+              mr: 2,
+              flexShrink: 0,
+              width: '200px',
+              height: '112px',
+              position: 'relative',
+              overflow: 'hidden',
+              borderRadius: 1
             }}
           >
-            <Box sx={{ position: 'relative', paddingTop: '56.25%', mb: 1 }}>
-              <img
-                src={video.thumbnail}
-                alt={video.title}
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover'
-                }}
-              />
-            </Box>
+            <img
+              src={video.thumbnail}
+              alt={video.title}
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover'
+              }}
+            />
+          </Box>
+          <Box sx={{ flex: 1 }}>
             <Typography
-              className="video-title"
+              component="a"
+              href={`https://www.youtube.com/watch?v=${video.id}`}
+              target="_blank"
               sx={{
-                fontSize: '14px',
-                color: '#1558d6',
-                mb: 0.5,
-                lineHeight: 1.3
+                fontSize: '18px',
+                color: '#1a0dab',
+                textDecoration: 'none',
+                display: 'block',
+                mb: 1,
+                '&:hover': {
+                  textDecoration: 'underline'
+                }
               }}
             >
               {video.title}
             </Typography>
             <Typography
               sx={{
-                fontSize: '12px',
-                color: '#70757a'
+                fontSize: '14px',
+                color: '#70757a',
+                mb: 1
               }}
             >
               {new Date(video.publishedAt).toLocaleDateString()}
             </Typography>
           </Box>
-        ))}
-      </Box>
+        </Box>
+      ))}
     </Box>
   );
 }
