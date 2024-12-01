@@ -14,21 +14,19 @@ function VideosPage() {
         setError(null);
 
         const response = await axios.get('/api/videos');
-        console.log('API Response:', response.data);
+
+        if (response.data.error) {
+          throw new Error(response.data.message || 'Failed to load videos');
+        }
 
         if (!response.data || !response.data.videos) {
           throw new Error('Invalid response format');
         }
 
         setVideos(response.data.videos);
-      } catch (error) {
-        console.error("Error fetching videos:", error);
-        setError(
-          error.response?.data?.error ||
-          error.response?.data?.details ||
-          error.message ||
-          "Failed to load videos. Please try again later."
-        );
+      } catch (err) {
+        console.error("Error fetching videos:", err);
+        setError(err.message || 'Failed to load videos. Please try again later.');
       } finally {
         setLoading(false);
       }
