@@ -72,8 +72,8 @@ function VideosPage() {
               mr: { xs: 0, sm: 2 },
               mb: { xs: 1.5, sm: 0 },
               flexShrink: 0,
-              width: { xs: '100%', sm: '200px' },
-              height: { xs: '200px', sm: '112px' },
+              width: { xs: '160px', sm: '200px' },
+              height: { xs: '90px', sm: '112px' },
               position: 'relative',
               overflow: 'hidden',
               borderRadius: 1
@@ -85,8 +85,7 @@ function VideosPage() {
               style={{
                 width: '100%',
                 height: '100%',
-                objectFit: isMobile ? 'cover' : 'cover',
-                objectPosition: 'left center'
+                objectFit: 'cover'
               }}
             />
           </Box>
@@ -94,8 +93,8 @@ function VideosPage() {
             flex: 1,
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: { xs: 'flex-start', sm: 'flex-start' },
-            alignItems: { xs: 'flex-start', sm: 'flex-start' },
+            justifyContent: 'flex-start',
+            alignItems: 'flex-start',
             width: '100%'
           }}>
             <Typography
