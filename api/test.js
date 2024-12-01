@@ -1,18 +1,14 @@
 import { handleCors, handleMethodNotAllowed, createSuccessResponse, createErrorResponse } from './utils/apiHelpers';
 
-export const config = {
-  runtime: 'edge'
-};
-
-export default async function handler(request) {
+export default async function handler(req, res) {
   // Handle CORS preflight
-  if (request.method === 'OPTIONS') {
-    return handleCors();
+  if (req.method === 'OPTIONS') {
+    return handleCors(res);
   }
 
   // Only allow GET requests
-  if (request.method !== 'GET') {
-    return handleMethodNotAllowed();
+  if (req.method !== 'GET') {
+    return handleMethodNotAllowed(res);
   }
 
   try {
@@ -25,7 +21,7 @@ export default async function handler(request) {
       hasYoutubeChannelId: !!process.env.YOUTUBE_CHANNEL_ID
     };
 
-    return createSuccessResponse({
+    return createSuccessResponse(res, {
       status: 'ok',
       message: 'API is working',
       timestamp: new Date().toISOString(),
@@ -34,6 +30,6 @@ export default async function handler(request) {
       'Cache-Control': 'no-store'
     });
   } catch (error) {
-    return createErrorResponse(error);
+    return createErrorResponse(res, error);
   }
 } 
