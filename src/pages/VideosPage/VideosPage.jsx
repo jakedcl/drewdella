@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Box, Grid, Card, CardMedia, CardContent, Typography, CircularProgress, Alert } from "@mui/material";
+import { Box, Typography, CircularProgress, Alert } from "@mui/material";
 
 function VideosPage() {
   const [videos, setVideos] = useState([]);
@@ -11,22 +11,16 @@ function VideosPage() {
     const fetchVideos = async () => {
       try {
         setLoading(true);
-        setError(null);
-
         const response = await axios.get('/api/videos');
 
         if (response.data.error) {
           throw new Error(response.data.message || 'Failed to load videos');
         }
 
-        if (!response.data || !response.data.videos) {
-          throw new Error('Invalid response format');
-        }
-
         setVideos(response.data.videos);
       } catch (err) {
         console.error("Error fetching videos:", err);
-        setError(err.message || 'Failed to load videos. Please try again later.');
+        setError(err.message || 'Failed to load videos');
       } finally {
         setLoading(false);
       }
@@ -37,7 +31,7 @@ function VideosPage() {
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
+      <Box display="flex" justifyContent="center" p={3}>
         <CircularProgress />
       </Box>
     );
@@ -51,52 +45,62 @@ function VideosPage() {
     );
   }
 
-  if (!videos.length) {
-    return (
-      <Box p={2}>
-        <Alert severity="info">No videos found</Alert>
-      </Box>
-    );
-  }
-
   return (
-    <Box p={2}>
-      <Grid container spacing={2}>
+    <Box sx={{ p: 2 }}>
+      <Box sx={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+        gap: 2
+      }}>
         {videos.map((video) => (
-          <Grid item xs={12} sm={6} md={4} lg={3} key={video.id}>
-            <Card>
-              <CardMedia
-                component="img"
-                image={video.thumbnail}
+          <Box
+            key={video.id}
+            onClick={() => window.open(`https://www.youtube.com/watch?v=${video.id}`, '_blank')}
+            sx={{
+              cursor: 'pointer',
+              '&:hover': {
+                '.video-title': {
+                  color: '#1a0dab'
+                }
+              }
+            }}
+          >
+            <Box sx={{ position: 'relative', paddingTop: '56.25%', mb: 1 }}>
+              <img
+                src={video.thumbnail}
                 alt={video.title}
-                sx={{
-                  height: 180,
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '100%',
                   objectFit: 'cover'
                 }}
-                onClick={() => window.open(`https://www.youtube.com/watch?v=${video.id}`, '_blank')}
-                style={{ cursor: 'pointer' }}
               />
-              <CardContent>
-                <Typography variant="h6" noWrap title={video.title}>
-                  {video.title}
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{
-                  display: '-webkit-box',
-                  WebkitLineClamp: 2,
-                  WebkitBoxOrient: 'vertical',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis'
-                }}>
-                  {video.description}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  {new Date(video.publishedAt).toLocaleDateString()}
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
+            </Box>
+            <Typography
+              className="video-title"
+              sx={{
+                fontSize: '14px',
+                color: '#1558d6',
+                mb: 0.5,
+                lineHeight: 1.3
+              }}
+            >
+              {video.title}
+            </Typography>
+            <Typography
+              sx={{
+                fontSize: '12px',
+                color: '#70757a'
+              }}
+            >
+              {new Date(video.publishedAt).toLocaleDateString()}
+            </Typography>
+          </Box>
         ))}
-      </Grid>
+      </Box>
     </Box>
   );
 }

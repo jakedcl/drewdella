@@ -58,10 +58,24 @@ export default async function handler(req, res) {
   try {
     const youtubeUrl = `https://www.googleapis.com/youtube/v3/search?key=${process.env.YOUTUBE_API_KEY}&channelId=${process.env.YOUTUBE_CHANNEL_ID}&part=snippet,id&maxResults=1&type=video`;
     const youtubeResponse = await fetch(youtubeUrl);
+    const youtubeData = await youtubeResponse.text();
+    
     results.services.youtube = {
       status: youtubeResponse.ok ? 'ok' : 'error',
-      statusCode: youtubeResponse.status
+      statusCode: youtubeResponse.status,
+      details: youtubeResponse.ok ? undefined : youtubeData
     };
+
+    // If it's a JSON response, try to parse it for more details
+    try {
+      const jsonData = JSON.parse(youtubeData);
+      if (!youtubeResponse.ok && jsonData.error) {
+        results.services.youtube.errorMessage = jsonData.error.message;
+        results.services.youtube.errorReason = jsonData.error.errors?.[0]?.reason;
+      }
+    } catch (e) {
+      // If JSON parsing fails, we already have the raw response in details
+    }
   } catch (error) {
     results.services.youtube = {
       status: 'error',
