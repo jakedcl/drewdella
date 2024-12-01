@@ -1,14 +1,18 @@
 import { handleCors, handleMethodNotAllowed, createSuccessResponse, createErrorResponse, validateEnvVars } from './utils/apiHelpers';
 
-export default async function handler(req, res) {
+export const config = {
+  runtime: 'edge'
+};
+
+export default async function handler(request) {
   // Handle CORS preflight
-  if (req.method === 'OPTIONS') {
-    return handleCors(res);
+  if (request.method === 'OPTIONS') {
+    return handleCors();
   }
 
   // Only allow GET requests
-  if (req.method !== 'GET') {
-    return handleMethodNotAllowed(res);
+  if (request.method !== 'GET') {
+    return handleMethodNotAllowed();
   }
 
   try {
@@ -44,7 +48,7 @@ export default async function handler(req, res) {
     const data = await response.json();
     console.log(`Found ${data.resources.length} images`);
 
-    return createSuccessResponse(res, {
+    return createSuccessResponse({
       images: data.resources.map(file => ({
         url: file.secure_url,
         publicId: file.public_id,
@@ -57,6 +61,6 @@ export default async function handler(req, res) {
     });
 
   } catch (error) {
-    return createErrorResponse(res, error);
+    return createErrorResponse(error);
   }
 } 
