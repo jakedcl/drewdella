@@ -1,4 +1,4 @@
-// Common headers for all responses
+// Common headers
 export const commonHeaders = {
   'Content-Type': 'application/json',
   'Access-Control-Allow-Origin': '*',
@@ -9,20 +9,20 @@ export const commonHeaders = {
 
 // Handle CORS preflight requests
 export function handleCors(res) {
-  res.writeHead(204, commonHeaders);
-  res.end();
+  res.status(204).set(commonHeaders).end();
 }
 
 // Handle method not allowed
 export function handleMethodNotAllowed(res) {
-  res.writeHead(405, commonHeaders);
-  res.end(JSON.stringify({ error: 'Method not allowed' }));
+  res.status(405).json({
+    error: true,
+    message: 'Method not allowed'
+  });
 }
 
 // Create success response
 export function createSuccessResponse(res, data, customHeaders = {}) {
-  res.writeHead(200, { ...commonHeaders, ...customHeaders });
-  res.end(JSON.stringify(data));
+  res.set({ ...commonHeaders, ...customHeaders }).json(data);
 }
 
 // Create error response
@@ -39,8 +39,7 @@ export function createErrorResponse(res, error, status = 500) {
     errorResponse.stack = error.stack;
   }
 
-  res.writeHead(status, commonHeaders);
-  res.end(JSON.stringify(errorResponse));
+  res.status(status).json(errorResponse);
 }
 
 // Validate environment variables

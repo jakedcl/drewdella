@@ -1,30 +1,21 @@
-import { handleCors, handleMethodNotAllowed, createSuccessResponse, createErrorResponse, validateEnvVars } from './utils/apiHelpers';
-
 export default async function handler(req, res) {
-  // Handle CORS preflight
-  if (req.method === 'OPTIONS') {
-    return handleCors(res);
-  }
-
-  // Only allow GET requests
   if (req.method !== 'GET') {
-    return handleMethodNotAllowed(res);
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
-    // Validate required environment variables
-    validateEnvVars(['CLOUDINARY_CLOUD_NAME', 'CLOUDINARY_API_KEY', 'CLOUDINARY_API_SECRET']);
-
-    const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
-    const apiKey = process.env.CLOUDINARY_API_KEY;
-    const apiSecret = process.env.CLOUDINARY_API_SECRET;
+    const { CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET } = process.env;
+    
+    if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_API_KEY || !CLOUDINARY_API_SECRET) {
+      throw new Error('Missing Cloudinary configuration');
+    }
 
     const response = await fetch(
-      `https://api.cloudinary.com/v1_1/${cloudName}/resources/search`,
+      `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/resources/search`,
       {
         method: 'POST',
         headers: {
-          'Authorization': `Basic ${Buffer.from(`${apiKey}:${apiSecret}`).toString('base64')}`,
+          'Authorization': `Basic ${Buffer.from(`${CLOUDINARY_API_KEY}:${CLOUDINARY_API_SECRET}`).toString('base64')}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
@@ -36,27 +27,21 @@ export default async function handler(req, res) {
     );
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Cloudinary error:', errorText);
-      throw new Error(`Cloudinary API error: ${response.status}`);
+      throw new Error('Failed to fetch images');
     }
 
     const data = await response.json();
-    console.log(`Found ${data.resources.length} images`);
-
-    return createSuccessResponse(res, {
+    
+    return res.status(200).json({
       images: data.resources.map(file => ({
         url: file.secure_url,
-        publicId: file.public_id,
         width: file.width,
-        height: file.height,
-        format: file.format
+        height: file.height
       }))
-    }, {
-      'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300'
     });
 
   } catch (error) {
-    return createErrorResponse(res, error);
+    console.error('API Error:', error);
+    return res.status(500).json({ error: 'Failed to load images' });
   }
 } 
