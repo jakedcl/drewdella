@@ -10,8 +10,14 @@
     }
   },
   "rewrites": [
-    { "source": "/api/:path*", "destination": "/api/:path*" },
-    { "source": "/(.*)", "destination": "/" }
+    {
+      "source": "/api/:match*",
+      "destination": "/api/:match*"
+    },
+    {
+      "source": "/:path*",
+      "destination": "/index.html"
+    }
   ],
   "headers": [
     {
