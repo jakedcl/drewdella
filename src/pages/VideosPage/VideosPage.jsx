@@ -59,7 +59,7 @@ function VideosPage() {
           sx={{
             display: 'flex',
             flexDirection: { xs: 'column', sm: 'row' },
-            alignItems: { xs: 'stretch', sm: 'flex-start' },
+            alignItems: { xs: 'flex-start', sm: 'flex-start' },
             mb: { xs: 3, sm: 4 },
             pb: { xs: 2, sm: 2 },
             borderBottom: '1px solid #dfe1e5'
@@ -76,8 +76,7 @@ function VideosPage() {
               height: { xs: '200px', sm: '112px' },
               position: 'relative',
               overflow: 'hidden',
-              borderRadius: 1,
-              backgroundColor: '#f8f9fa'
+              borderRadius: 1
             }}
           >
             <img
@@ -86,7 +85,8 @@ function VideosPage() {
               style={{
                 width: '100%',
                 height: '100%',
-                objectFit: isMobile ? 'contain' : 'cover'
+                objectFit: isMobile ? 'cover' : 'cover',
+                objectPosition: 'left center'
               }}
             />
           </Box>
@@ -94,7 +94,7 @@ function VideosPage() {
             flex: 1,
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: { xs: 'center', sm: 'flex-start' },
+            justifyContent: { xs: 'flex-start', sm: 'flex-start' },
             alignItems: { xs: 'flex-start', sm: 'flex-start' },
             width: '100%'
           }}>
