@@ -29,11 +29,18 @@ export function createSuccessResponse(res, data, customHeaders = {}) {
 export function createErrorResponse(res, error, status = 500) {
   console.error('API Error:', error);
   
+  const errorResponse = {
+    error: true,
+    message: error.message || 'Internal server error',
+    status: status
+  };
+
+  if (process.env.NODE_ENV === 'development') {
+    errorResponse.stack = error.stack;
+  }
+
   res.writeHead(status, commonHeaders);
-  res.end(JSON.stringify({
-    error: error.message || 'Internal server error',
-    details: process.env.NODE_ENV === 'development' ? error.stack : undefined
-  }));
+  res.end(JSON.stringify(errorResponse));
 }
 
 // Validate environment variables

@@ -15,21 +15,19 @@ function ImagesPage() {
         setError(null);
 
         const response = await axios.get('/api/images');
-        console.log('API Response:', response.data);
+
+        if (response.data.error) {
+          throw new Error(response.data.message || 'Failed to load images');
+        }
 
         if (!response.data || !response.data.images) {
           throw new Error('Invalid response format');
         }
 
         setImages(response.data.images);
-      } catch (error) {
-        console.error("Error fetching images:", error);
-        setError(
-          error.response?.data?.error ||
-          error.response?.data?.details ||
-          error.message ||
-          "Failed to load images. Please try again later."
-        );
+      } catch (err) {
+        console.error("Error fetching images:", err);
+        setError(err.message || 'Failed to load images. Please try again later.');
       } finally {
         setLoading(false);
       }
