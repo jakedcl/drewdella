@@ -6,7 +6,7 @@
   "outputDirectory": "dist",
   "functions": {
     "api/*.js": {
-      "runtime": "edge"
+      "runtime": "edge@2"
     }
   },
   "rewrites": [
