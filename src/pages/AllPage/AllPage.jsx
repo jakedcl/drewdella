@@ -5,7 +5,7 @@ export default function AllPage() {
     {
       title: 'Dellacore Vol. 2',
       url: 'https://li.sten.to/dellacorevol2', // Replace with actual URL if available
-      description: 'This is how I am most comfortable: just me, my guitar, my love songs, and some other stuff. Welcome to the new era. Enjoy.',
+      description: "This is how I'm most comfortable: just me, my guitar, my love songs, and some other stuff. Welcome to the new era. Enjoy.",
     },
     {
       title: 'Dellacore Vol. 1',
