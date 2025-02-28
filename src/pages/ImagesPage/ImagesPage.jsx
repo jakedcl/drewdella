@@ -24,7 +24,12 @@ function ImagesPage() {
           throw new Error('Invalid response format');
         }
 
-        setImages(response.data.images);
+        // Sort images by createdAt timestamp in descending order (newest first)
+        const sortedImages = response.data.images.sort((a, b) => {
+          return new Date(b.createdAt) - new Date(a.createdAt);
+        });
+
+        setImages(sortedImages);
       } catch (err) {
         console.error("Error fetching images:", err);
         setError(err.message || 'Failed to load images. Please try again later.');
