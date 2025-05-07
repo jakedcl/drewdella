@@ -20,9 +20,14 @@ app.use(cors());
 // Test endpoint to verify server is running
 app.get('/api/test', (req, res) => {
   const envVars = {
-    hasCloudName: !!process.env.CLOUDINARY_CLOUD_NAME,
-    hasApiKey: !!process.env.CLOUDINARY_API_KEY,
-    hasApiSecret: !!process.env.CLOUDINARY_API_SECRET
+    sanity: {
+      projectId: 'qcu6o4bq',
+      dataset: 'production'
+    },
+    youtube: {
+      hasApiKey: !!process.env.YOUTUBE_API_KEY,
+      hasChannelId: !!process.env.YOUTUBE_CHANNEL_ID
+    }
   };
   
   console.log('Environment check:', envVars);
@@ -36,59 +41,40 @@ app.get('/api/test', (req, res) => {
 // Images endpoint
 app.get('/api/images', async (req, res) => {
   try {
-    // 1. Check environment variables
-    const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
-    const apiKey = process.env.CLOUDINARY_API_KEY;
-    const apiSecret = process.env.CLOUDINARY_API_SECRET;
+    const projectId = 'qcu6o4bq';
+    const dataset = 'production';
 
     console.log('Environment check:', {
-      hasCloudName: !!cloudName,
-      hasApiKey: !!apiKey,
-      hasApiSecret: !!apiSecret
+      sanity: {
+        projectId,
+        dataset
+      }
     });
 
-    if (!cloudName || !apiKey || !apiSecret) {
-      throw new Error('Missing Cloudinary configuration');
-    }
-
-    // 2. Make request to Cloudinary
-    console.log('Making request to Cloudinary...');
+    // Make request to Sanity
+    console.log('Making request to Sanity...');
     
-    const url = `https://api.cloudinary.com/v1_1/${cloudName}/resources/search`;
-    const auth = Buffer.from(`${apiKey}:${apiSecret}`).toString('base64');
+    const url = `https://${projectId}.api.sanity.io/v2023-05-03/data/query/${dataset}?query=*[_type == "imageGallery"][0]{galleryImages[]{asset->{_id,url}}}`;
 
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Basic ${auth}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        expression: "folder:drewdella",
-        sort_by: [{ public_id: "desc" }],
-        max_results: 30
-      })
-    });
+    const response = await fetch(url);
 
-    // 3. Check response
+    // Check response
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Cloudinary error response:', errorText);
-      throw new Error(`Cloudinary API error: ${response.status} ${errorText}`);
+      console.error('Sanity error response:', errorText);
+      throw new Error(`Sanity API error: ${response.status} ${errorText}`);
     }
 
-    // 4. Process data
+    // Process data
     const data = await response.json();
-    console.log(`Found ${data.resources.length} images`);
+    console.log('Received data from Sanity:', data);
+    
+    const images = data.result?.galleryImages || [];
+    console.log(`Found ${images.length} images`);
 
     res.json({
-      images: data.resources.map(file => ({
-        url: file.secure_url,
-        publicId: file.public_id,
-        width: file.width,
-        height: file.height,
-        format: file.format
-      }))
+      message: 'This API is deprecated. Images are now fetched directly from Sanity in the frontend.',
+      images: []
     });
   } catch (error) {
     console.error('Detailed error:', error);
@@ -106,8 +92,9 @@ app.listen(PORT, () => {
   console.log(`- Health check: http://localhost:${PORT}/api/test`);
   console.log(`- Images: http://localhost:${PORT}/api/images`);
   console.log('\nEnvironment variables:');
-  console.log('- CLOUDINARY_CLOUD_NAME:', !!process.env.CLOUDINARY_CLOUD_NAME);
-  console.log('- CLOUDINARY_API_KEY:', !!process.env.CLOUDINARY_API_KEY);
-  console.log('- CLOUDINARY_API_SECRET:', !!process.env.CLOUDINARY_API_SECRET);
+  console.log('- SANITY_PROJECT_ID: qcu6o4bq');
+  console.log('- SANITY_DATASET: production');
+  console.log('- YOUTUBE_API_KEY:', !!process.env.YOUTUBE_API_KEY);
+  console.log('- YOUTUBE_CHANNEL_ID:', !!process.env.YOUTUBE_CHANNEL_ID);
   console.log('\nPress Ctrl+C to stop\n');
 }); 
