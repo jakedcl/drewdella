@@ -10,10 +10,9 @@ export default async function handler(req, res) {
 
   // Check environment variables
   const envCheck = {
-    cloudinary: {
-      cloudName: !!process.env.CLOUDINARY_CLOUD_NAME,
-      apiKey: !!process.env.CLOUDINARY_API_KEY,
-      apiSecret: !!process.env.CLOUDINARY_API_SECRET
+    sanity: {
+      projectId: 'qcu6o4bq', // Hardcoded as it's public anyway
+      dataset: 'production'
     },
     youtube: {
       apiKey: !!process.env.YOUTUBE_API_KEY,
@@ -24,31 +23,22 @@ export default async function handler(req, res) {
   results.services.environment = {
     status: 'ok',
     details: {
-      cloudinary: Object.values(envCheck.cloudinary).every(Boolean),
+      sanity: true,
       youtube: Object.values(envCheck.youtube).every(Boolean)
     }
   };
 
-  // Check Cloudinary
+  // Check Sanity
   try {
-    const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${process.env.CLOUDINARY_CLOUD_NAME}/resources/search`;
-    const cloudinaryResponse = await fetch(cloudinaryUrl, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Basic ${Buffer.from(`${process.env.CLOUDINARY_API_KEY}:${process.env.CLOUDINARY_API_SECRET}`).toString('base64')}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        expression: "folder:drewdella",
-        max_results: 1
-      })
-    });
-    results.services.cloudinary = {
-      status: cloudinaryResponse.ok ? 'ok' : 'error',
-      statusCode: cloudinaryResponse.status
+    const sanityUrl = `https://${envCheck.sanity.projectId}.api.sanity.io/v2023-05-03/data/query/${envCheck.sanity.dataset}?query=*[_type == "imageGallery"][0]{_id}`;
+    const sanityResponse = await fetch(sanityUrl);
+    
+    results.services.sanity = {
+      status: sanityResponse.ok ? 'ok' : 'error',
+      statusCode: sanityResponse.status
     };
   } catch (error) {
-    results.services.cloudinary = {
+    results.services.sanity = {
       status: 'error',
       error: error.message
     };

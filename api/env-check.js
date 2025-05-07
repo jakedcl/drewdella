@@ -8,10 +8,9 @@ export default async function handler(req, res) {
   try {
     // Check environment variables (without exposing values)
     const envCheck = {
-      cloudinary: {
-        cloudName: !!process.env.CLOUDINARY_CLOUD_NAME,
-        apiKey: !!process.env.CLOUDINARY_API_KEY,
-        apiSecret: !!process.env.CLOUDINARY_API_SECRET
+      sanity: {
+        projectId: 'qcu6o4bq', // Hardcoded as it's public anyway
+        dataset: 'production'
       },
       youtube: {
         apiKey: !!process.env.YOUTUBE_API_KEY,

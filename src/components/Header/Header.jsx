@@ -1,8 +1,35 @@
+import React, { useState, useEffect } from "react";
 import GoogleLogo from "../GoogleLogo/GoogleLogo";
 import SearchBar from "../SearchBar/SearchBar";
+import { client } from "../../lib/sanity";
 import "./Header.css"; // Your CSS file for styling
 
 const Header = ({ currentPath = "" }) => {
+  const [shopUrl, setShopUrl] = useState("https://www.drewdellamerch.com"); // Default fallback
+
+  useEffect(() => {
+    const fetchShopLink = async () => {
+      try {
+        // Fetch the shop link from Sanity
+        const query = `*[_type == "shopLink"][0] {
+          title,
+          url
+        }`;
+
+        const data = await client.fetch(query);
+
+        if (data && data.url) {
+          setShopUrl(data.url);
+        }
+      } catch (error) {
+        console.error("Error fetching shop link:", error);
+        // Keep the default URL on error
+      }
+    };
+
+    fetchShopLink();
+  }, []);
+
   const googleLogoStyles = {
     display: "flex",
     flexDirection: "row",
@@ -26,6 +53,7 @@ const Header = ({ currentPath = "" }) => {
             { name: "@thedrewdella", path: "/connect" },
             { name: "@thedrewdella", path: "/connect" },
             { name: "live shows nyc+", path: "/maps" },
+            { name: "drew della merch", path: shopUrl },
           ]}
         />
       </div>
@@ -38,7 +66,7 @@ const Header = ({ currentPath = "" }) => {
           Gmail
         </a>
         <a
-          href="https://www.drewdellamerch.com"
+          href={shopUrl}
           className="header-link"
           style={{ mx: "2rem" }}
           target="_blank"

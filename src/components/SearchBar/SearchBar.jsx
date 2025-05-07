@@ -43,7 +43,7 @@ function SearchBar({
       if (suggestion) {
         // Close the dropdown and navigate to the selected suggestion
         setIsDropdownVisible(false);
-        navigate(suggestion.path); // Use navigate instead of history.push
+        handleNavigation(suggestion.path);
       } else {
         console.log("Invalid input");
       }
@@ -57,9 +57,25 @@ function SearchBar({
     }, 100);
   };
 
+  // Helper function to determine if a path is external (starts with http)
+  const isExternalLink = (path) => {
+    return path.startsWith('http://') || path.startsWith('https://');
+  };
+
+  // Handle navigation - either use React Router or window.location
+  const handleNavigation = (path) => {
+    if (isExternalLink(path)) {
+      // For external links, open in a new tab
+      window.open(path, '_blank');
+    } else {
+      // For internal links, use React Router
+      navigate(path);
+    }
+  };
+
   const handleOptionClick = (path) => {
     setIsDropdownVisible(false); // Close the dropdown
-    navigate(path); // Navigate to the selected option's path
+    handleNavigation(path);
   };
 
   useEffect(() => {
