@@ -73,6 +73,7 @@ const Map = () => {
             });
 
             map.current.on('load', async () => {
+                const allLngLats = [];
                 for (const location of locations) {
                     let lngLat = null;
                     if (location.coordinates && location.coordinates.lng && location.coordinates.lat) {
@@ -83,6 +84,7 @@ const Map = () => {
                         lngLat = await getCoordinates(location.venueName);
                     }
                     if (lngLat) {
+                        allLngLats.push(lngLat);
                         const el = document.createElement('div');
                         el.className = 'marker';
                         el.innerHTML = pinSVG;
@@ -99,6 +101,11 @@ const Map = () => {
                             .setPopup(popup)
                             .addTo(map.current);
                     }
+                }
+                // Fit map to all pins
+                if (allLngLats.length > 0) {
+                    const bounds = allLngLats.reduce((b, coord) => b.extend(coord), new mapboxgl.LngLatBounds(allLngLats[0], allLngLats[0]));
+                    map.current.fitBounds(bounds, { padding: 80, maxZoom: 14, duration: 0 });
                 }
             });
         };
