@@ -61,7 +61,6 @@ function NavTabs() {
         scrollButtons="auto"
         variant="scrollable"
         sx={{}}
-        centered
       >
         {pages.map((page, index) => (
           <Tab

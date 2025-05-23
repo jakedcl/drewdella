@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Masonry } from "@mui/lab";
 import { CircularProgress, Alert, Box } from "@mui/material";
-import { client, urlFor } from "../../lib/sanity";
+import { client, urlFor, fetchSanityData } from "../../lib/sanity";
 
 function ImagesPage() {
   const [images, setImages] = useState([]);
@@ -31,13 +31,17 @@ function ImagesPage() {
           }
         }`;
 
-        const data = await client.fetch(query);
+        console.log('Fetching images from Sanity...');
+        const data = await fetchSanityData(query);
+        console.log('Received data from Sanity:', data);
 
         if (!data || !data.galleryImages) {
+          console.log('No gallery data found');
           setImages([]);
         } else {
           // Filter out any images that don't have an asset
           const validImages = data.galleryImages.filter(img => img && img.asset);
+          console.log(`Found ${validImages.length} valid images`);
           setImages(validImages);
         }
       } catch (err) {
@@ -62,7 +66,11 @@ function ImagesPage() {
   if (error) {
     return (
       <Box p={2}>
-        <Alert severity="error">{error}</Alert>
+        <Alert severity="error">
+          {error}
+          <br />
+          <small>Please check the console for more details.</small>
+        </Alert>
       </Box>
     );
   }
@@ -70,7 +78,14 @@ function ImagesPage() {
   if (!images.length) {
     return (
       <Box p={2}>
-        <Alert severity="info">No valid images found. Add images in the Sanity Studio.</Alert>
+        <Alert severity="info">
+          No valid images found. Please check:
+          <ul>
+            <li>Sanity Studio for image gallery content</li>
+            <li>Network connection</li>
+            <li>Console for detailed errors</li>
+          </ul>
+        </Alert>
       </Box>
     );
   }
@@ -94,6 +109,10 @@ function ImagesPage() {
                   borderRadius: 4
                 }}
                 loading="lazy"
+                onError={(e) => {
+                  console.error('Image failed to load:', image.asset._id);
+                  e.target.style.display = 'none';
+                }}
               />
               {image.caption && (
                 <p style={{ fontSize: '0.9rem', color: '#666', marginTop: '4px' }}>

@@ -4,11 +4,7 @@ import { Link, useNavigate } from "react-router-dom"; // Import useNavigate
 import SearchIcon from "@mui/icons-material/Search";
 
 function SearchBar({
-  suggestions = [
-    { name: "Google", path: "/home" },
-    { name: "Images", path: "/images" },
-    { name: "Photos", path: "/photos" },
-  ],
+  suggestions = [], // Remove default suggestions
   feelingLucky = "false",
   currentPath = "/home",
 }) {
@@ -78,6 +74,11 @@ function SearchBar({
     handleNavigation(path);
   };
 
+  // Deduplicate suggestions by name
+  const uniqueSuggestions = Array.from(
+    new Map(suggestions.map(item => [item.name, item])).values()
+  );
+
   useEffect(() => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
@@ -102,7 +103,7 @@ function SearchBar({
         />
         {isDropdownVisible && (
           <div className="dropdown-menu">
-            {suggestions.map((item) => (
+            {uniqueSuggestions.map((item) => (
               <div
                 key={item.name}
                 className="dropdown-item"
