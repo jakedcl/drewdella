@@ -8,6 +8,7 @@ import ImagesPage from "./pages/ImagesPage/ImagesPage.jsx";
 import Layout from "./components/Layout/Layout.jsx";
 import MapPage from "./pages/MapPage/MapPage.jsx";
 import VideosPage from "./pages/VideosPage/VideosPage.jsx";
+import BlogPage from "./pages/BlogPage/BlogPage.jsx";
 
 const router = createBrowserRouter([
   {
@@ -36,6 +37,10 @@ const router = createBrowserRouter([
       {
         path: "images",
         element: <ImagesPage />,
+      },
+      {
+        path: "blog",
+        element: <BlogPage />,
       },
       {
         path: "*",

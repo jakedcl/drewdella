@@ -37,6 +37,7 @@ function NavTabs() {
     { label: "All", path: "/all" },
     { label: "Images", path: "/images" },
     { label: "Videos", path: "/videos" },
+    { label: "Blog", path: "/blog" },
     { label: "Socials", path: "/connect" },
     { label: "Shopping", path: shopUrl },
     { label: "Maps", path: "/maps" },
