@@ -6,17 +6,17 @@ function Footer() {
   return (
     <footer className="footer">
       <div className="footer_left">
-        <Link to="/blog" className="footer_link">
-          About
+        <Link to="/all" className="footer_link">
+          Music
         </Link>
-        <a href="/link2" className="footer_link">
-          Privacy
-        </a>
+        <Link to="/connect" className="footer_link">
+          Socials
+        </Link>
       </div>
       <div className="footer_right">
-        <a href="/link3" className="footer_link">
-          Settings
-        </a>
+        <Link to="/blog" className="footer_link">
+          Blog
+        </Link>
       </div>
     </footer>
   );

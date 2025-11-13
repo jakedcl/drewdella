@@ -1,0 +1,46 @@
+.shop-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+  padding: 40px 20px;
+}
+
+.shop-content {
+  text-align: center;
+  max-width: 600px;
+}
+
+.shop-title {
+  font-family: 'Helvetica', Arial, sans-serif;
+  font-size: 32px;
+  font-weight: 400;
+  color: #1a0dab;
+  margin-bottom: 40px;
+}
+
+.shop-message {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.shop-text {
+  font-family: 'Helvetica', Arial, sans-serif;
+  font-size: 18px;
+  color: #4d5156;
+  margin: 0;
+  line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+  .shop-title {
+    font-size: 28px;
+    margin-bottom: 30px;
+  }
+
+  .shop-text {
+    font-size: 16px;
+  }
+}
+

@@ -1,36 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import HeaderHome from "../../components/HeaderHome/HeaderHome.jsx";
 import GoogleLogo from "../../components/GoogleLogo/GoogleLogo.jsx";
 import SearchBar from "../../components/SearchBar/SearchBar.jsx";
 import Footer from "../../components/Footer/Footer.jsx";
-import { client } from "../../lib/sanity";
+import { searchSuggestions } from "../../constants/searchSuggestions";
 import "./HomePage.css";
 
 function HomePage() {
-  const [shopUrl, setShopUrl] = useState("https://www.drewdellamerch.com"); // Default fallback
-
-  useEffect(() => {
-    const fetchShopLink = async () => {
-      try {
-        // Fetch the shop link from Sanity
-        const query = `*[_type == "shopLink"][0] {
-          title,
-          url
-        }`;
-
-        const data = await client.fetch(query);
-
-        if (data && data.url) {
-          setShopUrl(data.url);
-        }
-      } catch (error) {
-        console.error("Error fetching shop link:", error);
-        // Keep the default URL on error
-      }
-    };
-
-    fetchShopLink();
-  }, []);
 
   const googleLogoStyles = {
     marginLeft: "auto",
@@ -56,13 +32,7 @@ function HomePage() {
           <GoogleLogo style={googleLogoStyles} />
           <SearchBar
             feelingLucky={true}
-            suggestions={[
-              { name: "drew della discography", path: "/all" },
-              { name: "della photos", path: "/images" },
-              { name: "@thedrewdella", path: "/connect" },
-              { name: "live shows nyc+", path: "/maps" },
-              { name: "drew della merch", path: shopUrl },
-            ]}
+            suggestions={searchSuggestions}
           />
         </div>
       </div>

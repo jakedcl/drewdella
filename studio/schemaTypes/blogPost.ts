@@ -83,6 +83,22 @@ export default defineType({
               type: 'string',
               description: 'Optional caption for the image',
             },
+            {
+              name: 'size',
+              title: 'Image Size',
+              type: 'string',
+              description: 'Control the display size of the image',
+              options: {
+                list: [
+                  {title: 'Small', value: 'small'},
+                  {title: 'Medium', value: 'medium'},
+                  {title: 'Large', value: 'large'},
+                  {title: 'Full Width', value: 'full'},
+                ],
+                layout: 'radio',
+              },
+              initialValue: 'medium',
+            },
           ],
         }
       ],

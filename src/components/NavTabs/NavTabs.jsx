@@ -1,37 +1,9 @@
-import React, { useState, useEffect } from "react";
-import { Tabs, Tab, CircularProgress } from "@mui/material";
+import React from "react";
+import { Tabs, Tab } from "@mui/material";
 import { Link, useLocation } from "react-router-dom";
-import { client } from "../../lib/sanity";
 
 function NavTabs() {
   const location = useLocation();
-  const [shopUrl, setShopUrl] = useState("https://www.drewdellamerch.com"); // Default fallback
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchShopLink = async () => {
-      try {
-        // Fetch the shop link from Sanity
-        const query = `*[_type == "shopLink"][0] {
-          title,
-          url
-        }`;
-
-        const data = await client.fetch(query);
-
-        if (data && data.url) {
-          setShopUrl(data.url);
-        }
-      } catch (error) {
-        console.error("Error fetching shop link:", error);
-        // Keep the default URL on error
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchShopLink();
-  }, []);
 
   const pages = [
     { label: "All", path: "/all" },
@@ -39,7 +11,7 @@ function NavTabs() {
     { label: "Videos", path: "/videos" },
     { label: "Blog", path: "/blog" },
     { label: "Socials", path: "/connect" },
-    { label: "Shopping", path: shopUrl },
+    { label: "Shopping", path: "/shop" },
     { label: "Maps", path: "/maps" },
   ];
 
