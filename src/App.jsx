@@ -9,6 +9,7 @@ import Layout from "./components/Layout/Layout.jsx";
 import MapPage from "./pages/MapPage/MapPage.jsx";
 import VideosPage from "./pages/VideosPage/VideosPage.jsx";
 import BlogPage from "./pages/BlogPage/BlogPage.jsx";
+import ShopPage from "./pages/ShopPage/ShopPage.jsx";
 
 const router = createBrowserRouter([
   {
@@ -41,6 +42,10 @@ const router = createBrowserRouter([
       {
         path: "blog",
         element: <BlogPage />,
+      },
+      {
+        path: "shop",
+        element: <ShopPage />,
       },
       {
         path: "*",

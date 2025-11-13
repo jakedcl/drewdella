@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import GoogleLogo from "../GoogleLogo/GoogleLogo";
 import SearchBar from "../SearchBar/SearchBar";
 import { client } from "../../lib/sanity";
+import { searchSuggestions } from "../../constants/searchSuggestions";
 import "./Header.css"; // Your CSS file for styling
 
 const Header = ({ currentPath = "" }) => {
@@ -47,14 +48,7 @@ const Header = ({ currentPath = "" }) => {
         <SearchBar
           currentPath={currentPath}
           feelingLucky={false} // prop makes feeling google search and lucky buttons appear under this instance of searchBar
-          suggestions={[
-            { name: "drew della discography", path: "/all" },
-            { name: "della photos", path: "/images" },
-            { name: "@thedrewdella", path: "/connect" },
-            { name: "@thedrewdella", path: "/connect" },
-            { name: "live shows nyc+", path: "/maps" },
-            { name: "drew della merch", path: shopUrl },
-          ]}
+          suggestions={searchSuggestions}
         />
       </div>
       <div style={{ flex: 1.7 }}></div>
@@ -66,10 +60,9 @@ const Header = ({ currentPath = "" }) => {
           Gmail
         </a>
         <a
-          href={shopUrl}
+          href="/shop"
           className="header-link"
           style={{ mx: "2rem" }}
-          target="_blank"
         >
           Store
         </a>
