@@ -1,6 +1,6 @@
 .lyrics-page {
   max-width: 1000px;
-  margin: 0 auto;
+  margin: 0;
   padding: 1rem;
 }
 
@@ -52,7 +52,7 @@
 /* Detail View Styles */
 .lyrics-detail {
   max-width: 800px;
-  margin: 0 auto;
+  margin: 0;
 }
 
 .lyrics-back-link {

@@ -1,5 +1,6 @@
 // HeaderHome.jsx
 import React from "react";
+import { Link } from "react-router-dom";
 import "./HeaderHome.css";
 
 function HeaderHome() {
@@ -7,12 +8,6 @@ function HeaderHome() {
   return (
     <header className="header-home">
       <div className="header-home-left">
-        <a
-          href="/all"
-          className="header-home-link"
-        >
-          music
-        </a>
         <a
           href="/shop"
           className="header-home-link"
@@ -22,12 +17,12 @@ function HeaderHome() {
       </div>
       <div style={{ display: "flex", flex: 2 }} />
       <div className="header-home-right">
-        <a
-          href="mailto:drewdella@gmail.com?subject=Reaching out from the Website&body=Hi Andrew,"
+        <Link
+          to="/lyrics"
           className="header-home-link"
         >
-          Gmail
-        </a>
+          Lyrics
+        </Link>
         <a href="images" className="header-home-link" target="_blank">
           Images
         </a>

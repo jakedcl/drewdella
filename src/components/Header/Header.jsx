@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import GoogleLogo from "../GoogleLogo/GoogleLogo";
 import SearchBar from "../SearchBar/SearchBar";
 import { client } from "../../lib/sanity";
@@ -53,12 +54,12 @@ const Header = ({ currentPath = "" }) => {
       </div>
       <div style={{ flex: 1.7 }}></div>
       <div style={{ flex: 0.3, alignItems: "end" }}>
-        <a
-          href="mailto:drewdella@gmail.com?subject=Reaching out from the Website&body=Hi Andrew,"
+        <Link
+          to="/lyrics"
           className="header-link"
         >
-          Gmail
-        </a>
+          Lyrics
+        </Link>
         <a
           href="/shop"
           className="header-link"

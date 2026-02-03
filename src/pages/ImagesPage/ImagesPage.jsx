@@ -91,39 +91,41 @@ function ImagesPage() {
   }
 
   return (
-    <Masonry columns={{ xs: 1, sm: 2, md: 3, lg: 4 }} spacing={1}>
-      {images.map((image) => (
-        <div key={image.id} style={{ margin: 4 }}>
-          {image.asset && (
-            <>
-              <img
-                src={urlFor(image.asset)
-                  .width(800)
-                  .auto('format')
-                  .url()}
-                alt={image.alt || 'Gallery image'}
-                style={{
-                  width: "100%",
-                  height: "auto",
-                  display: "block",
-                  borderRadius: 4
-                }}
-                loading="lazy"
-                onError={(e) => {
-                  console.error('Image failed to load:', image.asset._id);
-                  e.target.style.display = 'none';
-                }}
-              />
-              {image.caption && (
-                <p style={{ fontSize: '0.9rem', color: '#666', marginTop: '4px' }}>
-                  {image.caption}
-                </p>
-              )}
-            </>
-          )}
-        </div>
-      ))}
-    </Masonry>
+    <Box sx={{ maxWidth: '1000px', margin: 0, padding: '20px' }}>
+      <Masonry columns={{ xs: 2, sm: 2, md: 3, lg: 4 }} spacing={1}>
+        {images.map((image) => (
+          <div key={image.id} style={{ margin: 4 }}>
+            {image.asset && (
+              <>
+                <img
+                  src={urlFor(image.asset)
+                    .width(800)
+                    .auto('format')
+                    .url()}
+                  alt={image.alt || 'Gallery image'}
+                  style={{
+                    width: "100%",
+                    height: "auto",
+                    display: "block",
+                    borderRadius: 4
+                  }}
+                  loading="lazy"
+                  onError={(e) => {
+                    console.error('Image failed to load:', image.asset._id);
+                    e.target.style.display = 'none';
+                  }}
+                />
+                {image.caption && (
+                  <p style={{ fontSize: '0.9rem', color: '#666', marginTop: '4px' }}>
+                    {image.caption}
+                  </p>
+                )}
+              </>
+            )}
+          </div>
+        ))}
+      </Masonry>
+    </Box>
   );
 }
 
