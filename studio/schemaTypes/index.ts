@@ -4,5 +4,6 @@ import socialLink from './socialLink'
 import shopLink from './shopLink'
 import mapLocation from './mapLocation'
 import blogPost from './blogPost'
+import song from './song'
 
-export const schemaTypes = [imageGallery, musicRelease, socialLink, shopLink, mapLocation, blogPost]
+export const schemaTypes = [imageGallery, musicRelease, socialLink, shopLink, mapLocation, blogPost, song]

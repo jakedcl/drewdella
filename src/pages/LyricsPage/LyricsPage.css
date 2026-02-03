@@ -1,0 +1,172 @@
+.lyrics-page {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+/* List View Styles */
+.lyrics-list-view {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.lyrics-album-group {
+  border-bottom: 1px solid #f1f3f4;
+  padding-bottom: 1.5rem;
+}
+
+.lyrics-album-group:last-child {
+  border-bottom: none;
+}
+
+.lyrics-album-title {
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: #202124;
+  margin-bottom: 1rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.lyrics-songs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-left: 1rem;
+}
+
+.lyrics-song-item {
+  color: #1a0dab;
+  text-decoration: none;
+  font-size: 1rem;
+  padding: 0.5rem 0;
+  transition: opacity 0.2s;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.lyrics-song-item:hover {
+  opacity: 0.8;
+  text-decoration: underline;
+}
+
+/* Detail View Styles */
+.lyrics-detail {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.lyrics-back-link {
+  display: inline-block;
+  color: #1a0dab;
+  text-decoration: none;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.lyrics-back-link:hover {
+  text-decoration: underline;
+}
+
+.lyrics-header {
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #f1f3f4;
+}
+
+.lyrics-title {
+  font-size: 2rem;
+  font-weight: 400;
+  color: #202124;
+  margin: 0 0 0.5rem 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.lyrics-album {
+  font-size: 1rem;
+  color: #70757a;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.lyrics-content {
+  line-height: 1.8;
+  color: #202124;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.lyrics-paragraph {
+  margin: 0 0 1rem 0;
+  font-size: 1rem;
+  white-space: pre-wrap;
+}
+
+.lyrics-h1 {
+  font-size: 1.75rem;
+  font-weight: 500;
+  margin: 1.5rem 0 1rem 0;
+  color: #202124;
+}
+
+.lyrics-h2 {
+  font-size: 1.5rem;
+  font-weight: 500;
+  margin: 1.25rem 0 0.75rem 0;
+  color: #202124;
+}
+
+.lyrics-h3 {
+  font-size: 1.25rem;
+  font-weight: 500;
+  margin: 1rem 0 0.5rem 0;
+  color: #202124;
+}
+
+.lyrics-blockquote {
+  border-left: 4px solid #dfe1e5;
+  padding-left: 1rem;
+  margin: 1rem 0;
+  color: #5f6368;
+  font-style: italic;
+}
+
+.lyrics-list {
+  margin: 1rem 0;
+  padding-left: 2rem;
+}
+
+.lyrics-list-item {
+  margin: 0.5rem 0;
+}
+
+.lyrics-link {
+  color: #1a0dab;
+  text-decoration: underline;
+}
+
+.lyrics-link:hover {
+  opacity: 0.8;
+}
+
+.lyrics-code {
+  background-color: #f1f3f4;
+  padding: 0.2rem 0.4rem;
+  border-radius: 3px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9em;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .lyrics-title {
+    font-size: 1.5rem;
+  }
+
+  .lyrics-content {
+    font-size: 0.95rem;
+  }
+
+  .lyrics-songs-list {
+    padding-left: 0.5rem;
+  }
+}

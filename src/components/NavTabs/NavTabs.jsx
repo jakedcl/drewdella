@@ -11,12 +11,19 @@ function NavTabs() {
     { label: "Videos", path: "/videos" },
     { label: "Blog", path: "/blog" },
     { label: "Socials", path: "/connect" },
+    { label: "Lyrics", path: "/lyrics" },
     { label: "Shopping", path: "/shop" },
     { label: "Maps", path: "/maps" },
   ];
 
   // Determine the current index based on path
-  const currentTab = pages.findIndex((page) => page.path === location.pathname);
+  const currentTab = pages.findIndex((page) => {
+    // Special handling for lyrics detail pages
+    if (page.path === "/lyrics" && location.pathname.startsWith("/lyrics")) {
+      return true;
+    }
+    return page.path === location.pathname;
+  });
 
   return (
     <div

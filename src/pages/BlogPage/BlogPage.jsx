@@ -1,6 +1,55 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { client, urlFor } from "../../lib/sanity";
 import "./BlogPage.css";
+
+function BlogPost({ post, formatDate, renderContent }) {
+    const [isExpanded, setIsExpanded] = useState(false);
+    const contentRef = useRef(null);
+    const [needsReadMore, setNeedsReadMore] = useState(false);
+
+    useEffect(() => {
+        // Check if content exceeds 12 lines after render
+        const checkHeight = () => {
+            if (contentRef.current) {
+                const lineHeight = parseFloat(getComputedStyle(contentRef.current).lineHeight) || 22.12; // fallback to 1.58em * 14px
+                const maxHeight = lineHeight * 12;
+                const actualHeight = contentRef.current.scrollHeight;
+                setNeedsReadMore(actualHeight > maxHeight);
+            }
+        };
+
+        // Check immediately and after a short delay to ensure content is rendered
+        checkHeight();
+        const timeout = setTimeout(checkHeight, 100);
+        
+        return () => clearTimeout(timeout);
+    }, [post._id]); // Use post._id instead of post.content to avoid unnecessary re-renders
+
+    return (
+        <article className="blog-post">
+            <div className="blog-post-content">
+                <h2 className="blog-post-title">{post.title}</h2>
+                <time className="blog-post-date" dateTime={post.date}>
+                    {formatDate(post.date)}
+                </time>
+                <div 
+                    ref={contentRef}
+                    className={`blog-post-body ${isExpanded ? 'expanded' : 'collapsed'}`}
+                >
+                    {renderContent(post.content)}
+                </div>
+                {needsReadMore && (
+                    <button 
+                        className="blog-read-more-btn"
+                        onClick={() => setIsExpanded(!isExpanded)}
+                    >
+                        {isExpanded ? 'Read less' : 'Read more'}
+                    </button>
+                )}
+            </div>
+        </article>
+    );
+}
 
 function BlogPage() {
     const [blogPosts, setBlogPosts] = useState([]);
@@ -203,17 +252,12 @@ function BlogPage() {
                     </div>
                 ) : (
                     blogPosts.map((post) => (
-                        <article key={post._id} className="blog-post">
-                            <div className="blog-post-content">
-                                <h2 className="blog-post-title">{post.title}</h2>
-                                <time className="blog-post-date" dateTime={post.date}>
-                                    {formatDate(post.date)}
-                                </time>
-                                <div className="blog-post-body">
-                                    {renderContent(post.content)}
-                                </div>
-                            </div>
-                        </article>
+                        <BlogPost 
+                            key={post._id} 
+                            post={post}
+                            formatDate={formatDate}
+                            renderContent={renderContent}
+                        />
                     ))
                 )}
             </div>

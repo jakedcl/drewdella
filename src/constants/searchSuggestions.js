@@ -5,6 +5,7 @@ export const searchSuggestions = [
   { name: "della photos", path: "/images" },
   { name: "live shows nyc+", path: "/maps" },
   { name: "drew della discography", path: "/all" },
+  { name: "della song lyrics", path: "/lyrics" },
 
 //  { name: "drew della merch", path: "/shop" },
 ];
