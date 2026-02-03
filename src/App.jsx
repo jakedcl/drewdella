@@ -10,6 +10,7 @@ import MapPage from "./pages/MapPage/MapPage.jsx";
 import VideosPage from "./pages/VideosPage/VideosPage.jsx";
 import BlogPage from "./pages/BlogPage/BlogPage.jsx";
 import ShopPage from "./pages/ShopPage/ShopPage.jsx";
+import LyricsPage from "./pages/LyricsPage/LyricsPage.jsx";
 
 const router = createBrowserRouter([
   {
@@ -46,6 +47,14 @@ const router = createBrowserRouter([
       {
         path: "shop",
         element: <ShopPage />,
+      },
+      {
+        path: "lyrics",
+        element: <LyricsPage />,
+      },
+      {
+        path: "lyrics/:slug",
+        element: <LyricsPage />,
       },
       {
         path: "*",

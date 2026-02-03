@@ -54,6 +54,39 @@
   font-size: 14px;
   line-height: 1.58;
   margin-top: 8px;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out;
+}
+
+.blog-post-body.collapsed {
+  max-height: calc(1.58em * 12); /* 12 lines based on line-height */
+}
+
+.blog-post-body.expanded {
+  max-height: none;
+}
+
+.blog-read-more-btn {
+  background: none;
+  border: none;
+  color: #065fd4;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 4px 0;
+  margin-top: 4px;
+  font-family: 'Helvetica', Arial, sans-serif;
+  text-align: left;
+  transition: opacity 0.2s;
+  display: inline-block;
+}
+
+.blog-read-more-btn:hover {
+  opacity: 0.8;
+}
+
+.blog-read-more-btn:active {
+  opacity: 0.6;
 }
 
 /* Typography styles */
