@@ -1,13 +1,11 @@
 .shop-page {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 60vh;
   padding: 40px 20px;
+  max-width: 1000px;
+  margin: 0;
 }
 
 .shop-content {
-  text-align: center;
+  text-align: left;
   max-width: 600px;
 }
 

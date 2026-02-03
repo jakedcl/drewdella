@@ -51,7 +51,7 @@ function VideosPage() {
     <Box sx={{
       p: { xs: 1, sm: 2 },
       maxWidth: '1000px',
-      margin: '0 auto'
+      margin: 0
     }}>
       {videos.map((video) => (
         <Box
