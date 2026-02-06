@@ -31,6 +31,7 @@ function LyricsPage() {
         _id,
         title,
         album,
+        albumOrder,
         slug
       }`;
 
@@ -163,17 +164,25 @@ function LyricsPage() {
     });
   };
 
-  // Group songs by album
+  // Group songs by album and calculate minimum albumOrder for each album
   const groupSongsByAlbum = (songs) => {
     const grouped = {};
+    const albumOrders = {}; // Track minimum albumOrder per album
+    
     songs.forEach((song) => {
       const albumKey = song.album || 'Singles';
       if (!grouped[albumKey]) {
         grouped[albumKey] = [];
+        albumOrders[albumKey] = song.albumOrder ?? Infinity;
       }
       grouped[albumKey].push(song);
+      // Update minimum albumOrder if this song has a lower value
+      if (song.albumOrder !== null && song.albumOrder !== undefined) {
+        albumOrders[albumKey] = Math.min(albumOrders[albumKey], song.albumOrder);
+      }
     });
-    return grouped;
+    
+    return { grouped, albumOrders };
   };
 
   if (loading) {
@@ -213,7 +222,7 @@ function LyricsPage() {
   }
 
   // List view (all songs grouped by album)
-  const groupedSongs = groupSongsByAlbum(songs);
+  const { grouped: groupedSongs, albumOrders } = groupSongsByAlbum(songs);
 
   if (songs.length === 0) {
     return (
@@ -228,9 +237,14 @@ function LyricsPage() {
       <div className="lyrics-list-view">
         {Object.keys(groupedSongs)
           .sort((a, b) => {
-            // Put "Singles" at the end
-            if (a === 'Singles') return 1;
-            if (b === 'Singles') return -1;
+            // Put "Singles" at the end (give it a very high order if not set)
+            const aOrder = a === 'Singles' ? (albumOrders[a] === Infinity ? 999999 : albumOrders[a] + 10000) : (albumOrders[a] === Infinity ? 999999 : albumOrders[a]);
+            const bOrder = b === 'Singles' ? (albumOrders[b] === Infinity ? 999999 : albumOrders[b] + 10000) : (albumOrders[b] === Infinity ? 999999 : albumOrders[b]);
+            
+            // Sort by albumOrder first, then alphabetically if orders are equal
+            if (aOrder !== bOrder) {
+              return aOrder - bOrder;
+            }
             return a.localeCompare(b);
           })
           .map((album) => (

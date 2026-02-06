@@ -80,6 +80,13 @@ export default defineType({
       description: 'Order to display songs within album (lower numbers appear first)',
       initialValue: 0,
     }),
+    defineField({
+      name: 'albumOrder',
+      title: 'Album Display Order',
+      type: 'number',
+      description: 'Order to display this album (lower numbers appear first). If multiple songs in the same album have different values, the lowest value will be used.',
+      initialValue: 0,
+    }),
   ],
   orderings: [
     {
