@@ -237,15 +237,20 @@ function LyricsPage() {
             <div key={album} className="lyrics-album-group">
               <h2 className="lyrics-album-title">{album}</h2>
               <div className="lyrics-songs-list">
-                {groupedSongs[album].map((song) => (
-                  <Link
-                    key={song._id}
-                    to={`/lyrics/${song.slug.current}`}
-                    className="lyrics-song-item"
-                  >
-                    {song.title}
-                  </Link>
-                ))}
+                {groupedSongs[album]
+                  .filter((song) => song.slug && (song.slug.current || song.slug))
+                  .map((song) => {
+                    const slugValue = song.slug?.current || song.slug;
+                    return (
+                      <Link
+                        key={song._id}
+                        to={`/lyrics/${slugValue}`}
+                        className="lyrics-song-item"
+                      >
+                        {song.title}
+                      </Link>
+                    );
+                  })}
               </div>
             </div>
           ))}
