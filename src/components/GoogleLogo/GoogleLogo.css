@@ -10,6 +10,14 @@
   max-width: 25vh;
 }
 
+@media (max-width: 768px) {
+  .logo-container {
+    max-width: 95vw;
+    min-width: 85vw;
+    margin-bottom: 1rem;
+  }
+}
+
 /* For small screens (sm) */
 @media (min-width: 600) {
   /* Adjust the pixel value based on your preferred sm breakpoint */
