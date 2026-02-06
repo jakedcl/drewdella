@@ -48,7 +48,6 @@ const Header = ({ currentPath = "" }) => {
       <div style={{ flex: 2.4 }}>
         <SearchBar
           currentPath={currentPath}
-          feelingLucky={false} // prop makes feeling google search and lucky buttons appear under this instance of searchBar
           suggestions={searchSuggestions}
         />
       </div>

@@ -31,7 +31,6 @@ function HomePage() {
         <div className="home-hero">
           <GoogleLogo style={googleLogoStyles} />
           <SearchBar
-            feelingLucky={true}
             suggestions={searchSuggestions}
           />
         </div>

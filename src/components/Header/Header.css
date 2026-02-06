@@ -7,6 +7,12 @@
   align-items: center;
 }
 
+@media (max-width: 768px) {
+  .header {
+    padding: 1vh 1vh;
+  }
+}
+
 .header-link {
   margin-left: 1vh;
   margin-right: 2vh;

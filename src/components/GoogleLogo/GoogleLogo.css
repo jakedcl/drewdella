@@ -16,6 +16,15 @@
     min-width: 85vw;
     margin-bottom: 1rem;
   }
+  
+  /* Logo in header on mobile pages - bigger with less margin */
+  .header .logo-container {
+    max-width: 50vw !important;
+    min-width: 40vw !important;
+    margin-bottom: 0 !important;
+    margin-left: 1rem !important;
+    padding: 0 !important;
+  }
 }
 
 /* For small screens (sm) */
