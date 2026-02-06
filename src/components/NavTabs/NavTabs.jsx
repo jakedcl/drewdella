@@ -6,7 +6,7 @@ function NavTabs() {
   const location = useLocation();
 
   const pages = [
-    { label: "All", path: "/all" },
+    { label: "Music", path: "/all" },
     { label: "Images", path: "/images" },
     { label: "Videos", path: "/videos" },
     { label: "Blog", path: "/blog" },
@@ -37,7 +37,7 @@ function NavTabs() {
       }}
     >
       <Tabs
-        value={currentTab === -1 ? 0 : currentTab} // Fallback to 'All' if path not found
+        value={currentTab === -1 ? 0 : currentTab} // Fallback to 'Music' if path not found
         scrollButtons="auto"
         variant="scrollable"
         sx={{}}

@@ -14,3 +14,11 @@
   padding: 20px;
   background-color: #ffffff;
 }
+
+.map-page-footer {
+  font-size: 14px;
+  color: #4d5156;
+  margin-top: 20px;
+  padding-left: 20px;
+  font-family: 'Helvetica', Arial, sans-serif;
+}
