@@ -5,7 +5,6 @@ import SearchIcon from "@mui/icons-material/Search";
 
 function SearchBar({
   suggestions = [], // Remove default suggestions
-  feelingLucky = "false",
   currentPath = "/home",
 }) {
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
@@ -120,13 +119,6 @@ function SearchBar({
       <div className="search-icon" onClick={activateInput}>
         <SearchIcon sx={{ paddingTop: ".2rem" }} />
       </div>
-
-      {feelingLucky && (
-        <div className="searchbar-buttons">
-          <button className="searchbar-button">Google Search</button>
-          <button className="searchbar-button">I'm Feeling Lucky</button>
-        </div>
-      )}
     </div>
   );
 }

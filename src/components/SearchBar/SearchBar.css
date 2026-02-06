@@ -95,18 +95,3 @@
   }
 }
 
-/* searchbar buttons (im feeling lucky) */
-.searchbar-buttons {
-  margin-top: 0vh;
-}
-.searchbar-button {
-  margin: 0 4px;
-  padding: 1.5vh 1.5vh;
-  margin: 2vw;
-  font-size: 14px;
-  color: #5f6368;
-  background: #f4f4f5;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
