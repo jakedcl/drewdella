@@ -2,7 +2,7 @@ import {defineField, defineType} from 'sanity'
 
 export default defineType({
   name: 'imageGallery',
-  title: 'Image Gallery',
+  title: 'Images',
   type: 'document',
   fields: [
     defineField({
@@ -51,7 +51,7 @@ export default defineType({
     prepare({title, media}) {
       return {
         title,
-        subtitle: 'Image Gallery',
+        subtitle: 'Images',
         media,
       }
     },

@@ -2,7 +2,7 @@ import {defineType, defineField} from 'sanity'
 
 export default defineType({
   name: 'mapLocation',
-  title: 'Map Location',
+  title: 'Map Locations',
   type: 'document',
   fields: [
     defineField({

@@ -31,4 +31,25 @@
   .home-div .search-icon {
     display: none;
   }
+  
+  /* Reduce logo container padding on mobile and make bigger */
+  .home-hero .logo-container {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+    max-width: 95vw !important;
+    min-width: 85vw !important;
+    margin-bottom: 0.5rem !important;
+  }
+  
+  /* Reduce home-hero margin on mobile and bring logo closer to search */
+  .home-hero {
+    margin: 1rem;
+    margin-bottom: 1rem;
+    min-height: auto;
+  }
+  
+  /* Add spacing between logo and search bar */
+  .home-hero .searchbar-container {
+    margin-top: 1rem;
+  }
 }

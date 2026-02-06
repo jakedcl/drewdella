@@ -2,7 +2,7 @@ import {defineField, defineType} from 'sanity'
 
 export default defineType({
   name: 'song',
-  title: 'Songs',
+  title: 'Lyrics',
   type: 'document',
   fields: [
     defineField({
