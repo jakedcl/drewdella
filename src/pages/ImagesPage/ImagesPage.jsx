@@ -91,7 +91,7 @@ function ImagesPage() {
   }
 
   return (
-    <Box sx={{ maxWidth: '1000px', margin: 0, padding: '20px' }}>
+    <Box sx={{ width: '100%', margin: 0, padding: '20px' }}>
       <Masonry columns={{ xs: 2, sm: 2, md: 3, lg: 4 }} spacing={1}>
         {images.map((image) => (
           <div key={image.id} style={{ margin: 4 }}>
