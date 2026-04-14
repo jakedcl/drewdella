@@ -2,6 +2,44 @@ import React, { useState, useEffect, useRef } from "react";
 import { client, urlFor } from "../../lib/sanity";
 import "./BlogPage.css";
 
+/** CSS max widths — must stay in sync with BlogPage.css */
+const BLOG_IMAGE_DISPLAY_PX = {
+    small: 300,
+    medium: 500,
+    large: 700,
+    full: 1000, // .blog-page max-width
+};
+
+/** `sizes` hints for responsive srcset (layout width, not pixel density) */
+const BLOG_IMAGE_SIZES = {
+    small: "(max-width: 300px) 100vw, 300px",
+    medium: "(max-width: 500px) 100vw, 500px",
+    large: "(max-width: 700px) 100vw, 700px",
+    full: "(max-width: 1000px) 100vw, 1000px",
+};
+
+const MAX_SRC_WIDTH = 2400;
+
+/**
+ * Blog images were requested at 1× display width, so they looked soft on retina.
+ * srcSet + sizes lets 1× screens load lighter URLs while 2× gets enough pixels.
+ */
+function blogImageResponsiveSources(asset, sizeKey) {
+    const displayMax = BLOG_IMAGE_DISPLAY_PX[sizeKey] || BLOG_IMAGE_DISPLAY_PX.medium;
+    const w1 = displayMax;
+    const w2 = Math.min(displayMax * 2, MAX_SRC_WIDTH);
+    const base = () => urlFor(asset).auto("format");
+    const url1 = base().width(w1).url();
+    const url2 = base().width(w2).url();
+    const srcSet =
+        w2 > w1 ? `${url1} ${w1}w, ${url2} ${w2}w` : `${url1} ${w1}w`;
+    return {
+        src: url2,
+        srcSet,
+        sizes: BLOG_IMAGE_SIZES[sizeKey] || BLOG_IMAGE_SIZES.medium,
+    };
+}
+
 function BlogPost({ post, formatDate, renderContent }) {
     const [isExpanded, setIsExpanded] = useState(false);
     const contentRef = useRef(null);
@@ -179,25 +217,19 @@ function BlogPage() {
 
             if (block._type === 'image' && block.asset) {
                 const size = block.size || 'medium';
-                const sizeMap = {
-                    small: 300,
-                    medium: 500,
-                    large: 700,
-                    full: 1200,
-                };
-                const imageWidth = sizeMap[size] || 500;
-
-                const imageUrl = urlFor(block.asset)
-                    .width(imageWidth)
-                    .auto('format')
-                    .url();
+                const { src, srcSet, sizes } = blogImageResponsiveSources(
+                    block.asset,
+                    size
+                );
 
                 const imageClass = `blog-image blog-image-${size}`;
 
                 return (
                     <div key={index} className={`blog-image-container blog-image-container-${size}`}>
                         <img
-                            src={imageUrl}
+                            src={src}
+                            srcSet={srcSet}
+                            sizes={sizes}
                             alt={block.alt || ''}
                             className={imageClass}
                             loading="lazy"
