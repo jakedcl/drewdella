@@ -1,3 +1,15 @@
+/** Client only uses # in Shorts titles/descriptions, not in full videos. */
+function snippetContainsHashtag(snippet) {
+  const title = snippet?.title ?? '';
+  const description = snippet?.description ?? '';
+  return title.includes('#') || description.includes('#');
+}
+
+function pickThumbnailUrl(thumbnails) {
+  const t = thumbnails?.high || thumbnails?.medium || thumbnails?.default;
+  return t?.url ?? '';
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -15,7 +27,8 @@ export default async function handler(req, res) {
       throw new Error('Missing YouTube configuration');
     }
 
-    const url = `https://www.googleapis.com/youtube/v3/search?key=${YOUTUBE_API_KEY}&channelId=${YOUTUBE_CHANNEL_ID}&part=snippet,id&order=date&maxResults=12&type=video`;
+    const maxSearch = 50;
+    const url = `https://www.googleapis.com/youtube/v3/search?key=${YOUTUBE_API_KEY}&channelId=${YOUTUBE_CHANNEL_ID}&part=snippet,id&order=date&maxResults=${maxSearch}&type=video`;
     console.log('Fetching from YouTube API:', url.replace(YOUTUBE_API_KEY, 'REDACTED'));
 
     const response = await fetch(url);
@@ -33,15 +46,23 @@ export default async function handler(req, res) {
       throw new Error('Invalid YouTube API response format');
     }
 
-    console.log(`Successfully fetched ${data.items.length} videos`);
+    const withoutShorts = data.items.filter(
+      (item) => item.id?.videoId && !snippetContainsHashtag(item.snippet)
+    );
+
+    const videos = withoutShorts.slice(0, 12).map((item) => ({
+      id: item.id.videoId,
+      title: item.snippet.title,
+      thumbnail: pickThumbnailUrl(item.snippet.thumbnails),
+      publishedAt: item.snippet.publishedAt,
+    }));
+
+    console.log(
+      `YouTube search: ${data.items.length} items, ${withoutShorts.length} without # in title/description, returning ${videos.length}`
+    );
     
     return res.status(200).json({
-      videos: data.items.map(item => ({
-        id: item.id.videoId,
-        title: item.snippet.title,
-        thumbnail: item.snippet.thumbnails.high.url,
-        publishedAt: item.snippet.publishedAt
-      }))
+      videos,
     });
 
   } catch (error) {
