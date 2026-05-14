@@ -95,3 +95,33 @@
   }
 }
 
+/* ---- Navbar (Header): search must stay in its column — no overlap on logo/doodle ---- */
+.header .searchbar-container {
+  margin: 0;
+  width: 100%;
+  max-width: min(640px, 100%);
+  justify-content: center;
+}
+
+@media (min-width: 769px) {
+  .header .searchbar-dropdown {
+    position: relative;
+    width: 100%;
+    left: auto;
+    right: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .header .searchbar-container {
+    width: auto;
+    max-width: none;
+    justify-content: flex-end;
+  }
+
+  .header .search-icon {
+    display: block;
+    flex-shrink: 0;
+  }
+}
+
