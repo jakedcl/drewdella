@@ -37,22 +37,31 @@ const Header = ({ currentPath = "" }) => {
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    flex: 1,
+    flexShrink: 0,
     position: "relative",
     padding: 0,
   };
 
   return (
     <header className="header">
-      <GoogleLogo style={googleLogoStyles} />
-      <div style={{ flex: 2.4 }}>
+      <div className="header-logo-group">
+        <GoogleLogo style={googleLogoStyles} />
+        <img
+          className="header-navbar-doodle"
+          src="/thx4itall-navbar.png"
+          alt="Thx4itall"
+          width={200}
+          height={80}
+        />
+      </div>
+      <div className="header-search-wrap">
         <SearchBar
           currentPath={currentPath}
           suggestions={searchSuggestions}
         />
       </div>
-      <div style={{ flex: 1.7 }}></div>
-      <div style={{ flex: 0.3, alignItems: "end" }}>
+      <div className="header-spacer" aria-hidden />
+      <div className="header-links">
         <Link
           to="/lyrics"
           className="header-link"
