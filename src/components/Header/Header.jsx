@@ -64,7 +64,6 @@ const Header = ({ currentPath = "" }) => {
         <a
           href="/shop"
           className="header-link"
-          style={{ mx: "2rem" }}
         >
           Store
         </a>

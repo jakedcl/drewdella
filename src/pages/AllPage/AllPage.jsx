@@ -17,44 +17,83 @@ import {
 } from "../../components/SearchResults/SearchResults.jsx";
 import "./AllPage.css";
 
-function VintagePopup({ title, lines, cta, href, onClose }) {
+function VintagePopup({ title, lines, cta, href }) {
+  const [phase, setPhase] = useState("off");
   const isInternal = typeof href === "string" && href.startsWith("/");
   const ctaProps = isInternal
     ? { to: href }
     : { href, target: "_blank", rel: "noopener noreferrer" };
   const CtaTag = isInternal ? Link : "a";
+  const tucked = phase === "peek";
+
+  useEffect(() => {
+    let hide;
+    const enter = window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => setPhase("open"));
+    });
+    hide = window.setTimeout(() => setPhase("peek"), 3800);
+    return () => {
+      window.cancelAnimationFrame(enter);
+      window.clearTimeout(hide);
+    };
+  }, []);
 
   return (
-    <div className="win-popup">
-      <div className="win-popup-bar">
-        <span className="win-popup-title">{title}</span>
-        <button
-          type="button"
-          className="win-popup-x"
-          onClick={onClose}
-          aria-label="Close"
-        >
-          ×
-        </button>
-      </div>
-      <div className="win-popup-body">
-        <div className="win-popup-msg">
-          <img
-            className="win-popup-doodle"
-            src="/thx4itall-navbar.png"
-            alt=""
-            width={200}
-            height={80}
-          />
-          <div>
-            {lines.map((line) => (
-              <p key={line}>{line}</p>
-            ))}
-          </div>
+    <div
+      className={`win-popup-dock is-${phase}`}
+      onClick={tucked ? () => setPhase("open") : undefined}
+      role={tucked ? "button" : undefined}
+      tabIndex={tucked ? 0 : undefined}
+      aria-label={tucked ? "Show congratulations" : undefined}
+      onKeyDown={
+        tucked
+          ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                setPhase("open");
+              }
+            }
+          : undefined
+      }
+    >
+      <div className="win-popup">
+        <div className="win-popup-bar">
+          <span className="win-popup-title">{title}</span>
+          <button
+            type="button"
+            className="win-popup-x"
+            onClick={(e) => {
+              e.stopPropagation();
+              setPhase("peek");
+            }}
+            aria-label="Hide"
+          >
+            ×
+          </button>
         </div>
-        <CtaTag className="win-popup-cta" {...ctaProps}>
-          {cta}
-        </CtaTag>
+        <div className="win-popup-body">
+          <div className="win-popup-msg">
+            <img
+              className="win-popup-doodle"
+              src="/thx4itall-navbar.png"
+              alt=""
+              width={200}
+              height={80}
+            />
+            <div>
+              {lines.map((line) => (
+                <p key={line}>{line}</p>
+              ))}
+            </div>
+          </div>
+          <CtaTag
+            className="win-popup-cta"
+            onClick={(e) => e.stopPropagation()}
+            {...ctaProps}
+          >
+            {cta}
+          </CtaTag>
+        </div>
       </div>
     </div>
   );
@@ -141,7 +180,6 @@ export default function AllPage() {
   });
   const [loading, setLoading] = useState(true);
   const [elapsed, setElapsed] = useState("0.12");
-  const [closed, setClosed] = useState(() => new Set());
   const [latestVideo, setLatestVideo] = useState(null);
 
   useEffect(() => {
@@ -204,7 +242,6 @@ export default function AllPage() {
     ...data,
     releases: [],
   });
-  const popupOpen = !closed.has("album");
   const popupHref = latest?.url || "/music";
   const popupLines = latest
     ? ["You may already be a winner.", `Listen to ${latest.title}`]
@@ -329,32 +366,17 @@ export default function AllPage() {
   ];
   const resultCount = listings.length;
 
-  if (popupOpen) {
-    listings.splice(
-      Math.min(7, listings.length),
-      0,
-      <VintagePopup
-        key="xp-album"
-        title="CONGRATULATIONS!!!!"
-        lines={popupLines}
-        cta="OK"
-        href={popupHref}
-        onClose={() =>
-          setClosed((prev) => {
-            const next = new Set(prev);
-            next.add("album");
-            return next;
-          })
-        }
-      />
-    );
-  }
-
   return (
     <div className="all-page">
       <SearchResults count={resultCount} elapsed={elapsed}>
         {listings}
       </SearchResults>
+      <VintagePopup
+        title="CONGRATULATIONS!!!!"
+        lines={popupLines}
+        cta="OK"
+        href={popupHref}
+      />
     </div>
   );
 }

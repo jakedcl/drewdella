@@ -134,10 +134,12 @@ function SearchBar({
 
   return (
     <div
-      className={`searchbar-container${isExpanded ? " searchbar-container--expanded" : ""}`}
+      className={`searchbar-container${isExpanded ? " searchbar-container--expanded" : ""}${
+        isDropdownVisible ? " searchbar-container--open" : ""
+      }`}
       ref={searchBarRef}
     >
-      <div className="searchbar-dropdown">
+      <div className="searchbar-shell">
         <input
           ref={inputRef}
           type="text"
