@@ -1,0 +1,13 @@
+.nav-tabs {
+  padding: 0 0.5rem;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  border-bottom: 1px solid #ebebeb;
+}
+
+@media (max-width: 768px) {
+  .nav-tabs {
+    padding: 0 4px;
+  }
+}

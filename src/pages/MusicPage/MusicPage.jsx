@@ -8,40 +8,40 @@ import {
   formatElapsed,
 } from "../../components/SearchResults/SearchResults.jsx";
 
-export default function ConnectPage() {
-  const [socialLinks, setSocialLinks] = useState([]);
+export default function MusicPage() {
+  const [releases, setReleases] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [elapsed, setElapsed] = useState("0.12");
 
   useEffect(() => {
-    const fetchSocialLinks = async () => {
+    const fetchReleases = async () => {
       const started = performance.now();
       try {
         setLoading(true);
         setError(null);
 
-        const query = `*[_type == "socialLink"] | order(order asc) {
+        const query = `*[_type == "musicRelease"] | order(order asc) {
           _id,
           title,
-          url,
-          description
+          description,
+          url
         }`;
 
         const data = await client.fetch(query);
-        setSocialLinks(data);
+        setReleases(data);
         setElapsed(formatElapsed(performance.now() - started));
       } catch (err) {
-        console.error("Error fetching social links:", err);
+        console.error("Error fetching music releases:", err);
         setError(
-          err.message || "Failed to load social links. Please try again later."
+          err.message || "Failed to load music releases. Please try again later."
         );
       } finally {
         setLoading(false);
       }
     };
 
-    fetchSocialLinks();
+    fetchReleases();
   }, []);
 
   if (loading) {
@@ -65,25 +65,25 @@ export default function ConnectPage() {
     );
   }
 
-  if (!socialLinks.length) {
+  if (!releases.length) {
     return (
       <Box p={2}>
         <Alert severity="info">
-          No social links found. Add links in the Sanity Studio.
+          No music releases found. Add releases in the Sanity Studio.
         </Alert>
       </Box>
     );
   }
 
   return (
-    <SearchResults count={socialLinks.length} elapsed={elapsed}>
-      {socialLinks.map((link) => (
+    <SearchResults count={releases.length} elapsed={elapsed}>
+      {releases.map((release) => (
         <SearchResult
-          key={link._id}
-          href={link.url}
-          title={link.title}
-          cite={formatCite(link.url)}
-          snippet={link.description}
+          key={release._id}
+          href={release.url}
+          title={release.title}
+          cite={formatCite(release.url)}
+          snippet={release.description}
         />
       ))}
     </SearchResults>

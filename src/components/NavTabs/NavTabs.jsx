@@ -1,12 +1,14 @@
 import React from "react";
 import { Tabs, Tab } from "@mui/material";
 import { Link, useLocation } from "react-router-dom";
+import "./NavTabs.css";
 
 function NavTabs() {
   const location = useLocation();
 
   const pages = [
-    { label: "Music", path: "/all" },
+    { label: "All", path: "/" },
+    { label: "Music", path: "/music" },
     { label: "Images", path: "/images" },
     { label: "Videos", path: "/videos" },
     { label: "Blog", path: "/blog" },
@@ -16,43 +18,53 @@ function NavTabs() {
     { label: "Maps", path: "/maps" },
   ];
 
-  // Determine the current index based on path
   const currentTab = pages.findIndex((page) => {
-    // Special handling for lyrics detail pages
+    if (page.path === "/") {
+      return location.pathname === "/" || location.pathname === "/all";
+    }
     if (page.path === "/lyrics" && location.pathname.startsWith("/lyrics")) {
+      return true;
+    }
+    if (page.path === "/blog" && location.pathname.startsWith("/blog")) {
       return true;
     }
     return page.path === location.pathname;
   });
 
   return (
-    <div
-      style={{
-        paddingLeft: ".5rem",
-        paddingRight: "1rem",
-        display: "flex",
-        flexDirection: "row",
-        alignItems: "start",
-        borderBottom: "1px solid #f1f3f4",
-      }}
-    >
+    <div className="nav-tabs">
       <Tabs
-        value={currentTab === -1 ? 0 : currentTab} // Fallback to 'Music' if path not found
+        value={currentTab === -1 ? 0 : currentTab}
         scrollButtons="auto"
         variant="scrollable"
-        sx={{}}
+        sx={{
+          minHeight: 40,
+          "& .MuiTabs-indicator": {
+            height: 3,
+            backgroundColor: "#1a73e8",
+          },
+          "& .MuiTab-root": {
+            textTransform: "none",
+            minHeight: 40,
+            minWidth: "auto",
+            padding: "0 12px",
+            fontSize: 13,
+            fontFamily: "Arial, Helvetica, sans-serif",
+            color: "#5f6368",
+            fontWeight: 400,
+            "&.Mui-selected": {
+              color: "#1a73e8",
+              fontWeight: 500,
+            },
+          },
+        }}
       >
-        {pages.map((page, index) => (
+        {pages.map((page) => (
           <Tab
             key={page.label}
             component={Link}
             to={page.path}
             label={page.label}
-            sx={{
-              textTransform: "none",
-              minHeight: 48,
-              fontSize: "1rem",
-            }}
           />
         ))}
       </Tabs>

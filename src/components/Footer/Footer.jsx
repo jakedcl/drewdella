@@ -6,7 +6,7 @@ function Footer() {
   return (
     <footer className="footer">
       <div className="footer_left">
-        <Link to="/all" className="footer_link">
+        <Link to="/music" className="footer_link">
           Music
         </Link>
         <Link to="/connect" className="footer_link">

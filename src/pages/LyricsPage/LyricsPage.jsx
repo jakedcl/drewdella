@@ -1,16 +1,24 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { client } from "../../lib/sanity";
 import { CircularProgress, Alert, Box } from "@mui/material";
+import {
+  SearchResults,
+  SearchResult,
+  formatElapsed,
+  snippetFromPortableText,
+} from "../../components/SearchResults/SearchResults.jsx";
 import "./LyricsPage.css";
 
 function LyricsPage() {
   const { slug } = useParams();
-  const navigate = useNavigate();
   const [songs, setSongs] = useState([]);
   const [song, setSong] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [elapsed, setElapsed] = useState("0.12");
+  const [query, setQuery] = useState("");
+  const [sort, setSort] = useState("album");
 
   useEffect(() => {
     if (slug) {
@@ -23,20 +31,24 @@ function LyricsPage() {
   }, [slug]);
 
   const fetchSongs = async () => {
+    const started = performance.now();
     try {
       setLoading(true);
       setError(null);
 
-      const query = `*[_type == "song"] | order(album asc, order asc) {
+      const query = `*[_type == "song"] | order(albumOrder asc, album asc, order asc) {
         _id,
         title,
         album,
         albumOrder,
-        slug
+        order,
+        slug,
+        "preview": pt::text(lyrics)
       }`;
 
       const data = await client.fetch(query);
       setSongs(data);
+      setElapsed(formatElapsed(performance.now() - started));
     } catch (err) {
       console.error("Error fetching songs:", err);
       setError("Failed to load songs");
@@ -164,27 +176,6 @@ function LyricsPage() {
     });
   };
 
-  // Group songs by album and calculate minimum albumOrder for each album
-  const groupSongsByAlbum = (songs) => {
-    const grouped = {};
-    const albumOrders = {}; // Track minimum albumOrder per album
-    
-    songs.forEach((song) => {
-      const albumKey = song.album || 'Singles';
-      if (!grouped[albumKey]) {
-        grouped[albumKey] = [];
-        albumOrders[albumKey] = song.albumOrder ?? Infinity;
-      }
-      grouped[albumKey].push(song);
-      // Update minimum albumOrder if this song has a lower value
-      if (song.albumOrder !== null && song.albumOrder !== undefined) {
-        albumOrders[albumKey] = Math.min(albumOrders[albumKey], song.albumOrder);
-      }
-    });
-    
-    return { grouped, albumOrders };
-  };
-
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
@@ -206,7 +197,7 @@ function LyricsPage() {
     return (
       <div className="lyrics-page">
         <div className="lyrics-detail">
-          <Link to="/lyrics" className="lyrics-back-link">← Back to all songs</Link>
+          <Link to="/lyrics" className="lyrics-back-link">← Back to search results</Link>
           <div className="lyrics-header">
             <h1 className="lyrics-title">{song.title}</h1>
             {song.album && (
@@ -221,9 +212,6 @@ function LyricsPage() {
     );
   }
 
-  // List view (all songs grouped by album)
-  const { grouped: groupedSongs, albumOrders } = groupSongsByAlbum(songs);
-
   if (songs.length === 0) {
     return (
       <Box p={2}>
@@ -232,44 +220,64 @@ function LyricsPage() {
     );
   }
 
+  const q = query.trim().toLowerCase();
+  const filtered = songs
+    .filter((item) => item.slug && (item.slug.current || item.slug))
+    .filter((item) => {
+      if (!q) return true;
+      return [item.title, item.album, item.preview].some((value) =>
+        String(value || "")
+          .toLowerCase()
+          .includes(q)
+      );
+    })
+    .slice()
+    .sort((a, b) => {
+      if (sort === "title") return a.title.localeCompare(b.title);
+      if (sort === "title-desc") return b.title.localeCompare(a.title);
+      const albumA = a.album || "Singles";
+      const albumB = b.album || "Singles";
+      if (albumA !== albumB) return albumA.localeCompare(albumB);
+      return (a.order ?? 0) - (b.order ?? 0);
+    });
+
   return (
-    <div className="lyrics-page">
-      <div className="lyrics-list-view">
-        {Object.keys(groupedSongs)
-          .sort((a, b) => {
-            // Put "Singles" at the end (give it a very high order if not set)
-            const aOrder = a === 'Singles' ? (albumOrders[a] === Infinity ? 999999 : albumOrders[a] + 10000) : (albumOrders[a] === Infinity ? 999999 : albumOrders[a]);
-            const bOrder = b === 'Singles' ? (albumOrders[b] === Infinity ? 999999 : albumOrders[b] + 10000) : (albumOrders[b] === Infinity ? 999999 : albumOrders[b]);
-            
-            // Sort by albumOrder first, then alphabetically if orders are equal
-            if (aOrder !== bOrder) {
-              return aOrder - bOrder;
-            }
-            return a.localeCompare(b);
-          })
-          .map((album) => (
-            <div key={album} className="lyrics-album-group">
-              <h2 className="lyrics-album-title">{album}</h2>
-              <div className="lyrics-songs-list">
-                {groupedSongs[album]
-                  .filter((song) => song.slug && (song.slug.current || song.slug))
-                  .map((song) => {
-                    const slugValue = song.slug?.current || song.slug;
-                    return (
-                      <Link
-                        key={song._id}
-                        to={`/lyrics/${slugValue}`}
-                        className="lyrics-song-item"
-                      >
-                        {song.title}
-                      </Link>
-                    );
-                  })}
-              </div>
-            </div>
-          ))}
-      </div>
-    </div>
+    <SearchResults
+      count={filtered.length}
+      elapsed={elapsed}
+      query={query}
+      onQueryChange={setQuery}
+      queryPlaceholder="Filter songs or albums"
+      sort={sort}
+      onSortChange={setSort}
+      sortOptions={[
+        { value: "album", label: "Album" },
+        { value: "title", label: "Title A–Z" },
+        { value: "title-desc", label: "Title Z–A" },
+      ]}
+    >
+      {filtered.length === 0 ? (
+        <p className="serp-empty">No lyrics match “{query}”.</p>
+      ) : (
+        filtered.map((item) => {
+          const slugValue = item.slug?.current || item.slug;
+          const albumLine = item.album
+            ? `Lyrics from ${item.album}.`
+            : "Single.";
+          const preview = snippetFromPortableText(item.preview, 140);
+          return (
+            <SearchResult
+              key={item._id}
+              internal
+              href={`/lyrics/${slugValue}`}
+              title={`${item.title} lyrics`}
+              cite={`drewdella.com › lyrics › ${slugValue}`}
+              snippet={[albumLine, preview].filter(Boolean).join(" ")}
+            />
+          );
+        })
+      )}
+    </SearchResults>
   );
 }
 

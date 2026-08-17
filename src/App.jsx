@@ -1,9 +1,9 @@
-// App.jsx
-import { BrowserRouter as Router, Routes, Route, createBrowserRouter, RouterProvider } from "react-router-dom";
+import { Navigate, createBrowserRouter, RouterProvider } from "react-router-dom";
 import HomePage from "./pages/HomePage/HomePage.jsx";
 import NotFoundPage from "./pages/NotFoundPage/NotFoundPage.jsx";
 import ConnectPage from "./pages/ConnectPage/ConnectPage.jsx";
 import AllPage from "./pages/AllPage/AllPage.jsx";
+import MusicPage from "./pages/MusicPage/MusicPage.jsx";
 import ImagesPage from "./pages/ImagesPage/ImagesPage.jsx";
 import Layout from "./components/Layout/Layout.jsx";
 import MapPage from "./pages/MapPage/MapPage.jsx";
@@ -12,62 +12,78 @@ import BlogPage from "./pages/BlogPage/BlogPage.jsx";
 import ShopPage from "./pages/ShopPage/ShopPage.jsx";
 import LyricsPage from "./pages/LyricsPage/LyricsPage.jsx";
 
-const router = createBrowserRouter([
+const router = createBrowserRouter(
+  [
+    {
+      path: "/home",
+      element: <HomePage />,
+    },
+    {
+      path: "/",
+      element: <Layout />,
+      children: [
+        {
+          index: true,
+          element: <AllPage />,
+        },
+        {
+          path: "all",
+          element: <Navigate to="/" replace />,
+        },
+        {
+          path: "connect",
+          element: <ConnectPage />,
+        },
+        {
+          path: "maps",
+          element: <MapPage />,
+        },
+        {
+          path: "music",
+          element: <MusicPage />,
+        },
+        {
+          path: "videos",
+          element: <VideosPage />,
+        },
+        {
+          path: "images",
+          element: <ImagesPage />,
+        },
+        {
+          path: "blog",
+          element: <BlogPage />,
+        },
+        {
+          path: "blog/:slug",
+          element: <BlogPage />,
+        },
+        {
+          path: "shop",
+          element: <ShopPage />,
+        },
+        {
+          path: "lyrics",
+          element: <LyricsPage />,
+        },
+        {
+          path: "lyrics/:slug",
+          element: <LyricsPage />,
+        },
+        {
+          path: "*",
+          element: <NotFoundPage />,
+        },
+      ],
+    },
+  ],
   {
-    path: "/",
-    element: <HomePage />,
-  },
-  {
-    element: <Layout />,
-    children: [
-      {
-        path: "connect",
-        element: <ConnectPage />,
-      },
-      {
-        path: "maps",
-        element: <MapPage />,
-      },
-      {
-        path: "all",
-        element: <AllPage />,
-      },
-      {
-        path: "videos",
-        element: <VideosPage />,
-      },
-      {
-        path: "images",
-        element: <ImagesPage />,
-      },
-      {
-        path: "blog",
-        element: <BlogPage />,
-      },
-      {
-        path: "shop",
-        element: <ShopPage />,
-      },
-      {
-        path: "lyrics",
-        element: <LyricsPage />,
-      },
-      {
-        path: "lyrics/:slug",
-        element: <LyricsPage />,
-      },
-      {
-        path: "*",
-        element: <NotFoundPage />,
-      },
-    ],
-  },
-], {
-  future: {
-    v7_startTransition: true,
-    v7_relativeSplatPath: true
+    future: {
+      v7_startTransition: true,
+      v7_relativeSplatPath: true,
+    },
   }
-});
+);
 
 function App() {
   return <RouterProvider router={router} />;

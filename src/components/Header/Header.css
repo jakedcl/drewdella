@@ -1,9 +1,10 @@
 .header {
-  height: 15vh;
+  height: auto;
+  min-height: 56px;
   display: flex;
   flex-direction: row;
   width: 100%;
-  padding: 3vh 3vh;
+  padding: 10px 3vh;
   align-items: center;
   gap: 0.5rem;
   box-sizing: border-box;
@@ -17,35 +18,33 @@
   justify-content: flex-start;
   flex: 0 0 auto;
   flex-shrink: 0;
-  gap: 0.35rem 0.75rem;
+  gap: 0.35rem 0.5rem;
   padding: 0;
   min-width: 0;
 }
 
 .header-navbar-doodle {
   display: block;
-  height: clamp(2rem, 5.2vh, 3.5rem);
+  height: clamp(1.75rem, 4vh, 2.75rem);
   width: auto;
-  max-width: min(42vw, 220px);
+  max-width: min(42vw, 200px);
   object-fit: contain;
   flex-shrink: 0;
   align-self: center;
 }
 
-/* Search sits in its own flex slice, centered (desktop) or right (mobile) */
+/* Search sits flush after logo + doodle (classic Google) */
 .header-search-wrap {
   flex: 1 1 0%;
   min-width: 0;
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 0 8px;
+  justify-content: flex-start;
+  padding: 0 8px 0 4px;
 }
 
-/* Google-like right-side breathing room on wide screens */
 .header-spacer {
-  flex: 0 0 clamp(0px, 8vw, 120px);
-  min-width: 0;
+  display: none;
 }
 
 .header-links {
@@ -60,25 +59,31 @@
 
 @media (max-width: 768px) {
   .header {
-    padding: 1vh 0.75rem;
+    height: auto;
+    min-height: 56px;
+    padding: 10px 12px;
     gap: 0.35rem;
   }
 
   .header-logo-group {
     gap: 0.25rem 0.5rem;
     max-width: calc(100% - 6.5rem);
+    overflow: hidden;
   }
 
   .header-navbar-doodle {
-    height: clamp(1.5rem, 4vh, 2.75rem);
-    max-width: min(26vw, 120px);
+    height: 32px;
+    max-width: min(24vw, 108px);
+    pointer-events: none;
   }
 
   .header-search-wrap {
-    flex: 0 1 auto;
+    flex: 0 0 auto;
     justify-content: flex-end;
-    min-width: 44px;
+    min-width: 40px;
     padding: 0 0 0 4px;
+    position: relative;
+    z-index: 3;
   }
 
   .header-spacer {
