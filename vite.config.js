@@ -17,6 +17,9 @@ export default defineConfig({
   preview: {
     proxy: apiProxy,
   },
+  resolve: {
+    dedupe: ["react", "react-dom", "styled-components"],
+  },
   build: {
     outDir: 'dist',
     assetsInlineLimit: 0,

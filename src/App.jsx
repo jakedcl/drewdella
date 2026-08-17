@@ -1,4 +1,5 @@
 import { Navigate, createBrowserRouter, RouterProvider } from "react-router-dom";
+import { lazy, Suspense } from "react";
 import HomePage from "./pages/HomePage/HomePage.jsx";
 import NotFoundPage from "./pages/NotFoundPage/NotFoundPage.jsx";
 import ConnectPage from "./pages/ConnectPage/ConnectPage.jsx";
@@ -12,8 +13,18 @@ import BlogPage from "./pages/BlogPage/BlogPage.jsx";
 import ShopPage from "./pages/ShopPage/ShopPage.jsx";
 import LyricsPage from "./pages/LyricsPage/LyricsPage.jsx";
 
+const StudioPage = lazy(() => import("./pages/StudioPage/StudioPage.jsx"));
+
 const router = createBrowserRouter(
   [
+    {
+      path: "/studio/*",
+      element: (
+        <Suspense fallback={<div className="studio-root" />}>
+          <StudioPage />
+        </Suspense>
+      ),
+    },
     {
       path: "/home",
       element: <HomePage />,
