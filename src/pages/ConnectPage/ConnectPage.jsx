@@ -6,6 +6,7 @@ import {
   SearchResult,
   formatCite,
   formatElapsed,
+  socialSnippet,
 } from "../../components/SearchResults/SearchResults.jsx";
 
 export default function ConnectPage() {
@@ -83,7 +84,7 @@ export default function ConnectPage() {
           href={link.url}
           title={link.title}
           cite={formatCite(link.url)}
-          snippet={link.description}
+          snippet={socialSnippet(link)}
         />
       ))}
     </SearchResults>

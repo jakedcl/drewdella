@@ -4,7 +4,7 @@ export const searchSuggestions = [
   { name: "della blog", path: "/blog" },
   { name: "@thedrewdella", path: "/connect" },
   { name: "della photos", path: "/images" },
-  { name: "live shows nyc+", path: "/maps" },
+  { name: "live shows", path: "/maps" },
   { name: "drew della discography", path: "/music" },
   { name: "della song lyrics", path: "/lyrics" },
 

@@ -19,6 +19,15 @@ export default defineType({
       description: 'Brief description of the release',
     }),
     defineField({
+      name: 'date',
+      title: 'Release date',
+      type: 'date',
+      description: 'When this release came out. Shown on Music and All listings.',
+      options: {
+        dateFormat: 'YYYY-MM-DD',
+      },
+    }),
+    defineField({
       name: 'url',
       title: 'Streaming URL',
       type: 'url',
@@ -46,6 +55,14 @@ export default defineType({
     select: {
       title: 'title',
       subtitle: 'description',
+      date: 'date',
+    },
+    prepare({title, subtitle, date}) {
+      const when = date ? new Date(date).toLocaleDateString() : ''
+      return {
+        title,
+        subtitle: [when, subtitle].filter(Boolean).join(' — '),
+      }
     },
   },
 }) 

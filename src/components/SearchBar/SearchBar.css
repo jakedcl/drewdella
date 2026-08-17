@@ -61,24 +61,50 @@
   position: relative;
   text-align: left;
   display: block;
-  padding: 14px 20px;
+  padding: 12px 20px 12px 30px;
+  margin-left: 10px;
   font-size: 14px;
-  line-height: 0.8;
-  color: #3b3b3b;
+  line-height: 1.2;
+  color: purple;
   border-bottom: 1px solid #dfe1e5;
   text-decoration: none;
-  color: purple;
-  background-image: url("/recentsearch.png"); /* Path to your icon image */
+  background-image: url("/recentsearch.png");
   background-repeat: no-repeat;
-  background-size: 20px 20px; /* Adjust size as needed */
-  background-position: left center;
-  padding-left: 30px; /* Adjust padding to make room for the icon */
-  margin-left: 10px;
-}
-.dropdown-item:hover {
-  /* dropdownmenu option hovering attributes */
-  background-color: #f8f9fa;
+  background-size: 20px 20px;
+  background-position: 0 12px;
   cursor: pointer;
+}
+.dropdown-item:hover,
+.dropdown-item.is-active {
+  background-color: #f8f9fa;
+}
+.dropdown-item--hit {
+  color: #1a0dab;
+  background-image: none;
+  padding-left: 20px;
+  margin-left: 0;
+}
+.dropdown-item-title {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dropdown-item-meta {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
+  line-height: 1.3;
+  color: #006621;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dropdown-empty {
+  padding: 14px 20px;
+  font-size: 13px;
+  color: #545454;
+  text-align: left;
 }
 
 .search-icon {

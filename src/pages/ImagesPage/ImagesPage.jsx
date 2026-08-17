@@ -12,6 +12,7 @@ import OpenInNewRoundedIcon from "@mui/icons-material/OpenInNewRounded";
 import IosShareRoundedIcon from "@mui/icons-material/IosShareRounded";
 import BookmarkBorderRoundedIcon from "@mui/icons-material/BookmarkBorderRounded";
 import { urlFor, fetchSanityData } from "../../lib/sanity";
+import { formatElapsed, SerpFooter } from "../../components/SearchResults/SearchResults.jsx";
 import "./ImagesPage.css";
 
 const SOURCE_NAME = "drewdella.com";
@@ -46,6 +47,7 @@ function ImagesPage() {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [elapsed, setElapsed] = useState("0.12");
   const [activeImage, setActiveImage] = useState(null);
   const [suggested, setSuggested] = useState([]);
   const [heroSrc, setHeroSrc] = useState("");
@@ -153,6 +155,7 @@ function ImagesPage() {
 
   useEffect(() => {
     const fetchImages = async () => {
+      const started = performance.now();
       try {
         setLoading(true);
         setError(null);
@@ -183,6 +186,7 @@ function ImagesPage() {
           );
           setImages(validImages);
         }
+        setElapsed(formatElapsed(performance.now() - started));
       } catch (err) {
         console.error("Error fetching images:", err);
         setError(
@@ -260,6 +264,10 @@ function ImagesPage() {
       <div
         className={`images-page${activeImage ? " images-page--panel-open" : ""}`}
       >
+        <p className="images-stats">
+          About {images.length.toLocaleString("en-US")} result
+          {images.length === 1 ? "" : "s"} ({elapsed} seconds)
+        </p>
         <Masonry
           columns={{ xs: 2, sm: 2, md: 3, lg: 4 }}
           spacing={1}
@@ -300,6 +308,9 @@ function ImagesPage() {
             </div>
           ))}
         </Masonry>
+        <div className="images-serp-footer">
+          <SerpFooter />
+        </div>
       </div>
 
       {activeImage && (
