@@ -316,10 +316,22 @@ export default function AllPage() {
     />
   );
 
-  const mixedListings = mixed.map((entry) =>
-    renderMixed(entry, entry.item._id)
+  const mixedWithVideo = [...mixed];
+  if (latestVideo) {
+    const firstBlogAt = mixedWithVideo.findIndex((entry) => entry.kind === "blog");
+    const videoEntry = { kind: "video", item: latestVideo };
+    if (firstBlogAt === -1) mixedWithVideo.push(videoEntry);
+    else mixedWithVideo.splice(firstBlogAt + 1, 0, videoEntry);
+  }
+
+  const mixedListings = mixedWithVideo.map((entry) =>
+    entry.kind === "video" ? (
+      <VideoResult key={entry.item.id} video={entry.item} />
+    ) : (
+      renderMixed(entry, entry.item._id)
+    )
   );
-  const bandcampAt = mixed.findIndex((entry) => {
+  const bandcampAt = mixedWithVideo.findIndex((entry) => {
     const hay = `${entry.item?.url || ""} ${entry.item?.title || ""}`.toLowerCase();
     return hay.includes("bandcamp");
   });
@@ -335,9 +347,6 @@ export default function AllPage() {
       snippet="Official site. Music, lyrics, photos, videos, blog, and live shows."
     />,
     <ImagesOneBox key="images" images={data.images} />,
-    ...(latestVideo
-      ? [<VideoResult key={latestVideo.id} video={latestVideo} />]
-      : []),
     <SearchResult
       key="shop"
       sponsored
