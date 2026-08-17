@@ -1,44 +1,122 @@
-.shop-page {
-  padding: 40px 20px;
-  max-width: 1000px;
-  margin: 0;
-}
-
-.shop-content {
-  text-align: left;
-  max-width: 600px;
-}
-
-.shop-title {
-  font-family: 'Helvetica', Arial, sans-serif;
-  font-size: 32px;
-  font-weight: 400;
-  color: #1a0dab;
-  margin-bottom: 40px;
-}
-
-.shop-message {
+.shop-empty {
   display: flex;
-  flex-direction: column;
-  gap: 16px;
+  align-items: flex-start;
+  gap: 28px;
+  margin: 8px 0 36px;
 }
 
-.shop-text {
-  font-family: 'Helvetica', Arial, sans-serif;
+.shop-doodle {
+  position: relative;
+  flex: 0 0 auto;
+  width: 140px;
+  height: 118px;
+}
+
+.shop-cart {
+  display: block;
+  width: 140px;
+  height: 110px;
+  transform-origin: 50% 90%;
+  animation: shop-rock 2.8s ease-in-out infinite;
+}
+
+.shop-tag {
+  position: absolute;
+  top: 44px;
+  left: 62px;
+  padding: 4px 6px 3px;
+  background: #f4b400;
+  color: #222;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  white-space: nowrap;
+  transform-origin: 50% -18px;
+  animation: shop-swing 2.2s ease-in-out infinite;
+}
+
+.shop-scan {
+  position: absolute;
+  left: 38px;
+  right: 18px;
+  top: 36px;
+  height: 2px;
+  background: #ea4335;
+  opacity: 0;
+  pointer-events: none;
+  animation: shop-scan 3.4s ease-in-out infinite;
+}
+
+.shop-copy {
+  min-width: 0;
+  padding-top: 8px;
+  font-family: Arial, Helvetica, sans-serif;
+  color: #222;
+}
+
+.shop-error {
+  margin: 0 0 10px;
   font-size: 18px;
-  color: #4d5156;
+  line-height: 1.4;
+}
+
+.shop-detail {
   margin: 0;
-  line-height: 1.6;
+  font-size: 14px;
+  line-height: 1.5;
+  max-width: 34em;
+}
+
+.shop-copy ins {
+  color: #777;
+  text-decoration: none;
+}
+
+@keyframes shop-rock {
+  0%,
+  100% {
+    transform: rotate(-2.5deg);
+  }
+  50% {
+    transform: rotate(2.5deg);
+  }
+}
+
+@keyframes shop-swing {
+  0%,
+  100% {
+    transform: rotate(-14deg);
+  }
+  50% {
+    transform: rotate(12deg);
+  }
+}
+
+@keyframes shop-scan {
+  0%,
+  12%,
+  100% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+  20% {
+    opacity: 0.85;
+  }
+  55% {
+    opacity: 0.85;
+    transform: translateY(28px);
+  }
+  70% {
+    opacity: 0;
+    transform: translateY(36px);
+  }
 }
 
 @media (max-width: 768px) {
-  .shop-title {
-    font-size: 28px;
-    margin-bottom: 30px;
-  }
-
-  .shop-text {
-    font-size: 16px;
+  .shop-empty {
+    flex-direction: column;
+    gap: 8px;
   }
 }
-

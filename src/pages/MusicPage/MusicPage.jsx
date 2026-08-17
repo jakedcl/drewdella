@@ -6,6 +6,7 @@ import {
   SearchResult,
   formatCite,
   formatElapsed,
+  datedSnippet,
 } from "../../components/SearchResults/SearchResults.jsx";
 
 export default function MusicPage() {
@@ -25,7 +26,8 @@ export default function MusicPage() {
           _id,
           title,
           description,
-          url
+          url,
+          date
         }`;
 
         const data = await client.fetch(query);
@@ -83,7 +85,7 @@ export default function MusicPage() {
           href={release.url}
           title={release.title}
           cite={formatCite(release.url)}
-          snippet={release.description}
+          snippet={datedSnippet(release.date, release.description)}
         />
       ))}
     </SearchResults>

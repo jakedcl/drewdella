@@ -7,6 +7,8 @@ import {
   SearchResult,
   formatElapsed,
   snippetFromPortableText,
+  pathCite,
+  datedSnippet,
 } from "../../components/SearchResults/SearchResults.jsx";
 import "./LyricsPage.css";
 
@@ -43,7 +45,8 @@ function LyricsPage() {
         albumOrder,
         order,
         slug,
-        "preview": pt::text(lyrics)
+        "preview": pt::text(lyrics),
+        "date": *[_type == "musicRelease" && lower(title) == lower(^.album)][0].date
       }`;
 
       const data = await client.fetch(query);
@@ -247,7 +250,7 @@ function LyricsPage() {
       elapsed={elapsed}
       query={query}
       onQueryChange={setQuery}
-      queryPlaceholder="Filter songs or albums"
+      queryPlaceholder="Search lyrics"
       sort={sort}
       onSortChange={setSort}
       sortOptions={[
@@ -271,8 +274,8 @@ function LyricsPage() {
               internal
               href={`/lyrics/${slugValue}`}
               title={`${item.title} lyrics`}
-              cite={`drewdella.com › lyrics › ${slugValue}`}
-              snippet={[albumLine, preview].filter(Boolean).join(" ")}
+              cite={pathCite("lyrics", slugValue)}
+              snippet={datedSnippet(item.date, albumLine, preview)}
             />
           );
         })

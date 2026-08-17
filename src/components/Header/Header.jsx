@@ -46,13 +46,6 @@ const Header = ({ currentPath = "" }) => {
     <header className="header">
       <div className="header-logo-group">
         <GoogleLogo style={googleLogoStyles} />
-        <img
-          className="header-navbar-doodle"
-          src="/thx4itall-navbar.png"
-          alt="Thx4itall"
-          width={200}
-          height={80}
-        />
       </div>
       <div className="header-search-wrap">
         <SearchBar

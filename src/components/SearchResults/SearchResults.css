@@ -24,18 +24,19 @@
   flex: 1;
   min-width: 0;
   height: 32px;
-  padding: 0 0 2px;
-  border: none;
-  border-bottom: 1px solid #dfe1e5;
-  background: transparent;
+  padding: 0 8px;
+  border: 1px solid #dfe1e5;
+  border-radius: 0;
+  background: #fff;
   font-family: inherit;
   font-size: 14px;
   color: #202124;
   outline: none;
+  box-shadow: none;
 }
 
 .serp-filter:focus {
-  border-bottom-color: #1a73e8;
+  border-color: #4d90fe;
 }
 
 .serp-filter::placeholder {
@@ -146,6 +147,75 @@
   color: #545454;
 }
 
+.video-result {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 0 0 26px;
+}
+
+.video-result-thumb {
+  flex: 0 0 auto;
+  width: 120px;
+  height: 90px;
+  overflow: hidden;
+  background: #eee;
+  border: 1px solid #ccc;
+}
+
+.video-result-thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.video-result-copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.video-result-copy .serp-title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.serp-related {
+  margin: 36px 0 28px;
+}
+
+.serp-related-label {
+  margin: 0 0 10px;
+  font-size: 16px;
+  color: #222;
+}
+
+.serp-related ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  columns: 2;
+  column-gap: 32px;
+  max-width: 420px;
+}
+
+.serp-related li {
+  break-inside: avoid;
+  margin: 0 0 6px;
+}
+
+.serp-related a {
+  font-size: 13px;
+  color: #1a0dab;
+  text-decoration: underline;
+}
+
+.serp-related a:visited {
+  color: #609;
+}
+
 @media (max-width: 768px) {
   .serp {
     padding: 4px 4px 40px;
@@ -153,5 +223,14 @@
 
   .serp-title {
     font-size: 16px;
+  }
+
+  .video-result-thumb {
+    width: 96px;
+    height: 72px;
+  }
+
+  .serp-related ul {
+    columns: 1;
   }
 }

@@ -6,6 +6,9 @@ import {
   SearchResult,
   formatElapsed,
   blogPreviewSnippet,
+  pathCite,
+  formatListingDate,
+  datedSnippet,
 } from "../../components/SearchResults/SearchResults.jsx";
 import "./BlogPage.css";
 
@@ -127,15 +130,6 @@ function BlogPage() {
         } finally {
             setLoading(false);
         }
-    };
-
-    const formatDate = (dateString) => {
-        const date = new Date(dateString);
-        return date.toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        });
     };
 
     const renderContent = (content) => {
@@ -274,7 +268,7 @@ function BlogPage() {
                 <article className="blog-post blog-post--detail">
                     <h1 className="blog-detail-title">{post.title}</h1>
                     <time className="blog-post-date" dateTime={post.date}>
-                        {formatDate(post.date)}
+                        {formatListingDate(post.date)}
                     </time>
                     <div className="blog-post-body expanded">
                         {renderContent(post.content)}
@@ -311,7 +305,7 @@ function BlogPage() {
             elapsed={elapsed}
             query={query}
             onQueryChange={setQuery}
-            queryPlaceholder="Filter posts"
+            queryPlaceholder="Search blog"
             sort={sort}
             onSortChange={setSort}
             sortOptions={[
@@ -327,9 +321,6 @@ function BlogPage() {
             ) : (
                 filtered.map((item) => {
                     const slugValue = item.slug?.current || item.slug;
-                    const dateLabel = item.date
-                        ? formatDate(item.date)
-                        : "";
                     const preview = blogPreviewSnippet(item);
                     return (
                         <SearchResult
@@ -337,10 +328,8 @@ function BlogPage() {
                             internal
                             href={`/blog/${slugValue}`}
                             title={item.title}
-                            cite={`drewdella.com › blog › ${slugValue}`}
-                            snippet={
-                                [dateLabel, preview].filter(Boolean).join(" — ")
-                            }
+                            cite={pathCite("blog", slugValue)}
+                            snippet={datedSnippet(item.date, preview)}
                         />
                     );
                 })

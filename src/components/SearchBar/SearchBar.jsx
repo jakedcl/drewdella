@@ -1,29 +1,62 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import "./SearchBar.css";
-import { Link, useNavigate } from "react-router-dom"; // Import useNavigate
+import { useNavigate } from "react-router-dom";
 import SearchIcon from "@mui/icons-material/Search";
+import { getSearchIndex, searchSite } from "../../lib/siteSearch";
+
+function isMobileSearch() {
+  return window.matchMedia("(max-width: 768px)").matches;
+}
 
 function SearchBar({
-  suggestions = [], // Remove default suggestions
+  suggestions = [],
   currentPath = "/home",
 }) {
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const [inputValue, setInputValue] = useState("");
-  const [isReadonly, setIsReadonly] = useState(true); // Input starts as readonly on mobile
+  const [isReadonly, setIsReadonly] = useState(true);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [index, setIndex] = useState([]);
+  const [activeIndex, setActiveIndex] = useState(0);
 
   const searchBarRef = useRef(null);
   const inputRef = useRef(null);
-  const navigate = useNavigate(); // Use useNavigate from react-router-dom v6
+  const navigate = useNavigate();
 
-  const handleInputFocus = () => {
-    setIsDropdownVisible(true);
-  };
+  const query = inputValue.trim();
+  const hits = useMemo(
+    () => (query ? searchSite(index, query) : []),
+    [index, query]
+  );
+
+  const uniqueSuggestions = useMemo(
+    () =>
+      Array.from(new Map(suggestions.map((item) => [item.name, item])).values()),
+    [suggestions]
+  );
+
+  const rows = query
+    ? hits.map((hit) => ({
+        key: hit.id,
+        title: hit.title,
+        source: hit.source,
+        snippet: hit.snippet,
+        path: hit.href,
+        external: !hit.internal,
+        kind: "hit",
+      }))
+    : uniqueSuggestions.map((item) => ({
+        key: item.name,
+        title: item.name,
+        path: item.path,
+        kind: "suggest",
+      }));
 
   const collapseSearch = () => {
     setIsDropdownVisible(false);
     setIsReadonly(true);
     setIsExpanded(false);
+    setActiveIndex(0);
   };
 
   const handleClickOutside = (event) => {
@@ -32,8 +65,37 @@ function SearchBar({
     }
   };
 
-  const handleInputChange = (event) => {
-    setInputValue(event.target.value);
+  const allowTyping = () => {
+    setIsReadonly(false);
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 50);
+  };
+
+  const activateInput = () => {
+    setIsExpanded(true);
+    setIsDropdownVisible(true);
+    getSearchIndex().then(setIndex).catch(() => setIndex([]));
+    if (isMobileSearch()) return;
+    allowTyping();
+  };
+
+  const handleInputClick = () => {
+    if (isMobileSearch() && isReadonly && isDropdownVisible) {
+      allowTyping();
+      return;
+    }
+    activateInput();
+  };
+
+  const goTo = (row) => {
+    if (!row?.path) return;
+    collapseSearch();
+    if (row.external || row.path.startsWith("http")) {
+      window.open(row.path, "_blank", "noopener,noreferrer");
+      return;
+    }
+    navigate(row.path);
   };
 
   const handleKeyDown = (event) => {
@@ -42,54 +104,22 @@ function SearchBar({
       inputRef.current?.blur();
       return;
     }
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      setIsDropdownVisible(true);
+      setActiveIndex((i) => Math.min(i + 1, Math.max(rows.length - 1, 0)));
+      return;
+    }
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      setActiveIndex((i) => Math.max(i - 1, 0));
+      return;
+    }
     if (event.key === "Enter") {
-      const suggestion = suggestions.find(
-        (item) => item.name.toLowerCase() === inputValue.toLowerCase()
-      );
-      if (suggestion) {
-        // Close the dropdown and navigate to the selected suggestion
-        collapseSearch();
-        handleNavigation(suggestion.path);
-      } else {
-        console.log("Invalid input");
-      }
+      event.preventDefault();
+      goTo(rows[activeIndex] || rows[0]);
     }
   };
-
-  const activateInput = () => {
-    setIsExpanded(true);
-    setIsReadonly(false); // Make input writable when clicked
-    setIsDropdownVisible(true);
-    setTimeout(() => {
-      inputRef.current?.focus(); // Programmatically focus input after readonly is removed
-    }, 100);
-  };
-
-  // Helper function to determine if a path is external (starts with http)
-  const isExternalLink = (path) => {
-    return path.startsWith('http://') || path.startsWith('https://');
-  };
-
-  // Handle navigation - either use React Router or window.location
-  const handleNavigation = (path) => {
-    if (isExternalLink(path)) {
-      // For external links, open in a new tab
-      window.open(path, '_blank');
-    } else {
-      // For internal links, use React Router
-      navigate(path);
-    }
-  };
-
-  const handleOptionClick = (path) => {
-    collapseSearch();
-    handleNavigation(path);
-  };
-
-  // Deduplicate suggestions by name
-  const uniqueSuggestions = Array.from(
-    new Map(suggestions.map(item => [item.name, item])).values()
-  );
 
   useEffect(() => {
     document.addEventListener("mousedown", handleClickOutside);
@@ -97,6 +127,10 @@ function SearchBar({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  useEffect(() => {
+    setActiveIndex(0);
+  }, [query]);
 
   return (
     <div
@@ -110,23 +144,41 @@ function SearchBar({
           className="searchbar-input"
           placeholder={currentPath === "/" ? "Search" : "Search Drew Della"}
           value={inputValue}
-          onChange={handleInputChange}
-          onFocus={handleInputFocus}
+          onChange={(event) => setInputValue(event.target.value)}
+          onFocus={() => setIsDropdownVisible(true)}
           onKeyDown={handleKeyDown}
-          readOnly={isReadonly} // Initially readonly
-          onClick={activateInput} // Remove readonly and focus when clicked
+          readOnly={isReadonly}
+          inputMode={isReadonly ? "none" : "search"}
+          onClick={handleInputClick}
+          autoComplete="off"
+          spellCheck={false}
         />
         {isDropdownVisible && (
-          <div className="dropdown-menu">
-            {uniqueSuggestions.map((item) => (
-              <div
-                key={item.name}
-                className="dropdown-item"
-                onClick={() => handleOptionClick(item.path)}
-              >
-                {item.name}
-              </div>
-            ))}
+          <div className="dropdown-menu" role="listbox">
+            {query && rows.length === 0 ? (
+              <div className="dropdown-empty">No results for “{query}”</div>
+            ) : (
+              rows.map((row, i) => (
+                <div
+                  key={row.key}
+                  className={`dropdown-item${row.kind === "hit" ? " dropdown-item--hit" : ""}${
+                    i === activeIndex ? " is-active" : ""
+                  }`}
+                  role="option"
+                  aria-selected={i === activeIndex}
+                  onMouseEnter={() => setActiveIndex(i)}
+                  onClick={() => goTo(row)}
+                >
+                  <span className="dropdown-item-title">{row.title}</span>
+                  {row.kind === "hit" && (
+                    <span className="dropdown-item-meta">
+                      {row.source}
+                      {row.snippet ? ` — ${row.snippet}` : ""}
+                    </span>
+                  )}
+                </div>
+              ))
+            )}
           </div>
         )}
       </div>

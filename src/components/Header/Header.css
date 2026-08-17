@@ -10,7 +10,7 @@
   box-sizing: border-box;
 }
 
-/* Logo + doodle: never shrink — stops search from overlapping */
+/* Logo: never shrink — stops search from overlapping */
 .header-logo-group {
   display: flex;
   flex-direction: row;
@@ -23,17 +23,7 @@
   min-width: 0;
 }
 
-.header-navbar-doodle {
-  display: block;
-  height: clamp(1.75rem, 4vh, 2.75rem);
-  width: auto;
-  max-width: min(42vw, 200px);
-  object-fit: contain;
-  flex-shrink: 0;
-  align-self: center;
-}
-
-/* Search sits flush after logo + doodle (classic Google) */
+/* Search sits flush after logo (classic Google) */
 .header-search-wrap {
   flex: 1 1 0%;
   min-width: 0;
@@ -69,12 +59,6 @@
     gap: 0.25rem 0.5rem;
     max-width: calc(100% - 6.5rem);
     overflow: hidden;
-  }
-
-  .header-navbar-doodle {
-    height: 32px;
-    max-width: min(24vw, 108px);
-    pointer-events: none;
   }
 
   .header-search-wrap {

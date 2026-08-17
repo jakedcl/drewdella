@@ -1,26 +1,29 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import axios from "axios";
 import { CircularProgress, Box } from "@mui/material";
-import { client } from "../../lib/sanity";
+import { client, urlFor } from "../../lib/sanity";
 import {
   SearchResults,
   SearchResult,
+  VideoResult,
   formatCite,
   formatElapsed,
+  pathCite,
+  datedSnippet,
   snippetFromPortableText,
   blogPreviewSnippet,
+  socialSnippet,
 } from "../../components/SearchResults/SearchResults.jsx";
 import "./AllPage.css";
 
-const POPUP = {
-  id: "merch",
-  title: "CONGRATULATIONS!!!",
-  body: "You may have already won exclusive Drew Della merch.",
-  cta: "Enter store →",
-  to: "/shop",
-};
+function VintagePopup({ title, lines, cta, href, onClose }) {
+  const isInternal = typeof href === "string" && href.startsWith("/");
+  const ctaProps = isInternal
+    ? { to: href }
+    : { href, target: "_blank", rel: "noopener noreferrer" };
+  const CtaTag = isInternal ? Link : "a";
 
-function VintagePopup({ title, body, cta, to, onClose }) {
   return (
     <div className="win-popup">
       <div className="win-popup-bar">
@@ -35,11 +38,64 @@ function VintagePopup({ title, body, cta, to, onClose }) {
         </button>
       </div>
       <div className="win-popup-body">
-        <p>{body}</p>
-        <Link className="win-popup-cta" to={to}>
+        <div className="win-popup-msg">
+          <img
+            className="win-popup-doodle"
+            src="/thx4itall-navbar.png"
+            alt=""
+            width={200}
+            height={80}
+          />
+          <div>
+            {lines.map((line) => (
+              <p key={line}>{line}</p>
+            ))}
+          </div>
+        </div>
+        <CtaTag className="win-popup-cta" {...ctaProps}>
           {cta}
-        </Link>
+        </CtaTag>
       </div>
+    </div>
+  );
+}
+
+function ImagesOneBox({ images }) {
+  const thumbs = (images || []).filter((img) => img?.asset).slice(0, 6);
+
+  return (
+    <div className="images-onebox">
+      <Link className="serp-title" to="/images">
+        Images for Drew Della
+      </Link>
+      <cite className="serp-cite">
+        images
+        <span className="serp-cite-arrow" aria-hidden>
+          ▼
+        </span>
+      </cite>
+      {thumbs.length > 0 && (
+        <div className="images-onebox-strip">
+          {thumbs.map((img) => (
+            <Link
+              key={img.id || img.asset._id}
+              className="images-onebox-frame"
+              to="/images"
+              aria-label={img.alt || "View images"}
+            >
+              <img
+                src={urlFor(img.asset).width(240).height(180).auto("format").url()}
+                alt={img.alt || ""}
+                width={90}
+                height={68}
+              />
+            </Link>
+          ))}
+        </div>
+      )}
+      <Link className="images-onebox-more" to="/images">
+        More images »
+      </Link>
     </div>
   );
 }
@@ -81,31 +137,43 @@ export default function AllPage() {
     posts: [],
     songs: [],
     socials: [],
+    images: [],
   });
   const [loading, setLoading] = useState(true);
   const [elapsed, setElapsed] = useState("0.12");
   const [closed, setClosed] = useState(() => new Set());
+  const [latestVideo, setLatestVideo] = useState(null);
 
   useEffect(() => {
     const fetchAll = async () => {
       const started = performance.now();
       try {
         const query = `{
-          "releases": *[_type == "musicRelease"] | order(order asc)[0...4] {
-            _id, title, description, url
+          "releases": *[_type == "musicRelease"] | order(order asc)[0...1] {
+            _id, title, description, url, date
           },
           "posts": *[_type == "blogPost"] | order(date desc)[0...3] {
             _id, title, date, slug, "preview": pt::text(content), "imageCount": count(content[_type == "image"])
           },
           "songs": *[_type == "song"] | order(albumOrder asc, order asc)[0...3] {
-            _id, title, album, slug, "preview": pt::text(lyrics)
+            _id, title, album, slug, "preview": pt::text(lyrics),
+            "date": *[_type == "musicRelease" && lower(title) == lower(^.album)][0].date
           },
           "socials": *[_type == "socialLink"] | order(order asc)[0...3] {
             _id, title, url, description
+          },
+          "images": *[_type == "imageGallery"][0].galleryImages[0...6] {
+            asset->{_id},
+            alt,
+            "id": _key
           }
         }`;
-        const next = await client.fetch(query);
+        const [next, videosRes] = await Promise.all([
+          client.fetch(query),
+          axios.get("/api/videos").catch(() => null),
+        ]);
         setData(next || {});
+        setLatestVideo(videosRes?.data?.videos?.[0] || null);
         setElapsed(formatElapsed(performance.now() - started));
       } catch (err) {
         console.error("Error fetching all results:", err);
@@ -130,9 +198,17 @@ export default function AllPage() {
     );
   }
 
-  const mixed = mixResults(data);
-  const count = mixed.length + 3;
-  const popupOpen = !closed.has(POPUP.id);
+  const releases = data.releases || [];
+  const latest = releases[0];
+  const mixed = mixResults({
+    ...data,
+    releases: [],
+  });
+  const popupOpen = !closed.has("album");
+  const popupHref = latest?.url || "/music";
+  const popupLines = latest
+    ? ["You may already be a winner.", `Listen to ${latest.title}`]
+    : ["You may already be a winner."];
 
   const renderMixed = (entry, key) => {
     const { kind, item } = entry;
@@ -143,20 +219,21 @@ export default function AllPage() {
           href={item.url}
           title={item.title}
           cite={formatCite(item.url)}
-          snippet={item.description}
+          snippet={datedSnippet(item.date, item.description)}
         />
       );
     }
     if (kind === "blog") {
       const slugValue = item.slug?.current || item.slug;
+      const preview = blogPreviewSnippet(item);
       return (
         <SearchResult
           key={key}
           internal
           href={`/blog/${slugValue}`}
           title={item.title}
-          cite={`drewdella.com › blog › ${slugValue}`}
-          snippet={blogPreviewSnippet(item)}
+          cite={pathCite("blog", slugValue)}
+          snippet={datedSnippet(item.date, preview)}
         />
       );
     }
@@ -171,10 +248,12 @@ export default function AllPage() {
           internal
           href={`/lyrics/${slugValue}`}
           title={`${item.title} lyrics`}
-          cite={`drewdella.com › lyrics › ${slugValue}`}
-          snippet={[albumLine, snippetFromPortableText(item.preview, 120)]
-            .filter(Boolean)
-            .join(" ")}
+          cite={pathCite("lyrics", slugValue)}
+          snippet={datedSnippet(
+            item.date,
+            albumLine,
+            snippetFromPortableText(item.preview, 120)
+          )}
         />
       );
     }
@@ -184,61 +263,97 @@ export default function AllPage() {
         href={item.url}
         title={item.title}
         cite={formatCite(item.url)}
-        snippet={item.description}
+        snippet={socialSnippet(item)}
       />
     );
   };
 
+  const mapsListing = (
+    <SearchResult
+      key="maps"
+      internal
+      href="/maps"
+      title="Live shows — venues on the map"
+      cite={pathCite("maps")}
+      snippet="Places Della’s played. Zoom in and shout out the rooms that hosted."
+    />
+  );
+
+  const mixedListings = mixed.map((entry) =>
+    renderMixed(entry, entry.item._id)
+  );
+  const bandcampAt = mixed.findIndex((entry) => {
+    const hay = `${entry.item?.url || ""} ${entry.item?.title || ""}`.toLowerCase();
+    return hay.includes("bandcamp");
+  });
+  if (bandcampAt === -1) mixedListings.unshift(mapsListing);
+  else mixedListings.splice(bandcampAt, 0, mapsListing);
+
+  const listings = [
+    <SearchResult
+      key="official"
+      internal
+      href="/home"
+      title="Drew Della"
+      snippet="Official site. Music, lyrics, photos, videos, blog, and live shows."
+    />,
+    <ImagesOneBox key="images" images={data.images} />,
+    ...(latestVideo
+      ? [<VideoResult key={latestVideo.id} video={latestVideo} />]
+      : []),
+    <SearchResult
+      key="shop"
+      sponsored
+      internal
+      href="/shop"
+      title="Drew Della store — merch coming soon"
+      snippet="Nothing for sale yet. New merch is on the way — check back."
+    />,
+    ...(latest?.url
+      ? [
+          <SearchResult
+            key="album-ad"
+            sponsored
+            href={latest.url}
+            title={latest.title}
+            snippet={
+              datedSnippet(
+                latest.date,
+                latest.description || "Latest album from Drew Della. Listen now."
+              )
+            }
+          />,
+        ]
+      : []),
+    ...mixedListings,
+  ];
+  const resultCount = listings.length;
+
+  if (popupOpen) {
+    listings.splice(
+      Math.min(7, listings.length),
+      0,
+      <VintagePopup
+        key="xp-album"
+        title="CONGRATULATIONS!!!!"
+        lines={popupLines}
+        cta="OK"
+        href={popupHref}
+        onClose={() =>
+          setClosed((prev) => {
+            const next = new Set(prev);
+            next.add("album");
+            return next;
+          })
+        }
+      />
+    );
+  }
+
   return (
     <div className="all-page">
-      <SearchResults count={count} elapsed={elapsed}>
-        <div className="serp-result">
-          <cite className="serp-cite">
-            www.drewdella.com
-            <span className="serp-cite-arrow" aria-hidden>
-              ▼
-            </span>
-          </cite>
-          <Link className="serp-title" to="/home">
-            Drew Della
-          </Link>
-          <p className="serp-snippet">
-            Official site. Music, lyrics, photos, videos, blog, and live shows
-            — a Google parody of the artist formerly searching for himself.
-          </p>
-        </div>
-
-        <SearchResult
-          sponsored
-          internal
-          href="/shop"
-          title="Drew Della merch — new drops incoming"
-          cite="www.drewdella.com/shop"
-          snippet="Official store. New album coming soon. New merch on the way. Shop tees, vinyl, and whatever Della cooked this week."
-        />
-        <SearchResult
-          sponsored
-          internal
-          href="/maps"
-          title="Live shows NYC+ — dates on the map"
-          cite="www.drewdella.com/maps"
-          snippet="Tour stops plotted. Zoom in, don’t be late, and screenshot the pin before it moves."
-        />
-
-        {popupOpen && (
-          <VintagePopup
-            {...POPUP}
-            onClose={() =>
-              setClosed((prev) => {
-                const next = new Set(prev);
-                next.add(POPUP.id);
-                return next;
-              })
-            }
-          />
-        )}
-
-        {mixed.map((entry) => renderMixed(entry, entry.item._id))}
+      <SearchResults count={resultCount} elapsed={elapsed}>
+        {listings}
       </SearchResults>
     </div>
   );
