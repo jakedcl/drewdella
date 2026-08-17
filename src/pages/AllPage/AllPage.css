@@ -47,10 +47,29 @@
   }
 }
 
-/* Windows XP message box */
+/* Windows XP message box — floats from the bottom right */
+.win-popup-dock {
+  position: fixed;
+  right: 12px;
+  bottom: 12px;
+  z-index: 1250;
+  width: min(340px, calc(100vw - 24px));
+  transform: translate(120%, 80%);
+  transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.win-popup-dock.is-open {
+  transform: translate(0, 0);
+}
+
+.win-popup-dock.is-peek {
+  transform: translate(calc(100% - 34px), 0);
+  cursor: pointer;
+}
+
 .win-popup {
-  width: min(340px, 100%);
-  margin: 0 0 26px;
+  width: 100%;
+  margin: 0;
   background: #ece9d8;
   border: 3px solid #0054e3;
   border-radius: 8px 8px 0 0;
@@ -59,7 +78,6 @@
   font-size: 11px;
   color: #000;
   overflow: hidden;
-  animation: win-pop-in 0.45s ease-out;
 }
 
 .win-popup-bar {
@@ -163,21 +181,6 @@
   box-shadow: none;
 }
 
-@keyframes win-pop-in {
-  0% {
-    opacity: 0;
-    transform: scale(0.86);
-  }
-  70% {
-    opacity: 1;
-    transform: scale(1.04);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
 @keyframes win-doodle-bob {
   0%,
   100% {
@@ -199,7 +202,15 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .win-popup,
+  .win-popup-dock {
+    transition: none;
+    transform: translate(calc(100% - 34px), 0);
+  }
+
+  .win-popup-dock.is-open {
+    transform: translate(0, 0);
+  }
+
   .win-popup-doodle,
   .win-popup-title {
     animation: none;

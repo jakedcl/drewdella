@@ -20,11 +20,9 @@
 }
 
 @media (max-width: 768px) {
-  /* hide input search bar on mobile */
-  .home-div .searchbar-dropdown {
+  .home-div .searchbar-shell {
     display: block;
   }
-  /* display search icon on mobile */
   .home-div .search-icon {
     display: none;
   }
