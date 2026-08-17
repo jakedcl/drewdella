@@ -1,0 +1,157 @@
+/* Classic Google SERP — Arial, ~652px column, no cards, no rules */
+.serp {
+  max-width: 652px;
+  padding: 6px 8px 48px 2px;
+  font-family: Arial, Helvetica, sans-serif;
+  text-align: left;
+}
+
+.serp-stats {
+  margin: 0 0 18px;
+  font-size: 13px;
+  line-height: 16px;
+  color: #70757a;
+}
+
+.serp-tools {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 10px;
+}
+
+.serp-filter {
+  flex: 1;
+  min-width: 0;
+  height: 32px;
+  padding: 0 0 2px;
+  border: none;
+  border-bottom: 1px solid #dfe1e5;
+  background: transparent;
+  font-family: inherit;
+  font-size: 14px;
+  color: #202124;
+  outline: none;
+}
+
+.serp-filter:focus {
+  border-bottom-color: #1a73e8;
+}
+
+.serp-filter::placeholder {
+  color: #80868b;
+}
+
+.serp-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  font-size: 13px;
+  color: #70757a;
+}
+
+.serp-sort select {
+  height: 28px;
+  padding: 0 4px;
+  border: none;
+  border-bottom: 1px solid #dfe1e5;
+  background: transparent;
+  font-family: inherit;
+  font-size: 13px;
+  color: #202124;
+  outline: none;
+  cursor: pointer;
+}
+
+.serp-empty {
+  margin: 8px 0 0;
+  font-size: 14px;
+  color: #545454;
+}
+
+.serp-result {
+  margin: 0 0 26px;
+  max-width: 100%;
+}
+
+.serp-cite {
+  display: block;
+  font-style: normal;
+  font-size: 14px;
+  line-height: 16px;
+  color: #006621;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.serp-cite-arrow {
+  display: inline-block;
+  margin-left: 4px;
+  font-size: 9px;
+  line-height: 1;
+  vertical-align: middle;
+  color: #006621;
+}
+
+.serp-ad {
+  display: inline-block;
+  margin-right: 6px;
+  padding: 0 4px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 15px;
+  color: #fff;
+  background: #e6b800;
+  vertical-align: 1px;
+}
+
+.serp-title {
+  display: inline-block;
+  margin: 1px 0 3px;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.2;
+  color: #1a0dab;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.serp-title:visited {
+  color: #609;
+}
+
+.serp-title:hover {
+  text-decoration: underline;
+}
+
+.serp-snippet {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: #545454;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.serp-snippet em,
+.serp-snippet strong {
+  font-style: normal;
+  font-weight: 700;
+  color: #545454;
+}
+
+@media (max-width: 768px) {
+  .serp {
+    padding: 4px 4px 40px;
+  }
+
+  .serp-title {
+    font-size: 16px;
+  }
+}

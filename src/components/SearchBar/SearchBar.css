@@ -83,7 +83,27 @@
 
 .search-icon {
   display: none; /* hide search icon by default */
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: #5f6368;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
 }
+
+.search-icon:hover,
+.search-icon:focus-visible {
+  background: #f1f3f4;
+  color: #202124;
+  outline: none;
+}
+
 @media (max-width: 768px) {
   /* hide input search bar on mobile */
   .searchbar-dropdown {
@@ -91,16 +111,16 @@
   }
   /* display search icon on mobile */
   .search-icon {
-    display: block;
+    display: flex;
   }
 }
 
 /* ---- Navbar (Header): search must stay in its column — no overlap on logo/doodle ---- */
 .header .searchbar-container {
   margin: 0;
-  width: 100%;
-  max-width: min(640px, 100%);
-  justify-content: center;
+  width: min(520px, 100%);
+  max-width: min(520px, 100%);
+  justify-content: flex-start;
 }
 
 @media (min-width: 769px) {
@@ -117,11 +137,28 @@
     width: auto;
     max-width: none;
     justify-content: flex-end;
+    position: static;
   }
 
   .header .search-icon {
-    display: block;
+    display: flex;
     flex-shrink: 0;
+    position: relative;
+    z-index: 3;
+  }
+
+  .header .searchbar-container--expanded .search-icon {
+    display: none;
+  }
+
+  .header .searchbar-container--expanded .searchbar-dropdown {
+    display: block;
+    position: fixed;
+    top: 8px;
+    left: 12px;
+    right: 12px;
+    width: auto;
+    z-index: 1400;
   }
 }
 

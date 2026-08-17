@@ -17,13 +17,22 @@
     margin-bottom: 1rem;
   }
   
-  /* Logo in header on mobile — leave room for doodle + search icon + links */
+  /* Logo in header on mobile — compact bar, not 15vh */
   .header .logo-container {
-    max-width: 34vw !important;
+    max-width: none !important;
     min-width: 0 !important;
     margin-bottom: 0 !important;
-    margin-left: 0.25rem !important;
+    margin-left: 0 !important;
     padding: 0 !important;
+    height: 32px;
+  }
+
+  .header .logo {
+    min-height: 0;
+    height: 32px;
+    width: auto;
+    max-height: 32px;
+    display: block;
   }
 }
 
@@ -49,4 +58,20 @@
   max-width: 100%;
   min-height: 100%;
   height: auto;
+}
+
+@media (min-width: 769px) {
+  .header .logo-container {
+    min-width: 0;
+    max-width: none;
+    height: 40px;
+  }
+
+  .header .logo {
+    min-height: 0;
+    height: 40px;
+    width: auto;
+    max-height: 40px;
+    display: block;
+  }
 }

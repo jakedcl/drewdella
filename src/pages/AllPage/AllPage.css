@@ -1,47 +1,76 @@
-.all-results-container {
-  padding: 20px;
-  max-width: 1000px;
-  margin: 0; /* Remove auto centering */
+.all-page {
+  position: relative;
 }
 
-.result-item {
+/* Win98 windows sit in the results column like old inline ads */
+.win-popup {
+  width: min(280px, 100%);
+  margin: 0 0 26px;
+  background: #c0c0c0;
+  border: 2px solid;
+  border-color: #fff #404040 #404040 #fff;
+  box-shadow: 2px 2px 0 #000;
+  font-family: Tahoma, "MS Sans Serif", sans-serif;
+  font-size: 11px;
+  color: #000;
+}
+
+.win-popup-bar {
   display: flex;
-  align-items: flex-start;
-  margin-bottom: 30px;
-  border-bottom: 1px solid #ccc;
-  padding-bottom: 10px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  height: 18px;
+  padding: 1px 3px;
+  background: #000080;
+  color: #fff;
+  user-select: none;
 }
 
-.result-content {
-  flex: 1;
-  margin-right: 20px;
+.win-popup-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }
 
-.result-title {
-  font-size: 18px;
-  color: #1a0dab;
-  text-decoration: underline;
-  margin-bottom: 5px;
+.win-popup-x {
+  width: 16px;
+  height: 14px;
+  padding: 0;
+  line-height: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #000;
+  background: #c0c0c0;
+  border: 2px solid;
+  border-color: #fff #404040 #404040 #fff;
+  cursor: pointer;
+  flex-shrink: 0;
 }
 
-.result-description {
-  font-size: 14px;
-  color: #4d5156;
+.win-popup-body {
+  padding: 10px 8px 8px;
+  background: #c0c0c0;
 }
 
-.result-image img {
-  max-width: 100px;
-  height: auto;
-  border-radius: 4px;
+.win-popup-body p {
+  margin: 0 0 10px;
+  line-height: 1.35;
 }
 
-@media (max-width: 768px) {
-  .result-item {
-    flex-direction: column;
-    align-items: flex-start; /* Ensure left alignment on mobile */
-  }
+.win-popup-cta {
+  display: inline-block;
+  padding: 3px 10px;
+  color: #000;
+  text-decoration: none;
+  background: #c0c0c0;
+  border: 2px solid;
+  border-color: #fff #404040 #404040 #fff;
+  font-weight: 700;
+}
 
-  .result-image img {
-    margin-top: 10px;
-  }
+.win-popup-cta:active {
+  border-color: #404040 #fff #fff #404040;
 }

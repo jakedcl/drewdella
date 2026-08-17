@@ -1,10 +1,30 @@
 /* BlogPage.css - Google search results styling */
 
 .blog-page {
-  padding: 20px;
-  max-width: 1000px;
-  margin: 0; /* Left aligned, no auto centering */
-  font-family: 'Helvetica', Arial, sans-serif;
+  padding: 8px 8px 48px 2px;
+  max-width: 652px;
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.blog-back-link {
+  display: inline-block;
+  color: #1a0dab;
+  text-decoration: none;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.blog-back-link:hover {
+  text-decoration: underline;
+}
+
+.blog-detail-title {
+  font-size: 20px;
+  font-weight: 400;
+  color: #202124;
+  margin: 0 0 6px;
+  line-height: 1.3;
 }
 
 .blog-content {

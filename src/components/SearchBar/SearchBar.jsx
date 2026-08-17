@@ -10,6 +10,7 @@ function SearchBar({
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [isReadonly, setIsReadonly] = useState(true); // Input starts as readonly on mobile
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const searchBarRef = useRef(null);
   const inputRef = useRef(null);
@@ -19,10 +20,15 @@ function SearchBar({
     setIsDropdownVisible(true);
   };
 
+  const collapseSearch = () => {
+    setIsDropdownVisible(false);
+    setIsReadonly(true);
+    setIsExpanded(false);
+  };
+
   const handleClickOutside = (event) => {
     if (searchBarRef.current && !searchBarRef.current.contains(event.target)) {
-      setIsDropdownVisible(false);
-      setIsReadonly(true); // Set input back to readonly when clicked outside
+      collapseSearch();
     }
   };
 
@@ -31,13 +37,18 @@ function SearchBar({
   };
 
   const handleKeyDown = (event) => {
+    if (event.key === "Escape") {
+      collapseSearch();
+      inputRef.current?.blur();
+      return;
+    }
     if (event.key === "Enter") {
       const suggestion = suggestions.find(
         (item) => item.name.toLowerCase() === inputValue.toLowerCase()
       );
       if (suggestion) {
         // Close the dropdown and navigate to the selected suggestion
-        setIsDropdownVisible(false);
+        collapseSearch();
         handleNavigation(suggestion.path);
       } else {
         console.log("Invalid input");
@@ -46,9 +57,11 @@ function SearchBar({
   };
 
   const activateInput = () => {
+    setIsExpanded(true);
     setIsReadonly(false); // Make input writable when clicked
+    setIsDropdownVisible(true);
     setTimeout(() => {
-      inputRef.current.focus(); // Programmatically focus input after readonly is removed
+      inputRef.current?.focus(); // Programmatically focus input after readonly is removed
     }, 100);
   };
 
@@ -69,7 +82,7 @@ function SearchBar({
   };
 
   const handleOptionClick = (path) => {
-    setIsDropdownVisible(false); // Close the dropdown
+    collapseSearch();
     handleNavigation(path);
   };
 
@@ -86,7 +99,10 @@ function SearchBar({
   }, []);
 
   return (
-    <div className="searchbar-container" ref={searchBarRef}>
+    <div
+      className={`searchbar-container${isExpanded ? " searchbar-container--expanded" : ""}`}
+      ref={searchBarRef}
+    >
       <div className="searchbar-dropdown">
         <input
           ref={inputRef}
@@ -115,10 +131,14 @@ function SearchBar({
         )}
       </div>
 
-      {/* The search icon, which is only visible on mobile, trigger handled in css */}
-      <div className="search-icon" onClick={activateInput}>
-        <SearchIcon sx={{ paddingTop: ".2rem" }} />
-      </div>
+      <button
+        type="button"
+        className="search-icon"
+        onClick={activateInput}
+        aria-label="Search"
+      >
+        <SearchIcon sx={{ fontSize: 22 }} />
+      </button>
     </div>
   );
 }

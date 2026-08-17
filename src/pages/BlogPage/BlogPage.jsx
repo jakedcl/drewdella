@@ -1,5 +1,12 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
+import { useParams, Link } from "react-router-dom";
 import { client, urlFor } from "../../lib/sanity";
+import {
+  SearchResults,
+  SearchResult,
+  formatElapsed,
+  blogPreviewSnippet,
+} from "../../components/SearchResults/SearchResults.jsx";
 import "./BlogPage.css";
 
 /** CSS max widths — must stay in sync with BlogPage.css */
@@ -40,98 +47,87 @@ function blogImageResponsiveSources(asset, sizeKey) {
     };
 }
 
-function BlogPost({ post, formatDate, renderContent }) {
-    const [isExpanded, setIsExpanded] = useState(false);
-    const contentRef = useRef(null);
-    const [needsReadMore, setNeedsReadMore] = useState(false);
-
-    useEffect(() => {
-        // Check if content exceeds 12 lines after render
-        const checkHeight = () => {
-            if (contentRef.current) {
-                const lineHeight = parseFloat(getComputedStyle(contentRef.current).lineHeight) || 22.12; // fallback to 1.58em * 14px
-                const maxHeight = lineHeight * 12;
-                const actualHeight = contentRef.current.scrollHeight;
-                setNeedsReadMore(actualHeight > maxHeight);
-            }
-        };
-
-        // Check immediately and after a short delay to ensure content is rendered
-        checkHeight();
-        const timeout = setTimeout(checkHeight, 100);
-        
-        return () => clearTimeout(timeout);
-    }, [post._id]); // Use post._id instead of post.content to avoid unnecessary re-renders
-
-    return (
-        <article className="blog-post">
-            <div className="blog-post-content">
-                <h2 className="blog-post-title">{post.title}</h2>
-                <time className="blog-post-date" dateTime={post.date}>
-                    {formatDate(post.date)}
-                </time>
-                <div 
-                    ref={contentRef}
-                    className={`blog-post-body ${isExpanded ? 'expanded' : 'collapsed'}`}
-                >
-                    {renderContent(post.content)}
-                </div>
-                {needsReadMore && (
-                    <button 
-                        className="blog-read-more-btn"
-                        onClick={() => setIsExpanded(!isExpanded)}
-                    >
-                        {isExpanded ? 'Read less' : 'Read more'}
-                    </button>
-                )}
-            </div>
-        </article>
-    );
-}
-
 function BlogPage() {
+    const { slug } = useParams();
     const [blogPosts, setBlogPosts] = useState([]);
+    const [post, setPost] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [elapsed, setElapsed] = useState("0.12");
+    const [query, setQuery] = useState("");
+    const [sort, setSort] = useState("newest");
 
     useEffect(() => {
-        const fetchBlogPosts = async () => {
-            try {
-                const query = `*[_type == "blogPost"] | order(date desc) {
-          _id,
-          title,
-          date,
-          content[]{
-            ...,
-            _type == "image" => {
-              ...,
-              asset->
-            },
-            _type == "block" => {
-              ...,
-              markDefs[]{
+        if (slug) {
+            fetchPost(slug);
+        } else {
+            fetchPosts();
+        }
+    }, [slug]);
+
+    const fetchPosts = async () => {
+        const started = performance.now();
+        try {
+            setLoading(true);
+            setError(null);
+            const query = `*[_type == "blogPost"] | order(date desc) {
+              _id,
+              title,
+              date,
+              slug,
+              "preview": pt::text(content),
+              "imageCount": count(content[_type == "image"])
+            }`;
+            const data = await client.fetch(query);
+            setBlogPosts(data);
+            setElapsed(formatElapsed(performance.now() - started));
+        } catch (err) {
+            console.error("Error fetching blog posts:", err);
+            setError("Failed to load blog posts");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const fetchPost = async (postSlug) => {
+        try {
+            setLoading(true);
+            setError(null);
+            const query = `*[_type == "blogPost" && slug.current == $slug][0] {
+              _id,
+              title,
+              date,
+              content[]{
                 ...,
-                _type == "link" => {
-                  ...
+                _type == "image" => {
+                  ...,
+                  asset->
+                },
+                _type == "block" => {
+                  ...,
+                  markDefs[]{
+                    ...,
+                    _type == "link" => {
+                      ...
+                    }
+                  }
                 }
-              }
+              },
+              slug
+            }`;
+            const data = await client.fetch(query, { slug: postSlug });
+            if (!data) {
+                setError("Post not found");
+            } else {
+                setPost(data);
             }
-          },
-          slug
-        }`;
-
-                const data = await client.fetch(query);
-                setBlogPosts(data);
-            } catch (err) {
-                console.error("Error fetching blog posts:", err);
-                setError("Failed to load blog posts");
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchBlogPosts();
-    }, []);
+        } catch (err) {
+            console.error("Error fetching blog post:", err);
+            setError("Failed to load blog post");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const formatDate = (dateString) => {
         const date = new Date(dateString);
@@ -252,11 +248,8 @@ function BlogPage() {
     if (loading) {
         return (
             <div className="blog-page">
-                <div className="blog-header">
-                    <h1>Blog</h1>
-                </div>
                 <div className="blog-loading">
-                    <p>Loading posts...</p>
+                    <p>Loading...</p>
                 </div>
             </div>
         );
@@ -265,9 +258,6 @@ function BlogPage() {
     if (error) {
         return (
             <div className="blog-page">
-                <div className="blog-header">
-                    <h1>Blog</h1>
-                </div>
                 <div className="blog-error">
                     <p>{error}</p>
                 </div>
@@ -275,25 +265,87 @@ function BlogPage() {
         );
     }
 
-    return (
-        <div className="blog-page">
-            <div className="blog-content">
-                {blogPosts.length === 0 ? (
-                    <div className="blog-empty">
-                        <p>No blog posts yet. Check back soon!</p>
+    if (slug && post) {
+        return (
+            <div className="blog-page">
+                <Link to="/blog" className="blog-back-link">
+                    ← Back to search results
+                </Link>
+                <article className="blog-post blog-post--detail">
+                    <h1 className="blog-detail-title">{post.title}</h1>
+                    <time className="blog-post-date" dateTime={post.date}>
+                        {formatDate(post.date)}
+                    </time>
+                    <div className="blog-post-body expanded">
+                        {renderContent(post.content)}
                     </div>
-                ) : (
-                    blogPosts.map((post) => (
-                        <BlogPost 
-                            key={post._id} 
-                            post={post}
-                            formatDate={formatDate}
-                            renderContent={renderContent}
-                        />
-                    ))
-                )}
+                </article>
             </div>
-        </div>
+        );
+    }
+
+    const q = query.trim().toLowerCase();
+    const filtered = blogPosts
+        .filter((item) => {
+            if (!q) return true;
+            return [item.title, item.preview, blogPreviewSnippet(item)].some((value) =>
+                String(value || "")
+                    .toLowerCase()
+                    .includes(q)
+            );
+        })
+        .slice()
+        .sort((a, b) => {
+            if (sort === "oldest") {
+                return new Date(a.date || 0) - new Date(b.date || 0);
+            }
+            if (sort === "title") {
+                return (a.title || "").localeCompare(b.title || "");
+            }
+            return new Date(b.date || 0) - new Date(a.date || 0);
+        });
+
+    return (
+        <SearchResults
+            count={filtered.length}
+            elapsed={elapsed}
+            query={query}
+            onQueryChange={setQuery}
+            queryPlaceholder="Filter posts"
+            sort={sort}
+            onSortChange={setSort}
+            sortOptions={[
+                { value: "newest", label: "Newest" },
+                { value: "oldest", label: "Oldest" },
+                { value: "title", label: "Title A–Z" },
+            ]}
+        >
+            {blogPosts.length === 0 ? (
+                <p className="serp-empty">No blog posts yet. Check back soon!</p>
+            ) : filtered.length === 0 ? (
+                <p className="serp-empty">No posts match “{query}”.</p>
+            ) : (
+                filtered.map((item) => {
+                    const slugValue = item.slug?.current || item.slug;
+                    const dateLabel = item.date
+                        ? formatDate(item.date)
+                        : "";
+                    const preview = blogPreviewSnippet(item);
+                    return (
+                        <SearchResult
+                            key={item._id}
+                            internal
+                            href={`/blog/${slugValue}`}
+                            title={item.title}
+                            cite={`drewdella.com › blog › ${slugValue}`}
+                            snippet={
+                                [dateLabel, preview].filter(Boolean).join(" — ")
+                            }
+                        />
+                    );
+                })
+            )}
+        </SearchResults>
     );
 }
 
