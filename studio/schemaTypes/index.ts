@@ -5,5 +5,15 @@ import shopLink from './shopLink'
 import mapLocation from './mapLocation'
 import blogPost from './blogPost'
 import song from './song'
+import youtubeCache from './youtubeCache'
 
-export const schemaTypes = [imageGallery, musicRelease, socialLink, shopLink, mapLocation, blogPost, song]
+export const schemaTypes = [
+  imageGallery,
+  musicRelease,
+  socialLink,
+  shopLink,
+  mapLocation,
+  blogPost,
+  song,
+  youtubeCache,
+]

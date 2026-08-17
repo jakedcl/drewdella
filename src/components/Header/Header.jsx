@@ -56,10 +56,10 @@ const Header = ({ currentPath = "" }) => {
       <div className="header-spacer" aria-hidden />
       <div className="header-links">
         <Link
-          to="/lyrics"
+          to="/maps"
           className="header-link"
         >
-          Lyrics
+          Maps
         </Link>
         <a
           href="/shop"

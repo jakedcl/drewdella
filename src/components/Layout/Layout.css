@@ -1,0 +1,19 @@
+.site-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.site-layout--maps {
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.site-main--maps {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
