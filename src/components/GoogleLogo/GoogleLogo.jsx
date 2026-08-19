@@ -6,7 +6,7 @@ import "./GoogleLogo.css";
 function GoogleLogo({ style }) {
   return (
     <div className="logo-container" style={style}>
-      <Link to="/">
+      <Link to="/home" aria-label="Drew Della home">
         <img src={logo} alt="Google Logo" className="logo" />
       </Link>
     </div>
