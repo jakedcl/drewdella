@@ -269,8 +269,8 @@ function ImagesPage() {
           {images.length === 1 ? "" : "s"} ({elapsed} seconds)
         </p>
         <Masonry
-          columns={{ xs: 2, sm: 2, md: 3, lg: 4 }}
-          spacing={1}
+          columns={{ xs: 3, sm: 4, md: 5, lg: 6, xl: 7 }}
+          spacing={0.75}
           sx={{ ml: 0, mr: 0, width: "100%" }}
         >
           {images.map((image) => (
@@ -289,7 +289,7 @@ function ImagesPage() {
                   }
                 >
                   <img
-                    src={urlFor(image.asset).width(800).auto("format").url()}
+                    src={urlFor(image.asset).width(360).auto("format").url()}
                     alt={image.alt || "Gallery image"}
                     loading="lazy"
                     draggable={false}
