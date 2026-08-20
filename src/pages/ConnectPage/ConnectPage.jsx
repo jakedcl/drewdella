@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { CircularProgress, Alert, Box } from "@mui/material";
+import { CircularProgress, Box } from "@mui/material";
 import { client } from "../../lib/sanity";
 import {
   SearchResults,
@@ -8,6 +8,7 @@ import {
   formatElapsed,
   socialSnippet,
 } from "../../components/SearchResults/SearchResults.jsx";
+import SerpMessage from "../../components/SerpMessage/SerpMessage.jsx";
 
 export default function ConnectPage() {
   const [socialLinks, setSocialLinks] = useState([]);
@@ -34,9 +35,7 @@ export default function ConnectPage() {
         setElapsed(formatElapsed(performance.now() - started));
       } catch (err) {
         console.error("Error fetching social links:", err);
-        setError(
-          err.message || "Failed to load social links. Please try again later."
-        );
+        setError("Couldn’t load socials right now. Try again in a bit.");
       } finally {
         setLoading(false);
       }
@@ -60,19 +59,29 @@ export default function ConnectPage() {
 
   if (error) {
     return (
-      <Box p={2}>
-        <Alert severity="error">{error}</Alert>
-      </Box>
+      <SerpMessage
+        title="Socials are taking a break."
+        detail={error}
+        links={[
+          { to: "/", label: "All results" },
+          { to: "/home", label: "Home" },
+        ]}
+      />
     );
   }
 
   if (!socialLinks.length) {
     return (
-      <Box p={2}>
-        <Alert severity="info">
-          No social links found. Add links in the Sanity Studio.
-        </Alert>
-      </Box>
+      <SearchResults count={0} elapsed={elapsed}>
+        <SerpMessage
+          title="No socials listed yet."
+          detail="Links will show up here when they’re ready."
+          links={[
+            { to: "/", label: "All results" },
+            { to: "/blog", label: "Blog" },
+          ]}
+        />
+      </SearchResults>
     );
   }
 

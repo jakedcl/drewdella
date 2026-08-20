@@ -111,6 +111,33 @@
     border-left: 1px solid #dadce0;
     overflow-y: auto;
   }
+
+  .images-panel-backdrop {
+    position: fixed;
+    top: 105px;
+    left: 0;
+    right: min(520px, 46vw);
+    bottom: 0;
+    z-index: 1190;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: transparent;
+    cursor: default;
+  }
+}
+
+@media (max-width: 899px) {
+  .images-panel-backdrop {
+    display: none;
+  }
+}
+
+.images-panel-note {
+  margin: 10px 0 0;
+  font-size: 12px;
+  line-height: 1.35;
+  color: #70757a;
 }
 
 .images-panel-bar {

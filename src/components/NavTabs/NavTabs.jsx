@@ -14,7 +14,7 @@ function NavTabs() {
     { label: "Blog", path: "/blog" },
     { label: "Socials", path: "/connect" },
     { label: "Lyrics", path: "/lyrics" },
-    { label: "Shopping", path: "/shop" },
+    { label: "Store", path: "/shop" },
     { label: "Maps", path: "/maps" },
   ];
 
@@ -34,7 +34,7 @@ function NavTabs() {
   return (
     <div className="nav-tabs">
       <Tabs
-        value={currentTab === -1 ? 0 : currentTab}
+        value={currentTab === -1 ? false : currentTab}
         scrollButtons="auto"
         variant="scrollable"
         sx={{
@@ -42,6 +42,7 @@ function NavTabs() {
           "& .MuiTabs-indicator": {
             height: 3,
             backgroundColor: "#1a73e8",
+            display: currentTab === -1 ? "none" : undefined,
           },
           "& .MuiTab-root": {
             textTransform: "none",

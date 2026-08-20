@@ -4,28 +4,22 @@ import GoogleLogo from "../GoogleLogo/GoogleLogo";
 import SearchBar from "../SearchBar/SearchBar";
 import { client } from "../../lib/sanity";
 import { searchSuggestions } from "../../constants/searchSuggestions";
-import "./Header.css"; // Your CSS file for styling
+import { resolveShopDestination, DEFAULT_SHOP_PATH } from "../../lib/shopLink";
+import "./Header.css";
 
 const Header = ({ currentPath = "" }) => {
-  const [shopUrl, setShopUrl] = useState("https://www.drewdellamerch.com"); // Default fallback
+  const [shop, setShop] = useState({
+    href: DEFAULT_SHOP_PATH,
+    external: false,
+  });
 
   useEffect(() => {
     const fetchShopLink = async () => {
       try {
-        // Fetch the shop link from Sanity
-        const query = `*[_type == "shopLink"][0] {
-          title,
-          url
-        }`;
-
-        const data = await client.fetch(query);
-
-        if (data && data.url) {
-          setShopUrl(data.url);
-        }
+        const data = await client.fetch(`*[_type == "shopLink"][0]{ url }`);
+        setShop(resolveShopDestination(data?.url));
       } catch (error) {
         console.error("Error fetching shop link:", error);
-        // Keep the default URL on error
       }
     };
 
@@ -48,25 +42,27 @@ const Header = ({ currentPath = "" }) => {
         <GoogleLogo style={googleLogoStyles} />
       </div>
       <div className="header-search-wrap">
-        <SearchBar
-          currentPath={currentPath}
-          suggestions={searchSuggestions}
-        />
+        <SearchBar currentPath={currentPath} suggestions={searchSuggestions} />
       </div>
       <div className="header-spacer" aria-hidden />
       <div className="header-links">
-        <Link
-          to="/maps"
-          className="header-link"
-        >
+        <Link to="/maps" className="header-link">
           Maps
         </Link>
-        <a
-          href="/shop"
-          className="header-link"
-        >
-          Store
-        </a>
+        {shop.external ? (
+          <a
+            href={shop.href}
+            className="header-link"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Store
+          </a>
+        ) : (
+          <Link to={shop.href} className="header-link">
+            Store
+          </Link>
+        )}
       </div>
     </header>
   );
