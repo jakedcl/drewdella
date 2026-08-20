@@ -1,0 +1,41 @@
+.not-found {
+  padding: 8px 8px 48px;
+  max-width: 652px;
+  font-family: Helvetica, Arial, sans-serif;
+}
+
+.not-found-stats {
+  margin: 0 0 18px;
+  font-size: 13px;
+  line-height: 16px;
+  color: #70757a;
+}
+
+.not-found-lead {
+  margin: 0 0 10px;
+  font-size: 16px;
+  color: #202124;
+}
+
+.not-found-copy {
+  margin: 0 0 22px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #4d5156;
+}
+
+.not-found-suggest {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #4d5156;
+}
+
+.not-found-suggest a {
+  color: #1a0dab;
+  text-decoration: none;
+}
+
+.not-found-suggest a:hover {
+  text-decoration: underline;
+}

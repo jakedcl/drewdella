@@ -105,8 +105,8 @@ const Map = () => {
     (async () => {
       try {
         if (!mapboxgl.accessToken) {
-          setError("Mapbox token is not configured");
-          return;
+      setError("Mapbox isn’t set up yet.");
+      return;
         }
         const data = await client.fetch(`*[_type == "mapLocation"] {
           _id, venueName, address, coordinates
@@ -115,7 +115,7 @@ const Map = () => {
         if (!cancelled) setPlaces(next);
       } catch (err) {
         console.error("Error fetching locations:", err);
-        if (!cancelled) setError("Failed to load locations");
+        if (!cancelled) setError("Couldn’t load the map right now. Try again in a bit.");
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -374,7 +374,7 @@ const Map = () => {
   }
 
   if (!places.length) {
-    return <div className="map-error">No venues on the map yet.</div>;
+    return <div className="map-error">No venues pinned yet — check back soon.</div>;
   }
 
   return (

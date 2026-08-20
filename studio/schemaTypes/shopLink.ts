@@ -17,9 +17,10 @@ export default defineType({
       name: 'url',
       title: 'URL',
       type: 'url',
-      description: 'Redirect URL for the Shopping tab',
+      description:
+        'Where Store goes. Use https://drewdella.com/shop for the coming-soon page. When real merch launches, put the external store URL here instead.',
       validation: (Rule) => Rule.required(),
-      initialValue: 'https://www.drewdellamerch.com',
+      initialValue: 'https://drewdella.com/shop',
     }),
   ],
   preview: {

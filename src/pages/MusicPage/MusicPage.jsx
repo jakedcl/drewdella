@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { CircularProgress, Alert, Box } from "@mui/material";
+import { CircularProgress, Box } from "@mui/material";
 import { client } from "../../lib/sanity";
 import {
   SearchResults,
@@ -8,6 +8,7 @@ import {
   formatElapsed,
   datedSnippet,
 } from "../../components/SearchResults/SearchResults.jsx";
+import SerpMessage from "../../components/SerpMessage/SerpMessage.jsx";
 
 export default function MusicPage() {
   const [releases, setReleases] = useState([]);
@@ -35,9 +36,7 @@ export default function MusicPage() {
         setElapsed(formatElapsed(performance.now() - started));
       } catch (err) {
         console.error("Error fetching music releases:", err);
-        setError(
-          err.message || "Failed to load music releases. Please try again later."
-        );
+        setError("Couldn’t load music right now. Try again in a bit.");
       } finally {
         setLoading(false);
       }
@@ -61,19 +60,29 @@ export default function MusicPage() {
 
   if (error) {
     return (
-      <Box p={2}>
-        <Alert severity="error">{error}</Alert>
-      </Box>
+      <SerpMessage
+        title="Music is taking a break."
+        detail={error}
+        links={[
+          { to: "/", label: "All results" },
+          { to: "/home", label: "Home" },
+        ]}
+      />
     );
   }
 
   if (!releases.length) {
     return (
-      <Box p={2}>
-        <Alert severity="info">
-          No music releases found. Add releases in the Sanity Studio.
-        </Alert>
-      </Box>
+      <SearchResults count={0} elapsed={elapsed}>
+        <SerpMessage
+          title="No releases to show yet."
+          detail="New music is on the way — check back soon."
+          links={[
+            { to: "/lyrics", label: "Lyrics" },
+            { to: "/videos", label: "Videos" },
+          ]}
+        />
+      </SearchResults>
     );
   }
 

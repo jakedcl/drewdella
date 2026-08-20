@@ -6,13 +6,14 @@ import React, {
   useRef,
 } from "react";
 import { Masonry } from "@mui/lab";
-import { CircularProgress, Alert, Box } from "@mui/material";
+import { CircularProgress, Box } from "@mui/material";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import OpenInNewRoundedIcon from "@mui/icons-material/OpenInNewRounded";
 import IosShareRoundedIcon from "@mui/icons-material/IosShareRounded";
 import BookmarkBorderRoundedIcon from "@mui/icons-material/BookmarkBorderRounded";
 import { urlFor, fetchSanityData } from "../../lib/sanity";
 import { formatElapsed, SerpFooter } from "../../components/SearchResults/SearchResults.jsx";
+import SerpMessage from "../../components/SerpMessage/SerpMessage.jsx";
 import "./ImagesPage.css";
 
 const SOURCE_NAME = "drewdella.com";
@@ -52,6 +53,8 @@ function ImagesPage() {
   const [suggested, setSuggested] = useState([]);
   const [heroSrc, setHeroSrc] = useState("");
   const [heroReady, setHeroReady] = useState(false);
+  const [actionNote, setActionNote] = useState("");
+  const closeBtnRef = useRef(null);
   const panelRef = useRef(null);
   const heroLoadId = useRef(0);
 
@@ -70,6 +73,7 @@ function ImagesPage() {
     setSuggested([]);
     setHeroSrc("");
     setHeroReady(false);
+    setActionNote("");
   }, []);
 
   const activeUrl = useMemo(
@@ -123,10 +127,11 @@ function ImagesPage() {
 
   const handleShare = useCallback(async () => {
     if (!activeUrl) return;
+    const pageUrl = `${window.location.origin}/images`;
     const payload = {
       title: panelTitle,
       text: panelTitle,
-      url: activeUrl,
+      url: pageUrl,
     };
     try {
       if (navigator.share) {
@@ -134,7 +139,9 @@ function ImagesPage() {
         return;
       }
       if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(activeUrl);
+        await navigator.clipboard.writeText(pageUrl);
+        setActionNote("Link copied");
+        window.setTimeout(() => setActionNote(""), 2000);
       }
     } catch {
       /* user cancelled share */
@@ -143,15 +150,15 @@ function ImagesPage() {
 
   const handleSave = useCallback(() => {
     if (!activeUrl) return;
-    const a = document.createElement("a");
-    a.href = activeUrl;
-    a.download = `${panelTitle.replace(/\s+/g, "-").toLowerCase() || "photo"}.jpg`;
-    a.target = "_blank";
-    a.rel = "noopener noreferrer";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-  }, [activeUrl, panelTitle]);
+    window.open(activeUrl, "_blank", "noopener,noreferrer");
+    setActionNote("Opened full image — save from your browser");
+    window.setTimeout(() => setActionNote(""), 2800);
+  }, [activeUrl]);
+
+  useEffect(() => {
+    if (!activeImage) return undefined;
+    closeBtnRef.current?.focus();
+  }, [activeImage]);
 
   useEffect(() => {
     const fetchImages = async () => {
@@ -235,11 +242,14 @@ function ImagesPage() {
   if (error) {
     return (
       <Box p={2}>
-        <Alert severity="error">
-          {error}
-          <br />
-          <small>Please check the console for more details.</small>
-        </Alert>
+        <SerpMessage
+          title="Images are taking a break."
+          detail="Couldn’t load photos right now. Try again in a bit."
+          links={[
+            { to: "/", label: "All results" },
+            { to: "/home", label: "Home" },
+          ]}
+        />
       </Box>
     );
   }
@@ -247,14 +257,14 @@ function ImagesPage() {
   if (!images.length) {
     return (
       <Box p={2}>
-        <Alert severity="info">
-          No valid images found. Please check:
-          <ul>
-            <li>Sanity Studio for image gallery content</li>
-            <li>Network connection</li>
-            <li>Console for detailed errors</li>
-          </ul>
-        </Alert>
+        <SerpMessage
+          title="No images to show yet."
+          detail="Photos will show up here when they’re ready."
+          links={[
+            { to: "/", label: "All results" },
+            { to: "/videos", label: "Videos" },
+          ]}
+        />
       </Box>
     );
   }
@@ -314,124 +324,138 @@ function ImagesPage() {
       </div>
 
       {activeImage && (
-        <aside
-          ref={panelRef}
-          className="images-panel"
-          role="dialog"
-          aria-modal="true"
-          aria-label={panelTitle}
-        >
-          <div className="images-panel-bar">
-            <div className="images-panel-source">
-              <span>{SOURCE_NAME}</span>
-            </div>
-            <button
-              type="button"
-              className="images-panel-close"
-              onClick={closePanel}
-              aria-label="Close"
-            >
-              <CloseRoundedIcon fontSize="small" />
-            </button>
-          </div>
-
-          <div className="images-panel-hero">
-            <img
-              key={activeImage.id}
-              src={heroSrc || thumbUrl}
-              alt={activeImage.alt || "Gallery image"}
-              draggable={false}
-              loading="eager"
-              fetchPriority="high"
-              decoding="async"
-              onLoad={() => setHeroReady(true)}
-              onError={() => setHeroReady(true)}
-            />
-          </div>
-
-          <div className="images-panel-meta">
-            <div className="images-panel-meta-row">
-              <div className="images-panel-copy">
-                <h2 className="images-panel-title">{panelTitle}</h2>
-                <p className="images-panel-subtitle">
-                  {activeImage.alt && activeImage.caption
-                    ? activeImage.alt
-                    : SOURCE_NAME}
-                </p>
+        <>
+          <button
+            type="button"
+            className="images-panel-backdrop"
+            aria-label="Close image detail"
+            onClick={closePanel}
+          />
+          <aside
+            ref={panelRef}
+            className="images-panel"
+            role="dialog"
+            aria-modal="true"
+            aria-label={panelTitle}
+          >
+            <div className="images-panel-bar">
+              <div className="images-panel-source">
+                <span>{SOURCE_NAME}</span>
               </div>
               <button
                 type="button"
-                className="images-btn images-btn--visit images-btn--visit-inline"
-                onClick={handleVisit}
+                className="images-panel-close"
+                ref={closeBtnRef}
+                onClick={closePanel}
+                aria-label="Close"
               >
-                Visit
-                <OpenInNewRoundedIcon sx={{ fontSize: 16 }} />
+                <CloseRoundedIcon fontSize="small" />
               </button>
             </div>
 
-            <div className="images-panel-actions">
-              <button
-                type="button"
-                className="images-btn images-btn--visit images-btn--visit-row"
-                onClick={handleVisit}
-              >
-                Visit
-                <OpenInNewRoundedIcon sx={{ fontSize: 16 }} />
-              </button>
-              <button
-                type="button"
-                className="images-btn images-btn--secondary"
-                onClick={handleShare}
-              >
-                <IosShareRoundedIcon sx={{ fontSize: 18 }} />
-                Share
-              </button>
-              <button
-                type="button"
-                className="images-btn images-btn--secondary"
-                onClick={handleSave}
-              >
-                <BookmarkBorderRoundedIcon sx={{ fontSize: 18 }} />
-                Save
-              </button>
+            <div className="images-panel-hero">
+              <img
+                key={activeImage.id}
+                src={heroSrc || thumbUrl}
+                alt={activeImage.alt || "Gallery image"}
+                draggable={false}
+                loading="eager"
+                fetchPriority="high"
+                decoding="async"
+                onLoad={() => setHeroReady(true)}
+                onError={() => setHeroReady(true)}
+              />
             </div>
-          </div>
 
-          {suggested.length > 0 && heroReady && (
-            <div className="images-panel-suggested">
-              <Masonry columns={2} spacing={1.5}>
-                {suggested.map((image) => (
-                  <div key={image.id} className="images-suggested-card">
-                    <button
-                      type="button"
-                      className="images-suggested-thumb"
-                      onClick={() => openImage(image)}
-                      aria-label={
-                        image.alt
-                          ? `Open image: ${image.alt}`
-                          : "Open image detail"
-                      }
-                    >
-                      <img
-                        src={urlFor(image.asset)
-                          .width(500)
-                          .auto("format")
-                          .url()}
-                        alt={image.alt || "Gallery image"}
-                        loading="lazy"
-                        fetchPriority="low"
-                        draggable={false}
-                      />
-                    </button>
-                    <p className="images-suggested-title">
-                      {imageLabel(image)}
-                    </p>
-                  </div>
-                ))}
-              </Masonry>
+            <div className="images-panel-meta">
+              <div className="images-panel-meta-row">
+                <div className="images-panel-copy">
+                  <h2 className="images-panel-title">{panelTitle}</h2>
+                  <p className="images-panel-subtitle">
+                    {activeImage.alt && activeImage.caption
+                      ? activeImage.alt
+                      : SOURCE_NAME}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className="images-btn images-btn--visit images-btn--visit-inline"
+                  onClick={handleVisit}
+                >
+                  Visit
+                  <OpenInNewRoundedIcon sx={{ fontSize: 16 }} />
+                </button>
+              </div>
+
+              <div className="images-panel-actions">
+                <button
+                  type="button"
+                  className="images-btn images-btn--visit images-btn--visit-row"
+                  onClick={handleVisit}
+                >
+                  Visit
+                  <OpenInNewRoundedIcon sx={{ fontSize: 16 }} />
+                </button>
+                <button
+                  type="button"
+                  className="images-btn images-btn--secondary"
+                  onClick={handleShare}
+                >
+                  <IosShareRoundedIcon sx={{ fontSize: 18 }} />
+                  Share
+                </button>
+                <button
+                  type="button"
+                  className="images-btn images-btn--secondary"
+                  onClick={handleSave}
+                >
+                  <BookmarkBorderRoundedIcon sx={{ fontSize: 18 }} />
+                  Save
+                </button>
+              </div>
+              {actionNote ? (
+                <p className="images-panel-note" role="status">
+                  {actionNote}
+                </p>
+              ) : null}
             </div>
-          )}
-        </aside>
+
+            {suggested.length > 0 && heroReady && (
+              <div className="images-panel-suggested">
+                <Masonry columns={2} spacing={1.5}>
+                  {suggested.map((image) => (
+                    <div key={image.id} className="images-suggested-card">
+                      <button
+                        type="button"
+                        className="images-suggested-thumb"
+                        onClick={() => openImage(image)}
+                        aria-label={
+                          image.alt
+                            ? `Open image: ${image.alt}`
+                            : "Open image detail"
+                        }
+                      >
+                        <img
+                          src={urlFor(image.asset)
+                            .width(500)
+                            .auto("format")
+                            .url()}
+                          alt={image.alt || "Gallery image"}
+                          loading="lazy"
+                          fetchPriority="low"
+                          draggable={false}
+                        />
+                      </button>
+                      <p className="images-suggested-title">
+                        {imageLabel(image)}
+                      </p>
+                    </div>
+                  ))}
+                </Masonry>
+              </div>
+            )}
+          </aside>
+        </>
       )}
     </>
   );

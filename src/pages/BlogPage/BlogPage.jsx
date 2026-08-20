@@ -10,6 +10,7 @@ import {
   formatListingDate,
   datedSnippet,
 } from "../../components/SearchResults/SearchResults.jsx";
+import SerpMessage from "../../components/SerpMessage/SerpMessage.jsx";
 import "./BlogPage.css";
 
 /** CSS max widths — must stay in sync with BlogPage.css */
@@ -86,7 +87,7 @@ function BlogPage() {
             setElapsed(formatElapsed(performance.now() - started));
         } catch (err) {
             console.error("Error fetching blog posts:", err);
-            setError("Failed to load blog posts");
+            setError("load-failed");
         } finally {
             setLoading(false);
         }
@@ -120,13 +121,13 @@ function BlogPage() {
             }`;
             const data = await client.fetch(query, { slug: postSlug });
             if (!data) {
-                setError("Post not found");
+                setError("not-found");
             } else {
                 setPost(data);
             }
         } catch (err) {
             console.error("Error fetching blog post:", err);
-            setError("Failed to load blog post");
+            setError("load-failed");
         } finally {
             setLoading(false);
         }
@@ -250,12 +251,21 @@ function BlogPage() {
     }
 
     if (error) {
+        const missing = error === "not-found";
         return (
-            <div className="blog-page">
-                <div className="blog-error">
-                    <p>{error}</p>
-                </div>
-            </div>
+            <SerpMessage
+                title={missing ? "That post isn’t here." : "Blog is taking a break."}
+                detail={
+                    missing
+                        ? "The link may be old, or the title changed. Try the blog again."
+                        : "Couldn’t load the blog right now. Try again in a bit."
+                }
+                links={[
+                    { to: "/blog", label: "All posts" },
+                    { to: "/", label: "All results" },
+                    { to: "/home", label: "Home" },
+                ]}
+            />
         );
     }
 

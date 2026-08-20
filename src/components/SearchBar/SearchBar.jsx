@@ -117,6 +117,7 @@ function SearchBar({
     }
     if (event.key === "Enter") {
       event.preventDefault();
+      if (!rows.length) return;
       goTo(rows[activeIndex] || rows[0]);
     }
   };

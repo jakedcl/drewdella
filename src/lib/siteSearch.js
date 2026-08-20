@@ -70,7 +70,7 @@ const PAGES = [
     id: "page-shop",
     title: "Shop",
     href: "/shop",
-    source: "Shopping",
+    source: "Store",
     internal: true,
     haystack: "merch store coming soon",
   },

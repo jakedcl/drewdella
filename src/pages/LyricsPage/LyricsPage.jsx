@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { client } from "../../lib/sanity";
-import { CircularProgress, Alert, Box } from "@mui/material";
+import { CircularProgress, Box } from "@mui/material";
 import {
   SearchResults,
   SearchResult,
@@ -10,6 +10,7 @@ import {
   pathCite,
   datedSnippet,
 } from "../../components/SearchResults/SearchResults.jsx";
+import SerpMessage from "../../components/SerpMessage/SerpMessage.jsx";
 import "./LyricsPage.css";
 
 function LyricsPage() {
@@ -54,7 +55,7 @@ function LyricsPage() {
       setElapsed(formatElapsed(performance.now() - started));
     } catch (err) {
       console.error("Error fetching songs:", err);
-      setError("Failed to load songs");
+      setError("load-failed");
     } finally {
       setLoading(false);
     }
@@ -90,13 +91,13 @@ function LyricsPage() {
 
       const data = await client.fetch(query, { slug: songSlug });
       if (!data) {
-        setError("Song not found");
+        setError("not-found");
       } else {
         setSong(data);
       }
     } catch (err) {
       console.error("Error fetching song:", err);
-      setError("Failed to load song");
+      setError("load-failed");
     } finally {
       setLoading(false);
     }
@@ -188,10 +189,21 @@ function LyricsPage() {
   }
 
   if (error) {
+    const missing = error === "not-found";
     return (
-      <Box p={2}>
-        <Alert severity="error">{error}</Alert>
-      </Box>
+      <SerpMessage
+        title={missing ? "That song isn’t here." : "Lyrics are taking a break."}
+        detail={
+          missing
+            ? "The link may be old, or the title changed. Try searching lyrics again."
+            : "Couldn’t load lyrics right now. Try again in a bit."
+        }
+        links={[
+          { to: "/lyrics", label: "All lyrics" },
+          { to: "/music", label: "Music" },
+          { to: "/", label: "All results" },
+        ]}
+      />
     );
   }
 
@@ -217,9 +229,16 @@ function LyricsPage() {
 
   if (songs.length === 0) {
     return (
-      <Box p={2}>
-        <Alert severity="info">No songs found. Add songs in the Sanity Studio.</Alert>
-      </Box>
+      <SearchResults count={0} elapsed={elapsed}>
+        <SerpMessage
+          title="No lyrics to show yet."
+          detail="Song words will show up here when they’re ready."
+          links={[
+            { to: "/music", label: "Music" },
+            { to: "/", label: "All results" },
+          ]}
+        />
+      </SearchResults>
     );
   }
 
