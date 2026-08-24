@@ -12,10 +12,13 @@
     "start": "next start"
   },
   "dependencies": {
+    "@emotion/cache": "^11.14.0",
+    "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.11.5",
     "@mui/icons-material": "^5.18.0",
     "@mui/lab": "^5.0.0-alpha.177",
     "@mui/material": "^5.18.0",
+    "@mui/material-nextjs": "^9.3.0",
     "@mui/styled-engine": "^5.18.0",
     "@sanity/client": "^7.12.0",
     "@sanity/image-url": "^1.2.0",
