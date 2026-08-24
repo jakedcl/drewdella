@@ -1,20 +1,22 @@
+"use client";
+
 import React from "react";
-import { Link } from "react-router-dom";
+import Link from "next/link";
 import "./Footer.css";
 
 function Footer() {
   return (
     <footer className="footer">
       <div className="footer_left">
-        <Link to="/music" className="footer_link">
+        <Link href="/music" className="footer_link">
           Music
         </Link>
-        <Link to="/connect" className="footer_link">
+        <Link href="/connect" className="footer_link">
           Socials
         </Link>
       </div>
       <div className="footer_right">
-        <Link to="/blog" className="footer_link">
+        <Link href="/blog" className="footer_link">
           Blog
         </Link>
       </div>

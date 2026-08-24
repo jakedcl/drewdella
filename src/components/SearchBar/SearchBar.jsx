@@ -1,6 +1,8 @@
+"use client";
+
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import "./SearchBar.css";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 import SearchIcon from "@mui/icons-material/Search";
 import { getSearchIndex, searchSite } from "../../lib/siteSearch";
 
@@ -21,7 +23,7 @@ function SearchBar({
 
   const searchBarRef = useRef(null);
   const inputRef = useRef(null);
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const query = inputValue.trim();
   const hits = useMemo(
@@ -95,7 +97,7 @@ function SearchBar({
       window.open(row.path, "_blank", "noopener,noreferrer");
       return;
     }
-    navigate(row.path);
+    router.push(row.path);
   };
 
   const handleKeyDown = (event) => {

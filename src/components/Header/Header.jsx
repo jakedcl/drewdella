@@ -1,5 +1,7 @@
+"use client";
+
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import Link from "next/link";
 import GoogleLogo from "../GoogleLogo/GoogleLogo";
 import SearchBar from "../SearchBar/SearchBar";
 import { client } from "../../lib/sanity";
@@ -46,7 +48,7 @@ const Header = ({ currentPath = "" }) => {
       </div>
       <div className="header-spacer" aria-hidden />
       <div className="header-links">
-        <Link to="/maps" className="header-link">
+        <Link href="/maps" className="header-link">
           Maps
         </Link>
         {shop.external ? (
@@ -59,7 +61,7 @@ const Header = ({ currentPath = "" }) => {
             Store
           </a>
         ) : (
-          <Link to={shop.href} className="header-link">
+          <Link href={shop.href} className="header-link">
             Store
           </Link>
         )}

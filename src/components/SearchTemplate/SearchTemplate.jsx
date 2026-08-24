@@ -1,3 +1,5 @@
+"use client";
+
 // SearchTemplate.jsx
 import "./SearchTemplate.css";
 import Header from "../Header/Header.jsx";

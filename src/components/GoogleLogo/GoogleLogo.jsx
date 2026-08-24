@@ -1,13 +1,14 @@
+"use client";
+
 import React from "react";
-import { Link } from "react-router-dom";
-import logo from "/dellagoogle.png";
+import Link from "next/link";
 import "./GoogleLogo.css";
 
 function GoogleLogo({ style }) {
   return (
     <div className="logo-container" style={style}>
-      <Link to="/home" aria-label="Drew Della home">
-        <img src={logo} alt="Google Logo" className="logo" />
+      <Link href="/home" aria-label="Drew Della home">
+        <img src="/dellagoogle.png" alt="Google Logo" className="logo" />
       </Link>
     </div>
   );

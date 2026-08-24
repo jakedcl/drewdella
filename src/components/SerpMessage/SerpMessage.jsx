@@ -1,5 +1,7 @@
+"use client";
+
 import React from "react";
-import { Link } from "react-router-dom";
+import Link from "next/link";
 import "./SerpMessage.css";
 
 /** Fan-facing empty / error / not-found chrome for SERP pages. */
@@ -18,7 +20,7 @@ export default function SerpMessage({
             <React.Fragment key={item.to || item.href || item.label}>
               {i > 0 ? " · " : null}
               {item.to ? (
-                <Link to={item.to}>{item.label}</Link>
+                <Link href={item.to}>{item.label}</Link>
               ) : (
                 <a href={item.href}>{item.label}</a>
               )}

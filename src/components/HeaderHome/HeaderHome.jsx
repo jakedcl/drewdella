@@ -1,5 +1,7 @@
+"use client";
+
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import Link from "next/link";
 import { client } from "../../lib/sanity";
 import { resolveShopDestination, DEFAULT_SHOP_PATH } from "../../lib/shopLink";
 import "./HeaderHome.css";
@@ -35,17 +37,17 @@ function HeaderHome() {
             Store
           </a>
         ) : (
-          <Link to={shop.href} className="header-home-link">
+          <Link href={shop.href} className="header-home-link">
             Store
           </Link>
         )}
       </div>
       <div style={{ display: "flex", flex: 2 }} />
       <div className="header-home-right">
-        <Link to="/lyrics" className="header-home-link">
+        <Link href="/lyrics" className="header-home-link">
           Lyrics
         </Link>
-        <Link to="/images" className="header-home-link">
+        <Link href="/images" className="header-home-link">
           Images
         </Link>
       </div>

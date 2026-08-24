@@ -1,10 +1,13 @@
+"use client";
+
 import React from "react";
 import { Tabs, Tab } from "@mui/material";
-import { Link, useLocation } from "react-router-dom";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import "./NavTabs.css";
 
 function NavTabs() {
-  const location = useLocation();
+  const pathname = usePathname();
 
   const pages = [
     { label: "All", path: "/" },
@@ -20,15 +23,15 @@ function NavTabs() {
 
   const currentTab = pages.findIndex((page) => {
     if (page.path === "/") {
-      return location.pathname === "/" || location.pathname === "/all";
+      return pathname === "/" || pathname === "/all";
     }
-    if (page.path === "/lyrics" && location.pathname.startsWith("/lyrics")) {
+    if (page.path === "/lyrics" && pathname.startsWith("/lyrics")) {
       return true;
     }
-    if (page.path === "/blog" && location.pathname.startsWith("/blog")) {
+    if (page.path === "/blog" && pathname.startsWith("/blog")) {
       return true;
     }
-    return page.path === location.pathname;
+    return page.path === pathname;
   });
 
   return (
@@ -64,7 +67,7 @@ function NavTabs() {
           <Tab
             key={page.label}
             component={Link}
-            to={page.path}
+            href={page.path}
             label={page.label}
           />
         ))}

@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import "./HangoutsChat.css";
 
@@ -88,7 +90,7 @@ function HangoutsChat() {
       const res = await fetch("/api/chat");
       const type = res.headers.get("content-type") || "";
       if (!res.ok || !type.includes("application/json")) {
-        throw new Error("Chat isn’t live on this deploy yet.");
+        throw new Error("Couldn’t load chat right now.");
       }
       const data = await res.json();
       mergeMessages(data.messages || []);

@@ -4,8 +4,5 @@
       "path": "/api/videos-sync",
       "schedule": "0 14 * * *"
     }
-  ],
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
