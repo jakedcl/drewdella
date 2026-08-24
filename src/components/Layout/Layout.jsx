@@ -2,6 +2,7 @@ import { Outlet, useLocation } from "react-router-dom";
 import { Box } from "@mui/material";
 import NavTabs from "../NavTabs/NavTabs.jsx";
 import Header from "../Header/Header.jsx";
+import HangoutsChat from "../HangoutsChat/HangoutsChat.jsx";
 import "./Layout.css";
 
 const Layout = () => {
@@ -18,6 +19,7 @@ const Layout = () => {
       >
         <Outlet />
       </Box>
+      <HangoutsChat />
     </div>
   );
 };

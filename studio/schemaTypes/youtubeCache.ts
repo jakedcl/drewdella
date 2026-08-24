@@ -33,6 +33,17 @@ export default defineType({
               title: 'Published',
               type: 'datetime',
             }),
+            defineField({name: 'duration', title: 'Duration', type: 'string'}),
+            defineField({
+              name: 'channelTitle',
+              title: 'Channel',
+              type: 'string',
+            }),
+            defineField({
+              name: 'description',
+              title: 'Description',
+              type: 'text',
+            }),
           ],
           preview: {
             select: {

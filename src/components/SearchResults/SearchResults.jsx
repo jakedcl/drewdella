@@ -165,7 +165,7 @@ function SerpRelated() {
       location.pathname !== item.path &&
       !location.pathname.startsWith(`${item.path}/`)
     );
-  });
+  }).filter((item, i, list) => list.findIndex((row) => row.path === item.path) === i);
 
   if (!items.length) return null;
 
@@ -233,11 +233,38 @@ export function SearchResult({
   );
 }
 
+function videoDescriptionSnippet(description, title, max = 140) {
+  if (!description) return "";
+  const skip = (line) => {
+    const text = line.trim();
+    if (!text) return true;
+    if (title && text.toLowerCase() === String(title).toLowerCase()) return true;
+    if (/^provided to youtube/i.test(text)) return true;
+    if (/^https?:\/\//i.test(text)) return true;
+    return false;
+  };
+  const line = String(description)
+    .split(/\n+/)
+    .map((part) => part.trim())
+    .find((part) => !skip(part));
+  return snippetFromPortableText(line, max);
+}
+
 export function VideoResult({ video }) {
   if (!video) return null;
 
   const href = `https://www.youtube.com/watch?v=${video.id}`;
   const dateLabel = formatListingDate(video.publishedAt);
+  const channel = video.channelTitle || "Drew Della";
+  const meta = [
+    video.duration,
+    dateLabel
+      ? `Uploaded by ${channel} on ${dateLabel}`
+      : `Uploaded by ${channel}`,
+  ]
+    .filter(Boolean)
+    .join(" - ");
+  const description = videoDescriptionSnippet(video.description, video.title);
 
   return (
     <div className="video-result">
@@ -246,8 +273,13 @@ export function VideoResult({ video }) {
         href={href}
         target="_blank"
         rel="noopener noreferrer"
+        aria-label={`Play ${video.title}`}
       >
         <img src={video.thumbnail} alt="" />
+        <span className="video-result-play" aria-hidden />
+        {video.duration ? (
+          <span className="video-result-time">{video.duration}</span>
+        ) : null}
       </a>
       <div className="video-result-copy">
         <a
@@ -264,7 +296,10 @@ export function VideoResult({ video }) {
             ▼
           </span>
         </cite>
-        {dateLabel && <p className="serp-snippet">{dateLabel}</p>}
+        {meta ? <p className="serp-snippet video-result-meta">{meta}</p> : null}
+        {description ? (
+          <p className="serp-snippet video-result-desc">{description}</p>
+        ) : null}
       </div>
     </div>
   );

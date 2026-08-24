@@ -115,21 +115,24 @@ function ImagesOneBox({ images }) {
       </cite>
       {thumbs.length > 0 && (
         <div className="images-onebox-strip">
-          {thumbs.map((img) => (
-            <Link
-              key={img.id || img.asset._id}
-              className="images-onebox-frame"
-              to="/images"
-              aria-label={img.alt || "View images"}
-            >
-              <img
-                src={urlFor(img.asset).width(240).height(180).auto("format").url()}
-                alt={img.alt || ""}
-                width={90}
-                height={68}
-              />
-            </Link>
-          ))}
+          {thumbs.map((img) => {
+            const imgId = img.id || img.asset?._id;
+            return (
+              <Link
+                key={imgId}
+                className="images-onebox-frame"
+                to={imgId ? `/images?img=${encodeURIComponent(imgId)}` : "/images"}
+                aria-label={img.alt || "View image"}
+              >
+                <img
+                  src={urlFor(img.asset).width(240).height(180).auto("format").url()}
+                  alt={img.alt || ""}
+                  width={90}
+                  height={68}
+                />
+              </Link>
+            );
+          })}
         </div>
       )}
       <Link className="images-onebox-more" to="/images">
