@@ -1,5 +1,8 @@
+"use client";
+
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { searchSuggestions } from "../../constants/searchSuggestions";
 import "./SearchResults.css";
 
@@ -155,15 +158,15 @@ export function SerpFooter() {
 }
 
 function SerpRelated() {
-  const location = useLocation();
+  const pathname = usePathname();
   const items = searchSuggestions.filter((item) => {
     if (!item?.path || !item?.name) return false;
     if (item.path === "/") {
-      return location.pathname !== "/" && location.pathname !== "/all";
+      return pathname !== "/" && pathname !== "/all";
     }
     return (
-      location.pathname !== item.path &&
-      !location.pathname.startsWith(`${item.path}/`)
+      pathname !== item.path &&
+      !pathname.startsWith(`${item.path}/`)
     );
   }).filter((item, i, list) => list.findIndex((row) => row.path === item.path) === i);
 
@@ -175,7 +178,7 @@ function SerpRelated() {
       <ul>
         {items.map((item) => (
           <li key={item.name}>
-            <Link to={item.path}>{item.name}</Link>
+            <Link href={item.path}>{item.name}</Link>
           </li>
         ))}
       </ul>
@@ -193,7 +196,7 @@ export function SearchResult({
 }) {
   const className = "serp-title";
   const titleEl = internal ? (
-    <Link className={className} to={href}>
+    <Link className={className} href={href}>
       {title}
     </Link>
   ) : (
