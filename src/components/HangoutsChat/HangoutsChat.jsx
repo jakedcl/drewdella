@@ -45,26 +45,25 @@ function formatTime(value) {
 }
 
 function HangoutsChat() {
-  const [open, setOpen] = useState(() => {
-    try {
-      return localStorage.getItem(OPEN_KEY) === "1";
-    } catch {
-      return false;
-    }
-  });
-  const [name, setName] = useState(() => {
-    try {
-      return localStorage.getItem(NAME_KEY) || "";
-    } catch {
-      return "";
-    }
-  });
+  const [ready, setReady] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState("");
   const [draft, setDraft] = useState("");
   const [messages, setMessages] = useState([]);
   const [status, setStatus] = useState("");
   const [sending, setSending] = useState(false);
   const listRef = useRef(null);
   const stickBottom = useRef(true);
+
+  useEffect(() => {
+    try {
+      setOpen(localStorage.getItem(OPEN_KEY) === "1");
+      setName(localStorage.getItem(NAME_KEY) || "");
+    } catch {
+      /* ignore */
+    }
+    setReady(true);
+  }, []);
 
   const scrollToBottom = useCallback(() => {
     const el = listRef.current;
@@ -101,23 +100,27 @@ function HangoutsChat() {
   }, [mergeMessages]);
 
   useEffect(() => {
+    if (!ready) return;
     try {
       localStorage.setItem(OPEN_KEY, open ? "1" : "0");
     } catch {
       /* ignore */
     }
-  }, [open]);
+  }, [open, ready]);
 
   useEffect(() => {
+    if (!ready || !name) return;
     try {
-      if (name) localStorage.setItem(NAME_KEY, name);
+      localStorage.setItem(NAME_KEY, name);
     } catch {
       /* ignore */
     }
-  }, [name]);
+  }, [name, ready]);
+
+  const showOpen = ready && open;
 
   useEffect(() => {
-    if (!open) return undefined;
+    if (!showOpen) return undefined;
 
     loadMessages();
     const tick = () => {
@@ -133,12 +136,12 @@ function HangoutsChat() {
       window.clearInterval(id);
       document.removeEventListener("visibilitychange", onVis);
     };
-  }, [open, loadMessages]);
+  }, [showOpen, loadMessages]);
 
   useEffect(() => {
-    if (!open || !stickBottom.current) return;
+    if (!showOpen || !stickBottom.current) return;
     scrollToBottom();
-  }, [messages, open, scrollToBottom]);
+  }, [messages, showOpen, scrollToBottom]);
 
   const onListScroll = () => {
     const el = listRef.current;
@@ -198,8 +201,8 @@ function HangoutsChat() {
   };
 
   return (
-    <div className={`hangouts${open ? " hangouts--open" : ""}`}>
-      {open ? (
+    <div className={`hangouts${showOpen ? " hangouts--open" : ""}`}>
+      {showOpen ? (
         <div className="hangouts-window" role="dialog" aria-label="Chat">
           <div className="hangouts-bar">
             <span className="hangouts-bar-dot" aria-hidden />
