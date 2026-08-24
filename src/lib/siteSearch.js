@@ -8,7 +8,7 @@ const PAGES = [
     href: "/",
     source: "All",
     internal: true,
-    haystack: "official site home all music lyrics photos videos blog live shows",
+    haystack: "official site home all music lyrics videos blog live shows chat hangouts",
   },
   {
     id: "page-home",
@@ -32,7 +32,7 @@ const PAGES = [
     href: "/images",
     source: "Images",
     internal: true,
-    haystack: "photos gallery pictures",
+    haystack: "photos pics pictures gallery photo",
   },
   {
     id: "page-videos",
@@ -225,14 +225,15 @@ async function loadIndex() {
   for (const item of data?.images || []) {
     const label = item.caption || item.alt;
     if (!label) continue;
+    const imgId = item.id || "";
     docs.push(
       doc({
-        id: item.id || label,
+        id: imgId || label,
         title: label,
-        href: "/images",
+        href: imgId ? `/images?img=${encodeURIComponent(imgId)}` : "/images",
         source: "Images",
         internal: true,
-        haystack: `${item.caption || ""} ${item.alt || ""}`,
+        haystack: `${item.caption || ""} ${item.alt || ""} photos pics photo picture`,
         snippet: "Photo",
       })
     );
@@ -282,6 +283,7 @@ function scoreDoc(item, query) {
   else if (title.includes(q)) score += 50;
 
   if (hay.includes(q)) score += 18;
+  if (item.id === "page-images" && hay.includes(q)) score += 40;
 
   for (const word of q.split(/\s+/).filter(Boolean)) {
     if (title.includes(word)) score += 10;

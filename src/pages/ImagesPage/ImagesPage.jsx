@@ -5,6 +5,7 @@ import React, {
   useMemo,
   useRef,
 } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Masonry } from "@mui/lab";
 import { CircularProgress, Box } from "@mui/material";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
@@ -17,6 +18,10 @@ import SerpMessage from "../../components/SerpMessage/SerpMessage.jsx";
 import "./ImagesPage.css";
 
 const SOURCE_NAME = "drewdella.com";
+
+function imageKey(image) {
+  return image?.id || image?.asset?._id || "";
+}
 
 function shuffle(items) {
   const next = [...items];
@@ -45,6 +50,7 @@ function imageLabel(image) {
 }
 
 function ImagesPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -57,14 +63,28 @@ function ImagesPage() {
   const closeBtnRef = useRef(null);
   const panelRef = useRef(null);
   const heroLoadId = useRef(0);
+  const openedFromQuery = useRef(false);
+
+  const syncImgParam = useCallback(
+    (image) => {
+      const key = imageKey(image);
+      if (!key) {
+        setSearchParams({}, { replace: true });
+        return;
+      }
+      setSearchParams({ img: key }, { replace: true });
+    },
+    [setSearchParams]
+  );
 
   const openImage = useCallback(
     (image) => {
       setHeroReady(false);
       setActiveImage(image);
-      setSuggested(shuffle(images.filter((img) => img.id !== image.id)));
+      setSuggested(shuffle(images.filter((img) => imageKey(img) !== imageKey(image))));
+      syncImgParam(image);
     },
-    [images]
+    [images, syncImgParam]
   );
 
   const closePanel = useCallback(() => {
@@ -74,7 +94,8 @@ function ImagesPage() {
     setHeroSrc("");
     setHeroReady(false);
     setActionNote("");
-  }, []);
+    setSearchParams({}, { replace: true });
+  }, [setSearchParams]);
 
   const activeUrl = useMemo(
     () => (activeImage ? hiResImageUrl(activeImage.asset) : ""),
@@ -207,6 +228,24 @@ function ImagesPage() {
     fetchImages();
   }, []);
 
+  /* Open panel when arriving from All (or a shared ?img= link) */
+  useEffect(() => {
+    if (loading || !images.length || openedFromQuery.current) return;
+    const want = searchParams.get("img");
+    if (!want) return;
+    const match = images.find(
+      (img) => imageKey(img) === want || img.asset?._id === want
+    );
+    if (match) {
+      openedFromQuery.current = true;
+      setHeroReady(false);
+      setActiveImage(match);
+      setSuggested(
+        shuffle(images.filter((img) => imageKey(img) !== imageKey(match)))
+      );
+    }
+  }, [loading, images, searchParams]);
+
   useEffect(() => {
     if (!activeImage) return undefined;
 
@@ -284,12 +323,14 @@ function ImagesPage() {
           sx={{ ml: 0, mr: 0, width: "100%" }}
         >
           {images.map((image) => (
-            <div key={image.id} className="images-result">
+            <div key={imageKey(image)} className="images-result">
               {image.asset && (
                 <button
                   type="button"
                   className={`images-thumb${
-                    activeImage?.id === image.id ? " images-thumb--active" : ""
+                    imageKey(activeImage) === imageKey(image)
+                      ? " images-thumb--active"
+                      : ""
                   }`}
                   onClick={() => openImage(image)}
                   aria-label={
@@ -355,7 +396,7 @@ function ImagesPage() {
 
             <div className="images-panel-hero">
               <img
-                key={activeImage.id}
+                key={imageKey(activeImage)}
                 src={heroSrc || thumbUrl}
                 alt={activeImage.alt || "Gallery image"}
                 draggable={false}
@@ -424,7 +465,7 @@ function ImagesPage() {
               <div className="images-panel-suggested">
                 <Masonry columns={2} spacing={1.5}>
                   {suggested.map((image) => (
-                    <div key={image.id} className="images-suggested-card">
+                    <div key={imageKey(image)} className="images-suggested-card">
                       <button
                         type="button"
                         className="images-suggested-thumb"
