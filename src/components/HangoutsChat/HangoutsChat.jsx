@@ -48,17 +48,21 @@ function HangoutsChat() {
   const [ready, setReady] = useState(false);
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
+  const [nameLocked, setNameLocked] = useState(false);
   const [draft, setDraft] = useState("");
   const [messages, setMessages] = useState([]);
   const [status, setStatus] = useState("");
   const [sending, setSending] = useState(false);
   const listRef = useRef(null);
   const stickBottom = useRef(true);
+  const inputRef = useRef(null);
 
   useEffect(() => {
     try {
       setOpen(localStorage.getItem(OPEN_KEY) === "1");
-      setName(localStorage.getItem(NAME_KEY) || "");
+      const saved = localStorage.getItem(NAME_KEY) || "";
+      setName(saved);
+      setNameLocked(Boolean(saved.trim()));
     } catch {
       /* ignore */
     }
@@ -143,14 +147,34 @@ function HangoutsChat() {
     scrollToBottom();
   }, [messages, showOpen, scrollToBottom]);
 
+  useEffect(() => {
+    if (!showOpen) return;
+    const t = window.setTimeout(() => inputRef.current?.focus(), 180);
+    return () => window.clearTimeout(t);
+  }, [showOpen]);
+
   const onListScroll = () => {
     const el = listRef.current;
     if (!el) return;
     stickBottom.current = el.scrollHeight - el.scrollTop - el.clientHeight < 48;
   };
 
+  const lockName = () => {
+    const cleaned = name.trim().slice(0, MAX_NAME);
+    if (!cleaned) {
+      setStatus("Pick a name first.");
+      return false;
+    }
+    setName(cleaned);
+    setNameLocked(true);
+    setStatus("");
+    return true;
+  };
+
   const send = async (event) => {
     event.preventDefault();
+    if (!nameLocked && !lockName()) return;
+
     const cleanedName = name.trim().slice(0, MAX_NAME);
     const cleanedBody = draft.trim().slice(0, MAX_BODY);
     if (!cleanedName) {
@@ -200,13 +224,17 @@ function HangoutsChat() {
     }
   };
 
+  const myName = name.trim().toLowerCase();
+
   return (
     <div className={`hangouts${showOpen ? " hangouts--open" : ""}`}>
       {showOpen ? (
         <div className="hangouts-window" role="dialog" aria-label="Chat">
           <div className="hangouts-bar">
             <span className="hangouts-bar-dot" aria-hidden />
-            <span className="hangouts-bar-title">Chat</span>
+            <div className="hangouts-bar-copy">
+              <span className="hangouts-bar-title">Hangouts</span>
+            </div>
             <button
               type="button"
               className="hangouts-bar-min"
@@ -223,47 +251,96 @@ function HangoutsChat() {
             onScroll={onListScroll}
           >
             {messages.length === 0 ? (
-              <p className="hangouts-empty">
-                Nobody’s here yet. Say hi — it sticks around.
-              </p>
+              <div className="hangouts-empty">
+                <span className="hangouts-empty-icon" aria-hidden />
+                <p>Nobody’s talking yet.</p>
+                <p>Say hi — messages stick around.</p>
+              </div>
             ) : (
-              messages.map((msg) => (
-                <div
-                  key={msg.id}
-                  className={`hangouts-row${msg.pending ? " hangouts-row--pending" : ""}`}
-                >
-                  <span
-                    className="hangouts-avatar"
-                    style={{ background: avatarColor(msg.name) }}
-                    aria-hidden
+              messages.map((msg, i) => {
+                const prev = messages[i - 1];
+                const sameAsPrev =
+                  prev &&
+                  prev.name.trim().toLowerCase() === msg.name.trim().toLowerCase();
+                const mine =
+                  myName && msg.name.trim().toLowerCase() === myName;
+                return (
+                  <div
+                    key={msg.id}
+                    className={`hangouts-row${sameAsPrev ? " hangouts-row--continued" : ""}${
+                      msg.pending ? " hangouts-row--pending" : ""
+                    }${mine ? " hangouts-row--mine" : ""}`}
                   >
-                    {initialOf(msg.name)}
-                  </span>
-                  <div className="hangouts-bubble">
-                    <div className="hangouts-meta">
-                      <strong>{msg.name}</strong>
-                      <span>{formatTime(msg.createdAt)}</span>
+                    {sameAsPrev ? (
+                      <span className="hangouts-avatar hangouts-avatar--spacer" aria-hidden />
+                    ) : (
+                      <span
+                        className="hangouts-avatar"
+                        style={{ background: avatarColor(msg.name) }}
+                        aria-hidden
+                      >
+                        {initialOf(msg.name)}
+                      </span>
+                    )}
+                    <div className="hangouts-bubble">
+                      {!sameAsPrev ? (
+                        <div className="hangouts-meta">
+                          <strong>{msg.name}</strong>
+                          <span>{formatTime(msg.createdAt)}</span>
+                        </div>
+                      ) : null}
+                      <p>{msg.body}</p>
+                      {sameAsPrev ? (
+                        <span className="hangouts-time-inline">
+                          {formatTime(msg.createdAt)}
+                        </span>
+                      ) : null}
                     </div>
-                    <p>{msg.body}</p>
                   </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
 
           <form className="hangouts-compose" onSubmit={send}>
-            <input
-              className="hangouts-name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value.slice(0, MAX_NAME))}
-              placeholder="Your name"
-              maxLength={MAX_NAME}
-              autoComplete="nickname"
-              aria-label="Your name"
-            />
+            {nameLocked ? (
+              <div className="hangouts-identity">
+                <span
+                  className="hangouts-avatar hangouts-avatar--sm"
+                  style={{ background: avatarColor(name) }}
+                  aria-hidden
+                >
+                  {initialOf(name)}
+                </span>
+                <span className="hangouts-identity-label">
+                  Chatting as <strong>{name}</strong>
+                </span>
+                <button
+                  type="button"
+                  className="hangouts-identity-edit"
+                  onClick={() => setNameLocked(false)}
+                >
+                  Change
+                </button>
+              </div>
+            ) : (
+              <input
+                className="hangouts-name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value.slice(0, MAX_NAME))}
+                onBlur={() => {
+                  if (name.trim()) lockName();
+                }}
+                placeholder="Your name"
+                maxLength={MAX_NAME}
+                autoComplete="nickname"
+                aria-label="Your name"
+              />
+            )}
             <div className="hangouts-input-row">
               <input
+                ref={inputRef}
                 className="hangouts-input"
                 type="text"
                 value={draft}
@@ -288,13 +365,26 @@ function HangoutsChat() {
 
       <button
         type="button"
-        className="hangouts-launcher"
+        className={`hangouts-launcher${showOpen ? " hangouts-launcher--open" : ""}`}
         onClick={() => setOpen((v) => !v)}
-        aria-label={open ? "Hide chat" : "Open chat"}
+        aria-label={open ? "Hide chat" : "Open Hangouts"}
         aria-expanded={open}
       >
-        <span className="hangouts-launcher-icon" aria-hidden />
-        <span className="hangouts-launcher-label">Chat</span>
+        <span className="hangouts-launcher-mark" aria-hidden>
+          {showOpen ? (
+            <svg viewBox="0 0 24 24" className="hangouts-launcher-x">
+              <path
+                fill="currentColor"
+                d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
+              />
+            </svg>
+          ) : (
+            <span className="hangouts-launcher-icon" />
+          )}
+        </span>
+        <span className="hangouts-launcher-label">
+          {showOpen ? "Close" : "Hangouts"}
+        </span>
       </button>
     </div>
   );
