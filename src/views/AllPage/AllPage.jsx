@@ -17,14 +17,16 @@ import {
   blogPreviewSnippet,
   socialSnippet,
 } from "../../components/SearchResults/SearchResults.jsx";
+import { safeHref } from "../../lib/safeHref.js";
 import "./AllPage.css";
 
 function VintagePopup({ title, lines, cta, href }) {
   const [phase, setPhase] = useState("off");
-  const isInternal = typeof href === "string" && href.startsWith("/");
+  const safe = safeHref(href) || "/music";
+  const isInternal = safe.startsWith("/");
   const ctaProps = isInternal
-    ? { href }
-    : { href, target: "_blank", rel: "noopener noreferrer" };
+    ? { href: safe }
+    : { href: safe, target: "_blank", rel: "noopener noreferrer" };
   const CtaTag = isInternal ? Link : "a";
   const tucked = phase === "peek";
 

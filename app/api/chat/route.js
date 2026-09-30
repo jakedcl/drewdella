@@ -1,6 +1,25 @@
 import { createMessage, listMessages } from "../../../lib/chat.js";
+import { clientIp, rateLimit } from "../../../lib/rateLimit.js";
 
-export async function GET() {
+const POST_LIMIT = { limit: 8, windowMs: 60_000 };
+const GET_LIMIT = { limit: 45, windowMs: 60_000 };
+
+function jsonError(status, message, extraHeaders = {}) {
+  return Response.json(
+    { error: message },
+    { status, headers: { "Cache-Control": "no-store", ...extraHeaders } }
+  );
+}
+
+export async function GET(request) {
+  const ip = clientIp(request);
+  const limited = rateLimit(`chat:get:${ip}`, GET_LIMIT);
+  if (!limited.ok) {
+    return jsonError(429, "Too many requests. Try again shortly.", {
+      "Retry-After": String(limited.retryAfter),
+    });
+  }
+
   try {
     const messages = await listMessages();
     return Response.json(
@@ -9,14 +28,19 @@ export async function GET() {
     );
   } catch (error) {
     console.error("Chat list error:", error);
-    return Response.json(
-      { error: "Failed to load chat" },
-      { status: 500, headers: { "Cache-Control": "no-store" } }
-    );
+    return jsonError(500, "Failed to load chat");
   }
 }
 
 export async function POST(request) {
+  const ip = clientIp(request);
+  const limited = rateLimit(`chat:post:${ip}`, POST_LIMIT);
+  if (!limited.ok) {
+    return jsonError(429, "Too many messages. Slow down.", {
+      "Retry-After": String(limited.retryAfter),
+    });
+  }
+
   try {
     const payload = await request.json().catch(() => ({}));
     const message = await createMessage({
@@ -29,12 +53,11 @@ export async function POST(request) {
     );
   } catch (error) {
     console.error("Chat post error:", error);
-    const status =
-      error.status ||
-      (error.message?.includes("SANITY_API_TOKEN") ? 500 : 400);
-    return Response.json(
-      { error: error.message || "Failed to post message" },
-      { status, headers: { "Cache-Control": "no-store" } }
-    );
+    const status = error.status === 400 ? 400 : 500;
+    const message =
+      status === 400
+        ? error.message || "Invalid message"
+        : "Failed to post message";
+    return jsonError(status, message);
   }
 }
