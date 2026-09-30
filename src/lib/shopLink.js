@@ -1,3 +1,5 @@
+import { safeHref } from "./safeHref.js";
+
 /** Resolve where Store / Shopping should send people. */
 
 export const DEFAULT_SHOP_PATH = "/shop";
@@ -17,11 +19,15 @@ function isOwnShopUrl(url) {
 
 /**
  * @returns {{ href: string, external: boolean }}
- * Same-origin /shop → SPA path. Anything else → external URL as stored in Sanity.
+ * Same-origin /shop → SPA path. External only if http(s).
  */
 export function resolveShopDestination(sanityUrl) {
   if (!sanityUrl || isOwnShopUrl(sanityUrl)) {
     return { href: DEFAULT_SHOP_PATH, external: false };
   }
-  return { href: String(sanityUrl).trim(), external: true };
+  const href = safeHref(sanityUrl);
+  if (!href || href.startsWith("/")) {
+    return { href: DEFAULT_SHOP_PATH, external: false };
+  }
+  return { href, external: true };
 }

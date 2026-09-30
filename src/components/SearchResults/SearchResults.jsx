@@ -4,6 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { searchSuggestions } from "../../constants/searchSuggestions";
+import { safeHref } from "../../lib/safeHref.js";
 import "./SearchResults.css";
 
 const OWN_HOST = "drewdella.com";
@@ -195,14 +196,17 @@ export function SearchResult({
   sponsored = false,
 }) {
   const className = "serp-title";
-  const titleEl = internal ? (
-    <Link className={className} href={href}>
+  const safe = safeHref(href);
+  const titleEl = !safe ? (
+    <span className={className}>{title}</span>
+  ) : internal || safe.startsWith("/") ? (
+    <Link className={className} href={safe}>
       {title}
     </Link>
   ) : (
     <a
       className={className}
-      href={href}
+      href={safe}
       target="_blank"
       rel="noopener noreferrer"
     >
@@ -210,7 +214,7 @@ export function SearchResult({
     </a>
   );
 
-  const citeText = sponsored ? formatAdCite(href) : cite;
+  const citeText = sponsored ? formatAdCite(safe || href) : cite;
   const citeEl = citeText ? (
     <cite className="serp-cite">
       {sponsored && (
