@@ -1,4 +1,8 @@
-import { createMessage, listMessages } from "../../../lib/chat.js";
+import {
+  consumeChatPostQuota,
+  createMessage,
+  listMessages,
+} from "../../../lib/chat.js";
 import { clientIp, rateLimit } from "../../../lib/rateLimit.js";
 
 const POST_LIMIT = { limit: 8, windowMs: 60_000 };
@@ -34,11 +38,26 @@ export async function GET(request) {
 
 export async function POST(request) {
   const ip = clientIp(request);
-  const limited = rateLimit(`chat:post:${ip}`, POST_LIMIT);
-  if (!limited.ok) {
+
+  // Fast path on a warm isolate (best-effort).
+  const local = rateLimit(`chat:post:${ip}`, POST_LIMIT);
+  if (!local.ok) {
     return jsonError(429, "Too many messages. Slow down.", {
-      "Retry-After": String(limited.retryAfter),
+      "Retry-After": String(local.retryAfter),
     });
+  }
+
+  // Shared path — works across Vercel instances.
+  try {
+    const shared = await consumeChatPostQuota(ip);
+    if (!shared.ok) {
+      return jsonError(429, "Too many messages. Slow down.", {
+        "Retry-After": String(shared.retryAfter),
+      });
+    }
+  } catch (error) {
+    console.error("Chat quota error:", error);
+    return jsonError(500, "Failed to post message");
   }
 
   try {
