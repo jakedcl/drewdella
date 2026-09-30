@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useVisualViewportBottom } from "../../lib/useVisualViewportBottom";
 import "./HangoutsChat.css";
 
 const POLL_MS = 4000;
@@ -225,9 +226,13 @@ function HangoutsChat() {
   };
 
   const myName = name.trim().toLowerCase();
+  const dockBottom = useVisualViewportBottom(12);
 
   return (
-    <div className={`hangouts${showOpen ? " hangouts--open" : ""}`}>
+    <div
+      className={`hangouts${showOpen ? " hangouts--open" : ""}`}
+      style={{ bottom: dockBottom }}
+    >
       {showOpen ? (
         <div className="hangouts-window" role="dialog" aria-label="Chat">
           <div className="hangouts-bar">

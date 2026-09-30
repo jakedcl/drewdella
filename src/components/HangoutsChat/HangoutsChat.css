@@ -2,7 +2,8 @@
 .hangouts {
   position: fixed;
   left: 12px;
-  bottom: 12px;
+  /* bottom set via useVisualViewportBottom so mobile chrome can't clip it */
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
   z-index: 1200;
   display: flex;
   flex-direction: column;
@@ -420,7 +421,6 @@
 @media (max-width: 768px) {
   .hangouts {
     left: 8px;
-    bottom: 8px;
   }
 
   .hangouts-window {

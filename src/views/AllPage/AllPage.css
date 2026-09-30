@@ -51,7 +51,8 @@
 .win-popup-dock {
   position: fixed;
   right: 12px;
-  bottom: 12px;
+  /* bottom set via useVisualViewportBottom so mobile chrome can't clip it */
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
   z-index: 1250;
   width: min(340px, calc(100vw - 24px));
   transform: translate(120%, 80%);

@@ -17,10 +17,12 @@ import {
   blogPreviewSnippet,
   socialSnippet,
 } from "../../components/SearchResults/SearchResults.jsx";
+import { useVisualViewportBottom } from "../../lib/useVisualViewportBottom";
 import "./AllPage.css";
 
 function VintagePopup({ title, lines, cta, href }) {
   const [phase, setPhase] = useState("off");
+  const dockBottom = useVisualViewportBottom(12);
   const isInternal = typeof href === "string" && href.startsWith("/");
   const ctaProps = isInternal
     ? { href }
@@ -43,6 +45,7 @@ function VintagePopup({ title, lines, cta, href }) {
   return (
     <div
       className={`win-popup-dock is-${phase}`}
+      style={{ bottom: dockBottom }}
       onClick={tucked ? () => setPhase("open") : undefined}
       role={tucked ? "button" : undefined}
       tabIndex={tucked ? 0 : undefined}
