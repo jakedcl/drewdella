@@ -14,6 +14,7 @@ import {
   datedSnippet,
 } from "../../components/SearchResults/SearchResults.jsx";
 import SerpMessage from "../../components/SerpMessage/SerpMessage.jsx";
+import { safeHref } from "../../lib/safeHref.js";
 import "./BlogPage.css";
 
 /** CSS max widths — must stay in sync with BlogPage.css */
@@ -164,17 +165,25 @@ function BlogPage() {
                                     // Handle annotations (like links) - mark is a key
                                     const markDef = markDefs.find(def => def._key === mark);
                                     if (markDef && markDef._type === 'link') {
-                                        text = (
-                                            <a
-                                                key={`${childIndex}-link`}
-                                                href={markDef.href}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="blog-link"
-                                            >
-                                                {text}
-                                            </a>
-                                        );
+                                        const href = safeHref(markDef.href);
+                                        if (href) {
+                                            const external = !href.startsWith("/");
+                                            text = (
+                                                <a
+                                                    key={`${childIndex}-link`}
+                                                    href={href}
+                                                    {...(external
+                                                        ? {
+                                                            target: "_blank",
+                                                            rel: "noopener noreferrer",
+                                                          }
+                                                        : {})}
+                                                    className="blog-link"
+                                                >
+                                                    {text}
+                                                </a>
+                                            );
+                                        }
                                     }
                                 }
                             });
