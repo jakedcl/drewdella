@@ -39,7 +39,6 @@ export async function GET(request) {
 export async function POST(request) {
   const ip = clientIp(request);
 
-  // Fast path on a warm isolate (best-effort).
   const local = rateLimit(`chat:post:${ip}`, POST_LIMIT);
   if (!local.ok) {
     return jsonError(429, "Too many messages. Slow down.", {
@@ -47,7 +46,6 @@ export async function POST(request) {
     });
   }
 
-  // Shared path — works across Vercel instances.
   try {
     const shared = await consumeChatPostQuota(ip);
     if (!shared.ok) {

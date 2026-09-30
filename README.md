@@ -285,16 +285,3 @@ drewdella/
 ├── vercel.json
 └── .env.example
 ```
-
----
-
-## Showing this to people
-
-1. **The gag** — homepage is a Google results page for the artist  
-2. **The CMS split** — Studio is the catalog; the SERP queries it  
-3. **The quota move** — daily YouTube snapshot, never per visitor  
-4. **The token rule** — `NEXT_PUBLIC_*` is public; writes + cron stay server-side  
-5. **Key restrictions** — Mapbox URLs, YouTube API allowlist, Sensitive env vars  
-6. **Hobby as a design constraint** — one cron, one snapshot, CDN reads  
-
-That’s the strategy. The files above are where it lives.
