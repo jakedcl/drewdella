@@ -57,6 +57,7 @@ function HangoutsChat() {
   const listRef = useRef(null);
   const stickBottom = useRef(true);
   const inputRef = useRef(null);
+  const dockBottom = useVisualViewportBottom(12);
 
   useEffect(() => {
     try {
@@ -226,7 +227,6 @@ function HangoutsChat() {
   };
 
   const myName = name.trim().toLowerCase();
-  const dockBottom = useVisualViewportBottom(12);
 
   return (
     <div
