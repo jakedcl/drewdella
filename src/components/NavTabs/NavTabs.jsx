@@ -94,7 +94,7 @@ function NavTabs() {
             textTransform: "none",
             minHeight: 40,
             minWidth: "auto",
-            padding: "0 12px",
+            padding: "0 8px",
             fontSize: 13,
             fontFamily: "Arial, Helvetica, sans-serif",
             color: "#5f6368",
