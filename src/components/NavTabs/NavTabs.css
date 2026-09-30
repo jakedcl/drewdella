@@ -1,12 +1,16 @@
 .nav-tabs {
   position: relative;
-  /* Flush to viewport so edge fades hit the screen edge */
   padding: 0;
   display: flex;
   flex-direction: row;
   align-items: flex-end;
+  width: 100%;
   border-bottom: 1px solid #ebebeb;
   overflow: hidden;
+}
+
+.nav-tabs .MuiTabs-root {
+  width: 100%;
 }
 
 /* Keep first/last labels off the hard edge while fades stay flush */
@@ -14,29 +18,30 @@
   padding-inline: 12px;
 }
 
-/* Longer, denser edge fade — solid white at the viewport edge */
+/*
+  Clean edge fade (no backdrop-filter — that was making the gray smudge boxes).
+  Solid white at the viewport edge → transparent inward.
+*/
 .nav-tabs::before,
 .nav-tabs::after {
   content: "";
   position: absolute;
   top: 0;
   bottom: 1px;
-  width: 4.5rem;
+  width: 3.5rem;
   pointer-events: none;
   z-index: 2;
   opacity: 0;
-  transition: opacity 0.18s ease;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  transition: opacity 0.15s ease;
 }
 
 .nav-tabs::before {
   left: 0;
   background: linear-gradient(
     to right,
-    rgba(255, 255, 255, 1) 0%,
-    rgba(255, 255, 255, 0.92) 28%,
-    rgba(255, 255, 255, 0.55) 58%,
+    #fff 0%,
+    #fff 18%,
+    rgba(255, 255, 255, 0.75) 48%,
     rgba(255, 255, 255, 0) 100%
   );
 }
@@ -45,9 +50,9 @@
   right: 0;
   background: linear-gradient(
     to left,
-    rgba(255, 255, 255, 1) 0%,
-    rgba(255, 255, 255, 0.92) 28%,
-    rgba(255, 255, 255, 0.55) 58%,
+    #fff 0%,
+    #fff 18%,
+    rgba(255, 255, 255, 0.75) 48%,
     rgba(255, 255, 255, 0) 100%
   );
 }
@@ -64,6 +69,6 @@
 
   .nav-tabs::before,
   .nav-tabs::after {
-    width: 3.75rem;
+    width: 2.75rem;
   }
 }
