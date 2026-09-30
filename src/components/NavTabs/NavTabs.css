@@ -1,4 +1,5 @@
 .nav-tabs {
+  position: relative;
   padding: 0 0.5rem;
   display: flex;
   flex-direction: row;
@@ -6,8 +7,58 @@
   border-bottom: 1px solid #ebebeb;
 }
 
+/* Soft blur fade on overflow edges — only shown when more content exists that way */
+.nav-tabs::before,
+.nav-tabs::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 1px;
+  width: 2.75rem;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 0.18s ease;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+
+.nav-tabs::before {
+  left: 0;
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0.92) 0%,
+    rgba(255, 255, 255, 0.45) 45%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  -webkit-mask-image: linear-gradient(to right, black 35%, transparent 100%);
+  mask-image: linear-gradient(to right, black 35%, transparent 100%);
+}
+
+.nav-tabs::after {
+  right: 0;
+  background: linear-gradient(
+    to left,
+    rgba(255, 255, 255, 0.92) 0%,
+    rgba(255, 255, 255, 0.45) 45%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  -webkit-mask-image: linear-gradient(to left, black 35%, transparent 100%);
+  mask-image: linear-gradient(to left, black 35%, transparent 100%);
+}
+
+.nav-tabs--fade-left::before,
+.nav-tabs--fade-right::after {
+  opacity: 1;
+}
+
 @media (max-width: 768px) {
   .nav-tabs {
     padding: 0 4px;
+  }
+
+  .nav-tabs::before,
+  .nav-tabs::after {
+    width: 2.25rem;
   }
 }

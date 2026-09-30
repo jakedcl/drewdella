@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Tabs, Tab } from "@mui/material";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -8,6 +8,9 @@ import "./NavTabs.css";
 
 function NavTabs() {
   const pathname = usePathname();
+  const wrapRef = useRef(null);
+  const [fadeLeft, setFadeLeft] = useState(false);
+  const [fadeRight, setFadeRight] = useState(false);
 
   const pages = [
     { label: "All", path: "/" },
@@ -34,11 +37,51 @@ function NavTabs() {
     return page.path === pathname;
   });
 
+  const updateFades = useCallback(() => {
+    const scroller = wrapRef.current?.querySelector(".MuiTabs-scroller");
+    if (!scroller) return;
+
+    const { scrollLeft, scrollWidth, clientWidth } = scroller;
+    const maxScroll = scrollWidth - clientWidth;
+
+    setFadeLeft(scrollLeft > 1);
+    setFadeRight(maxScroll > 1 && scrollLeft < maxScroll - 1);
+  }, []);
+
+  useEffect(() => {
+    const root = wrapRef.current;
+    if (!root) return;
+
+    const scroller = root.querySelector(".MuiTabs-scroller");
+    if (!scroller) return;
+
+    updateFades();
+    scroller.addEventListener("scroll", updateFades, { passive: true });
+
+    const ro = new ResizeObserver(updateFades);
+    ro.observe(scroller);
+    const list = scroller.querySelector(".MuiTabs-flexContainer");
+    if (list) ro.observe(list);
+
+    return () => {
+      scroller.removeEventListener("scroll", updateFades);
+      ro.disconnect();
+    };
+  }, [updateFades, currentTab]);
+
+  const className = [
+    "nav-tabs",
+    fadeLeft ? "nav-tabs--fade-left" : "",
+    fadeRight ? "nav-tabs--fade-right" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   return (
-    <div className="nav-tabs">
+    <div ref={wrapRef} className={className}>
       <Tabs
         value={currentTab === -1 ? false : currentTab}
-        scrollButtons="auto"
+        scrollButtons={false}
         variant="scrollable"
         sx={{
           minHeight: 40,
