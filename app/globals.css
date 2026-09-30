@@ -6,6 +6,17 @@ body {
 
 :root {
   --background: white;
+  /* Default Chrome 100% ≈ preferred ~120% zoom feel */
+  --ui-zoom: 1.2;
+}
+
+html {
+  zoom: var(--ui-zoom);
+}
+
+/* Sanity Studio has its own density — leave it at native scale */
+html:has(.studio-root) {
+  zoom: 1;
 }
 
 html,
