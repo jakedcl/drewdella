@@ -3,8 +3,14 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import "./SearchBar.css";
 import { useRouter } from "next/navigation";
-import SearchIcon from "@mui/icons-material/Search";
-import { getSearchIndex, searchSite } from "../../lib/siteSearch";
+const searchApi = { current: null };
+
+function loadSearch() {
+  if (!searchApi.current) {
+    searchApi.current = import("../../lib/siteSearch");
+  }
+  return searchApi.current;
+}
 
 function isMobileSearch() {
   return window.matchMedia("(max-width: 768px)").matches;
@@ -13,12 +19,16 @@ function isMobileSearch() {
 function SearchBar({
   suggestions = [],
   currentPath = "/home",
+  showActions = false,
+  luckyPaths = [],
+  initialQuery = "",
 }) {
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
-  const [inputValue, setInputValue] = useState("");
+  const [inputValue, setInputValue] = useState(initialQuery);
   const [isReadonly, setIsReadonly] = useState(true);
   const [isExpanded, setIsExpanded] = useState(false);
   const [index, setIndex] = useState([]);
+  const [searchSite, setSearchSite] = useState(() => () => []);
   const [activeIndex, setActiveIndex] = useState(0);
 
   const searchBarRef = useRef(null);
@@ -74,10 +84,20 @@ function SearchBar({
     }, 50);
   };
 
+  const warmIndex = () => {
+    loadSearch()
+      .then((mod) => {
+        setSearchSite(() => mod.searchSite);
+        return mod.getSearchIndex();
+      })
+      .then(setIndex)
+      .catch(() => setIndex([]));
+  };
+
   const activateInput = () => {
     setIsExpanded(true);
     setIsDropdownVisible(true);
-    getSearchIndex().then(setIndex).catch(() => setIndex([]));
+    warmIndex();
     if (isMobileSearch()) return;
     allowTyping();
   };
@@ -135,11 +155,45 @@ function SearchBar({
     setActiveIndex(0);
   }, [query]);
 
+  useEffect(() => {
+    const fromUrl = new URLSearchParams(window.location.search).get("q") || "";
+    const q = initialQuery || fromUrl;
+    if (!q) return;
+    setInputValue(q);
+    setIsExpanded(true);
+    setIsDropdownVisible(true);
+    setIsReadonly(false);
+    warmIndex();
+  }, [initialQuery]);
+
+  const feelingLucky = () => {
+    const paths = luckyPaths.filter(Boolean);
+    if (!paths.length) {
+      router.push("/music");
+      return;
+    }
+    const href = paths[Math.floor(Math.random() * paths.length)];
+    collapseSearch();
+    router.push(href);
+  };
+
+  const submitSearch = () => {
+    if (!query) {
+      activateInput();
+      return;
+    }
+    if (!rows.length) {
+      activateInput();
+      return;
+    }
+    goTo(rows[activeIndex] || rows[0]);
+  };
+
   return (
     <div
       className={`searchbar-container${isExpanded ? " searchbar-container--expanded" : ""}${
         isDropdownVisible ? " searchbar-container--open" : ""
-      }`}
+      }${showActions ? " searchbar-container--home" : ""}`}
       ref={searchBarRef}
     >
       <div className="searchbar-shell">
@@ -148,6 +202,7 @@ function SearchBar({
           type="text"
           className="searchbar-input"
           placeholder={currentPath === "/" ? "Search" : "Search Drew Della"}
+          aria-label={currentPath === "/" ? "Search" : "Search Drew Della"}
           value={inputValue}
           onChange={(event) => setInputValue(event.target.value)}
           onFocus={() => setIsDropdownVisible(true)}
@@ -194,8 +249,24 @@ function SearchBar({
         onClick={activateInput}
         aria-label="Search"
       >
-        <SearchIcon sx={{ fontSize: 22 }} />
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+          <path
+            fill="currentColor"
+            d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
+          />
+        </svg>
       </button>
+
+      {showActions ? (
+        <div className="home-actions">
+          <button type="button" className="home-btn" onClick={submitSearch}>
+            Della Search
+          </button>
+          <button type="button" className="home-btn" onClick={feelingLucky}>
+            I&apos;m Feeling Lucky
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 }

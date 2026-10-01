@@ -1,3 +1,41 @@
-"use client";
+import { notFound } from "next/navigation";
+import LyricsPage from "@/views/LyricsPage/LyricsPage.jsx";
+import { getLyric, getLyricsList } from "@/lib/content";
+import { pageMetadata } from "@/lib/seo";
 
-export { default } from "@/views/LyricsPage/LyricsPage.jsx";
+export const revalidate = 3600;
+
+export async function generateStaticParams() {
+  const songs = await getLyricsList().catch(() => []);
+  return (songs || [])
+    .map((song) => song.slug?.current || song.slug)
+    .filter(Boolean)
+    .map((slug) => ({ slug }));
+}
+
+export async function generateMetadata({ params }) {
+  const { slug } = await params;
+  const song = await getLyric(slug).catch(() => null);
+  if (!song) {
+    return pageMetadata({
+      title: "Lyrics",
+      description: "Lyrics by Drew Della.",
+      path: "/lyrics",
+    });
+  }
+  const description = song.album
+    ? `${song.title} lyrics from ${song.album} by Drew Della.`
+    : `${song.title} lyrics by Drew Della.`;
+  return pageMetadata({
+    title: `${song.title} lyrics`,
+    description,
+    path: `/lyrics/${slug}`,
+  });
+}
+
+export default async function Page({ params }) {
+  const { slug } = await params;
+  const song = await getLyric(slug).catch(() => null);
+  if (!song) notFound();
+  return <LyricsPage slug={slug} initialSong={song} />;
+}

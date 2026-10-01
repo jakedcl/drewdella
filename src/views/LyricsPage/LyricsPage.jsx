@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { client } from "../../lib/sanity";
-import { CircularProgress, Box } from "@mui/material";
 import {
   SearchResults,
   SearchResult,
@@ -17,12 +16,12 @@ import SerpMessage from "../../components/SerpMessage/SerpMessage.jsx";
 import { safeHref } from "../../lib/safeHref.js";
 import "./LyricsPage.css";
 
-function LyricsPage() {
+function LyricsPage({ slug: slugProp, initialSong = null, initialSongs = null }) {
   const params = useParams() || {};
-  const slug = params.slug;
-  const [songs, setSongs] = useState([]);
-  const [song, setSong] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const slug = slugProp !== undefined ? slugProp : params.slug;
+  const [songs, setSongs] = useState(initialSongs || []);
+  const [song, setSong] = useState(initialSong);
+  const [loading, setLoading] = useState(slug ? !initialSong : !initialSongs);
   const [error, setError] = useState(null);
   const [elapsed, setElapsed] = useState("0.12");
   const [query, setQuery] = useState("");
@@ -30,12 +29,13 @@ function LyricsPage() {
 
   useEffect(() => {
     if (slug) {
-      // Fetch individual song
+      const current = song?.slug?.current || song?.slug;
+      if (current === slug) return;
       fetchSong(slug);
-    } else {
-      // Fetch all songs for list view
-      fetchSongs();
+      return;
     }
+    if (initialSongs) return;
+    fetchSongs();
   }, [slug]);
 
   const fetchSongs = async () => {
@@ -194,11 +194,7 @@ function LyricsPage() {
   };
 
   if (loading) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
-        <CircularProgress />
-      </Box>
-    );
+    return <p className="serp-stats">Loading lyrics…</p>;
   }
 
   if (error) {

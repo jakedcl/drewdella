@@ -1,5 +1,5 @@
-import axios from "axios";
 import { client } from "./sanity";
+import { slugify } from "./slug";
 
 const PAGES = [
   {
@@ -122,7 +122,7 @@ function doc({ id, title, href, source, internal, haystack, snippet }) {
 async function loadIndex() {
   const query = `{
     "releases": *[_type == "musicRelease"] {
-      _id, title, description, url
+      _id, title, description, url, "slug": slug.current
     },
     "posts": *[_type == "blogPost"] {
       _id, title, slug, "body": pt::text(content)
@@ -143,20 +143,23 @@ async function loadIndex() {
 
   const [data, videosRes] = await Promise.all([
     client.fetch(query).catch(() => ({})),
-    axios.get("/api/videos").catch(() => null),
+    fetch("/api/videos")
+      .then((res) => (res.ok ? res.json() : null))
+      .catch(() => null),
   ]);
 
   const docs = [...PAGES];
 
   for (const item of data?.releases || []) {
+    const slug = item.slug || slugify(item.title);
     docs.push(
       doc({
         id: item._id,
         title: item.title,
-        href: item.url,
+        href: slug ? `/music/${slug}` : item.url,
         source: "Music",
-        internal: false,
-        haystack: item.description || "",
+        internal: Boolean(slug),
+        haystack: `${item.description || ""} ${item.url || ""}`,
         snippet: item.description || "",
       })
     );
@@ -239,7 +242,7 @@ async function loadIndex() {
     );
   }
 
-  for (const video of videosRes?.data?.videos || []) {
+  for (const video of videosRes?.videos || []) {
     docs.push(
       doc({
         id: video.id,

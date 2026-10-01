@@ -2,9 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import axios from "axios";
-import { CircularProgress, Box } from "@mui/material";
-import { client, urlFor } from "../../lib/sanity";
+import Image from "next/image";
+import { slugify } from "../../lib/slug";
 import {
   SearchResults,
   SearchResult,
@@ -80,12 +79,14 @@ function VintagePopup({ title, lines, cta, href }) {
         </div>
         <div className="win-popup-body">
           <div className="win-popup-msg">
-            <img
+            <Image
               className="win-popup-doodle"
               src="/thx4itall-navbar.png"
               alt=""
-              width={200}
-              height={80}
+              width={693}
+              height={360}
+              sizes="168px"
+              style={{ width: 168, height: "auto" }}
             />
             <div>
               {lines.map((line) => (
@@ -107,11 +108,11 @@ function VintagePopup({ title, lines, cta, href }) {
 }
 
 function ImagesOneBox({ images }) {
-  const thumbs = (images || []).filter((img) => img?.asset).slice(0, 6);
+  const thumbs = (images || []).filter((img) => img?.src).slice(0, 6);
 
   return (
     <div className="images-onebox">
-      <Link className="serp-title" href="/images">
+      <Link className="serp-title" href="/images" prefetch={false}>
         Images for Drew Della
       </Link>
       <cite className="serp-cite">
@@ -122,27 +123,32 @@ function ImagesOneBox({ images }) {
       </cite>
       {thumbs.length > 0 && (
         <div className="images-onebox-strip">
-          {thumbs.map((img) => {
+          {thumbs.map((img, index) => {
             const imgId = img.id || img.asset?._id;
+            const src = img.src;
+            if (!src) return null;
             return (
               <Link
-                key={imgId}
+                key={imgId || src}
                 className="images-onebox-frame"
                 href={imgId ? `/images?img=${encodeURIComponent(imgId)}` : "/images"}
                 aria-label={img.alt || "View image"}
+                prefetch={false}
               >
-                <img
-                  src={urlFor(img.asset).width(240).height(180).auto("format").url()}
+                <Image
+                  src={src}
                   alt={img.alt || ""}
                   width={90}
                   height={68}
+                  sizes="90px"
+                  priority={index === 0}
                 />
               </Link>
             );
           })}
         </div>
       )}
-      <Link className="images-onebox-more" href="/images">
+      <Link className="images-onebox-more" href="/images" prefetch={false}>
         More images »
       </Link>
     </div>
@@ -180,25 +186,28 @@ function mixResults({ releases, posts, songs, socials }) {
   return mixed;
 }
 
-export default function AllPage() {
-  const [data, setData] = useState({
-    releases: [],
-    posts: [],
-    songs: [],
-    socials: [],
-    images: [],
-  });
-  const [loading, setLoading] = useState(true);
-  const [elapsed, setElapsed] = useState("0.12");
-  const [latestVideo, setLatestVideo] = useState(null);
+export default function AllPage({ feed = null }) {
+  const [data, setData] = useState(
+    feed?.data || {
+      releases: [],
+      posts: [],
+      songs: [],
+      socials: [],
+      images: [],
+    }
+  );
+  const [loading, setLoading] = useState(!feed);
+  const [elapsed, setElapsed] = useState(feed?.elapsed || "0.12");
+  const [latestVideo, setLatestVideo] = useState(feed?.latestVideo || null);
 
   useEffect(() => {
+    if (feed) return undefined;
     const fetchAll = async () => {
       const started = performance.now();
       try {
         const query = `{
           "releases": *[_type == "musicRelease"] | order(order asc)[0...1] {
-            _id, title, description, url, date
+            _id, title, description, url, date, "slug": slug.current
           },
           "posts": *[_type == "blogPost"] | order(date desc)[0...3] {
             _id, title, date, slug, "preview": pt::text(content), "imageCount": count(content[_type == "image"])
@@ -216,12 +225,22 @@ export default function AllPage() {
             "id": _key
           }
         }`;
+        const { client, sanityImage } = await import("../../lib/sanity");
         const [next, videosRes] = await Promise.all([
           client.fetch(query),
-          axios.get("/api/videos").catch(() => null),
+          fetch("/api/videos").then((res) => (res.ok ? res.json() : null)).catch(() => null),
         ]);
+        if (next?.images) {
+          next.images = next.images
+            .map((img) => ({
+              id: img.id,
+              alt: img.alt || "",
+              src: sanityImage(img.asset, { width: 240, height: 180, quality: 70 }),
+            }))
+            .filter((img) => img.src);
+        }
         setData(next || {});
-        setLatestVideo(videosRes?.data?.videos?.[0] || null);
+        setLatestVideo(videosRes?.videos?.[0] || null);
         setElapsed(formatElapsed(performance.now() - started));
       } catch (err) {
         console.error("Error fetching all results:", err);
@@ -231,19 +250,11 @@ export default function AllPage() {
     };
 
     fetchAll();
-  }, []);
+    return undefined;
+  }, [feed]);
 
   if (loading) {
-    return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        minHeight="200px"
-      >
-        <CircularProgress />
-      </Box>
-    );
+    return <p className="serp-stats">Loading results…</p>;
   }
 
   const releases = data.releases || [];
@@ -252,7 +263,9 @@ export default function AllPage() {
     ...data,
     releases: [],
   });
-  const popupHref = latest?.url || "/music";
+  const popupHref = latest
+    ? `/music/${latest.slug || slugify(latest.title)}`
+    : "/music";
   const popupLines = latest
     ? ["You may already be a winner.", `Listen to ${latest.title}`]
     : ["You may already be a winner."];

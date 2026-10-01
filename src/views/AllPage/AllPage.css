@@ -54,7 +54,8 @@
   /* bottom set via useVisualViewportBottom so mobile chrome can't clip it */
   bottom: calc(12px + env(safe-area-inset-bottom, 0px));
   z-index: 1250;
-  width: min(340px, calc(100vw - 24px));
+  width: min(300px, calc(100vw / var(--ui-zoom) - 20px));
+  max-width: calc(100vw / var(--ui-zoom) - 16px);
   transform: translate(120%, 80%);
   transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
 }

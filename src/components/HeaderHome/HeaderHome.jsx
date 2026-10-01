@@ -1,29 +1,11 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import Link from "next/link";
-import { client } from "../../lib/sanity";
-import { resolveShopDestination, DEFAULT_SHOP_PATH } from "../../lib/shopLink";
+import { DEFAULT_SHOP_PATH } from "../../lib/shopLink";
 import "./HeaderHome.css";
 
-function HeaderHome() {
-  const [shop, setShop] = useState({
-    href: DEFAULT_SHOP_PATH,
-    external: false,
-  });
-
-  useEffect(() => {
-    const fetchShopLink = async () => {
-      try {
-        const data = await client.fetch(`*[_type == "shopLink"][0]{ url }`);
-        setShop(resolveShopDestination(data?.url));
-      } catch (error) {
-        console.error("Error fetching shop link:", error);
-      }
-    };
-    fetchShopLink();
-  }, []);
-
+function HeaderHome({ shop = { href: DEFAULT_SHOP_PATH, external: false } }) {
   return (
     <header className="header-home">
       <div className="header-home-left">
@@ -47,7 +29,7 @@ function HeaderHome() {
         <Link href="/lyrics" className="header-home-link">
           Lyrics
         </Link>
-        <Link href="/images" className="header-home-link">
+        <Link href="/images" className="header-home-link" prefetch={false}>
           Images
         </Link>
       </div>

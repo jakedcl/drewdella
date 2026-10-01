@@ -13,7 +13,8 @@
 }
 
 .hangouts-window {
-  width: min(340px, calc(100vw - 24px));
+  width: min(320px, calc(100vw / var(--ui-zoom) - 20px));
+  max-width: calc(100vw / var(--ui-zoom) - 16px);
   height: min(440px, calc(100dvh - 88px));
   display: flex;
   flex-direction: column;
@@ -455,7 +456,7 @@
   }
 
   .hangouts-window {
-    width: min(310px, calc(100vw - 16px));
+    width: min(310px, calc(100vw / var(--ui-zoom) - 16px));
     height: min(400px, calc(100dvh - 72px));
   }
 
@@ -498,4 +499,48 @@
     width: 44px;
     height: 44px;
   }
+}
+
+.hangouts-email-toggle {
+  margin: 0 10px 8px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #1a73e8;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.hangouts-email {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 0 10px 10px;
+}
+
+.hangouts-email-body {
+  min-height: 72px;
+  resize: vertical;
+  padding: 8px;
+  border: 1px solid #dadce0;
+  border-radius: 4px;
+  font: inherit;
+  font-size: 13px;
+}
+
+.hangouts-mail-list {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #3c4043;
+}
+
+.hangouts-hp {
+  position: absolute;
+  left: -9999px;
+  height: 0;
+  overflow: hidden;
 }

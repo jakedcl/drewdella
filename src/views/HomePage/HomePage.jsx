@@ -8,8 +8,7 @@ import Footer from "../../components/Footer/Footer.jsx";
 import { searchSuggestions } from "../../constants/searchSuggestions";
 import "./HomePage.css";
 
-function HomePage() {
-
+function HomePage({ luckyPaths = [], shop }) {
   const googleLogoStyles = {
     marginLeft: "auto",
     marginRight: "auto",
@@ -27,13 +26,16 @@ function HomePage() {
     <div
       style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}
     >
-      <HeaderHome />
+      <HeaderHome shop={shop} />
+      <h1 className="sr-only">Drew Della</h1>
       <div style={{ flex: 2 }} />
       <div className="home-div">
         <div className="home-hero">
-          <GoogleLogo style={googleLogoStyles} />
+          <GoogleLogo style={googleLogoStyles} animateOnLoad />
           <SearchBar
             suggestions={searchSuggestions}
+            showActions
+            luckyPaths={luckyPaths}
           />
         </div>
       </div>
