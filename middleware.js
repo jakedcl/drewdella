@@ -18,7 +18,7 @@ const CSP = [
   "form-action 'self'",
   `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : ""} https://va.vercel-scripts.com https://vitals.vercel-insights.com`,
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https://cdn.sanity.io https://i.ytimg.com https://img.youtube.com https://yt3.ggpht.com https://*.mapbox.com https://*.tiles.mapbox.com",
+  "img-src 'self' data: blob: https://cdn.sanity.io https://i.ytimg.com https://img.youtube.com https://yt3.ggpht.com https://*.mzstatic.com https://*.mapbox.com https://*.tiles.mapbox.com",
   "font-src 'self' data:",
   "connect-src 'self' https://qcu6o4bq.api.sanity.io https://qcu6o4bq.apicdn.sanity.io https://*.mapbox.com https://*.tiles.mapbox.com https://events.mapbox.com https://vitals.vercel-insights.com https://va.vercel-scripts.com",
   "worker-src 'self' blob:",

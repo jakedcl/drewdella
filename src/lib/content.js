@@ -2,6 +2,7 @@ import { cache } from "react";
 import { client, sanityImage } from "./sanity";
 import { resolveShopDestination } from "./shopLink";
 import { albumKey, slugify } from "./slug";
+import { MUSIC_CATALOG } from "./musicCatalog";
 
 export { albumKey, slugify };
 
@@ -21,6 +22,31 @@ export function releaseYear(release) {
 function coverOf(release) {
   if (!release?.cover?.asset) return "";
   return sanityImage(release.cover, { width: 800, quality: 75 });
+}
+
+function text(value) {
+  return String(value ?? "").trim();
+}
+
+function lyricSlug(title, songs, albumTitles) {
+  const keys = new Set((albumTitles || []).map((name) => albumKey(name)).filter(Boolean));
+  const want = albumKey(title);
+  if (!want || !keys.size) return "";
+  const song = (songs || []).find(
+    (item) =>
+      item?.slug &&
+      keys.has(albumKey(item.album)) &&
+      albumKey(item.title) === want
+  );
+  return song?.slug || "";
+}
+
+function withLyricLinks(tracks, songs, albumTitles) {
+  return (tracks || []).map((track) => ({
+    title: track.title,
+    duration: track.duration || "",
+    slug: track.slug || lyricSlug(track.title, songs, albumTitles),
+  }));
 }
 
 export function shapeRelease(release, songs = []) {
@@ -74,7 +100,11 @@ export function shapeRelease(release, songs = []) {
     href: slug ? `/music/${slug}` : "/music",
     cover: coverOf(release),
     coverAlt: release?.cover?.alt || `${release.title || "Release"} cover`,
-    tracks: authored.length ? authored : matched,
+    tracks: withLyricLinks(
+      authored.length ? authored : matched,
+      songs,
+      [release.title]
+    ),
     trackSource: authored.length ? "release" : matched.length ? "lyrics" : "none",
     links,
     gallery,
@@ -107,12 +137,111 @@ export const getSongs = cache(async () => {
   );
 });
 
+function catalogLinks(entry, sanity) {
+  const authored = (sanity?.links || []).filter((link) => text(link?.url));
+  if (authored.length) {
+    const links = [];
+    if (text(sanity.url)) links.push({ label: "Listen", url: text(sanity.url) });
+    for (const link of authored) {
+      const url = text(link.url);
+      if (links.some((item) => item.url === url)) continue;
+      links.push({ label: text(link.label) || "Listen", url });
+    }
+    return links;
+  }
+  const links = (entry.links || []).map((link) => ({
+    label: link.label,
+    url: link.url,
+  }));
+  const url = text(sanity?.url);
+  if (url && !links.some((item) => item.url === url)) {
+    links.push({ label: "Listen", url });
+  }
+  return links;
+}
+
+function mergeCatalogRelease(entry, sanity, songs) {
+  const albumTitles = [entry.title, sanity?.title];
+  const sanityTracks = (sanity?.tracks || []).filter((track) => text(track?.title));
+  const tracks = withLyricLinks(
+    sanityTracks.length
+      ? sanityTracks.map((track) => ({
+          title: text(track.title),
+          duration: text(track.duration),
+          slug: "",
+        }))
+      : entry.tracks,
+    songs,
+    albumTitles
+  );
+  const sanityCover = coverOf(sanity);
+  const slug = text(sanity?.slug) || entry.slug;
+  const date = text(sanity?.date) || entry.date;
+  const year = text(sanity?.year) || releaseYear({ date, year: entry.year });
+  const gallery = (sanity?.gallery || []).some((image) => image?.asset)
+    ? shapeRelease({ ...sanity, title: text(sanity.title) || entry.title }, songs).gallery
+    : [];
+
+  return {
+    id: sanity?._id || `catalog-${entry.slug}`,
+    title: text(sanity?.title) || entry.title,
+    description: text(sanity?.description),
+    subtitle: text(sanity?.subtitle) || entry.subtitle || "",
+    story: text(sanity?.story) || entry.story || "",
+    url: text(sanity?.url) || entry.links?.[0]?.url || "",
+    date,
+    year,
+    order: typeof sanity?.order === "number" ? sanity.order : entry.order,
+    featured: entry.featured,
+    featuredFromSanity: sanity?.featured === true,
+    slug,
+    href: slug ? `/music/${slug}` : "/music",
+    cover: sanityCover || entry.cover || "",
+    coverAlt: text(sanity?.cover?.alt) || entry.coverAlt || `${entry.title} cover`,
+    tracks,
+    trackSource: sanityTracks.length ? "release" : "catalog",
+    links: catalogLinks(entry, sanity),
+    gallery,
+  };
+}
+
+export function mergeMusicCatalog(sanityReleases = [], songs = []) {
+  const used = new Set();
+  const merged = MUSIC_CATALOG.map((entry) => {
+    const sanity = (sanityReleases || []).find(
+      (release) => albumKey(release?.title) === albumKey(entry.title)
+    );
+    if (sanity?._id) used.add(sanity._id);
+    return mergeCatalogRelease(entry, sanity, songs);
+  });
+
+  for (const release of sanityReleases || []) {
+    if (release?._id && used.has(release._id)) continue;
+    merged.push({
+      ...shapeRelease(release, songs),
+      featuredFromSanity: release.featured === true,
+    });
+  }
+
+  const explicit = merged.filter((release) => release.featuredFromSanity);
+  if (explicit.length) {
+    const ids = new Set(explicit.map((release) => release.id));
+    for (const release of merged) release.featured = ids.has(release.id);
+  }
+
+  return merged
+    .map(({ featuredFromSanity, ...release }) => release)
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0) || a.title.localeCompare(b.title));
+}
+
 export const getReleases = cache(async () => {
   const [releases, songs] = await Promise.all([
-    client.fetch(`*[_type == "musicRelease"] | order(order asc) ${RELEASE_FIELDS}`),
-    getSongs(),
+    client
+      .fetch(`*[_type == "musicRelease"] | order(order asc) ${RELEASE_FIELDS}`)
+      .catch(() => []),
+    getSongs().catch(() => []),
   ]);
-  return (releases || []).map((release) => shapeRelease(release, songs || []));
+  return mergeMusicCatalog(releases || [], songs || []);
 });
 
 export const getRelease = cache(async (slug) => {

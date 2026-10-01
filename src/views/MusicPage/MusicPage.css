@@ -143,6 +143,10 @@
   color: #3c4043;
 }
 
+.release-story {
+  white-space: pre-line;
+}
+
 .kp-facts {
   display: grid;
   gap: 6px;
