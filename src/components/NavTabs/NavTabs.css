@@ -8,11 +8,11 @@
 
 .nav-tabs-scroller {
   display: flex;
-  align-items: flex-end;
-  gap: 4px;
+  align-items: stretch;
+  gap: 2px;
   overflow-x: auto;
   scrollbar-width: none;
-  padding: 0 12px;
+  padding: 0 8px;
   position: relative;
 }
 
@@ -22,16 +22,24 @@
 
 .nav-tabs a {
   flex: 0 0 auto;
-  min-height: 40px;
-  padding: 0 10px;
+  min-height: 48px;
+  padding: 0 14px;
   display: inline-flex;
-  align-items: center;
+  align-items: stretch;
   color: #5f6368;
   font-family: Arial, Helvetica, sans-serif;
-  font-size: 13px;
+  font-size: 15px;
+  line-height: 1.2;
   font-weight: 400;
   text-decoration: none;
   white-space: nowrap;
+}
+
+.nav-tabs-label {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  height: 100%;
 }
 
 .nav-tabs a.is-active {
@@ -47,14 +55,15 @@
   color: #1a73e8;
 }
 
+/* Sits on the tab-bar edge and is exactly as wide as the label. */
 .nav-tabs-indicator {
   position: absolute;
   left: 0;
+  right: 0;
   bottom: 0;
   height: 3px;
   background: #1a73e8;
   view-transition-name: serp-tab;
-  transition: transform 0.2s ease, width 0.2s ease;
 }
 
 .nav-tabs::before,
@@ -63,7 +72,7 @@
   position: absolute;
   top: 0;
   bottom: 1px;
-  width: 2.75rem;
+  width: 3.25rem;
   pointer-events: none;
   z-index: 2;
   opacity: 0;
@@ -86,12 +95,19 @@
 
 @media (max-width: 768px) {
   .nav-tabs-scroller {
-    padding-inline: 8px;
+    /* Extra end padding so the last tab can scroll clear of the edge fade. */
+    padding-right: 4.5rem;
+  }
+
+  .nav-tabs a {
+    min-height: 44px;
+    padding: 0 12px;
+    font-size: 14px;
   }
 
   .nav-tabs::before,
   .nav-tabs::after {
-    width: 2.5rem;
+    width: 3rem;
   }
 
   /* Hidden tabs stay discoverable before scroll measurement runs. */
@@ -100,8 +116,16 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .nav-tabs-indicator {
-    transition: none;
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-group(serp-tab) {
+    animation-duration: 200ms;
+    animation-timing-function: ease;
+  }
+
+  ::view-transition-old(serp-tab),
+  ::view-transition-new(serp-tab) {
+    animation: none;
+    mix-blend-mode: normal;
+    height: 100%;
   }
 }

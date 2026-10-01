@@ -29,38 +29,52 @@ function NavTabs() {
   const scrollerRef = useRef(null);
   const [fadeLeft, setFadeLeft] = useState(false);
   const [fadeRight, setFadeRight] = useState(true);
-  const [indicator, setIndicator] = useState({ x: 0, width: 0 });
 
-  const update = useCallback(() => {
+  const measureFade = useCallback(() => {
     const scroller = scrollerRef.current;
     if (!scroller) return;
     const { scrollLeft, scrollWidth, clientWidth } = scroller;
     const maxScroll = scrollWidth - clientWidth;
     setFadeLeft(scrollLeft > 1);
     setFadeRight(maxScroll > 1 && scrollLeft < maxScroll - 1);
+  }, []);
 
+  const revealActive = useCallback(() => {
+    const scroller = scrollerRef.current;
+    if (!scroller) return;
     const active = scroller.querySelector("[aria-current='page']");
-    if (!active) {
-      setIndicator({ x: 0, width: 0 });
-      return;
+    if (!active) return;
+    // Layout pixels, same space as offsetLeft/clientWidth. Clears the 3rem edge fade
+    // even if this runs before the tab stylesheet is applied.
+    const pad = 64;
+    const left = active.offsetLeft;
+    const right = left + active.offsetWidth;
+    const { scrollLeft, clientWidth } = scroller;
+    if (left - pad < scrollLeft) {
+      scroller.scrollLeft = Math.max(0, left - pad);
+    } else if (right + pad > scrollLeft + clientWidth) {
+      scroller.scrollLeft = right + pad - clientWidth;
     }
-    setIndicator({ x: active.offsetLeft, width: active.offsetWidth });
   }, []);
 
   useEffect(() => {
-    update();
+    measureFade();
+    revealActive();
     const scroller = scrollerRef.current;
     if (!scroller) return undefined;
-    scroller.addEventListener("scroll", update, { passive: true });
-    const ro = new ResizeObserver(update);
+    scroller.addEventListener("scroll", measureFade, { passive: true });
+    const ro = new ResizeObserver(() => {
+      measureFade();
+      revealActive();
+    });
     ro.observe(scroller);
-    window.addEventListener("resize", update);
+    window.addEventListener("resize", measureFade);
     return () => {
-      scroller.removeEventListener("scroll", update);
+      scroller.removeEventListener("scroll", measureFade);
       ro.disconnect();
-      window.removeEventListener("resize", update);
+      window.removeEventListener("resize", measureFade);
     };
-  }, [update, pathname]);
+  }, [measureFade, revealActive, pathname]);
 
   const onTabClick = (event, href) => {
     if (
@@ -98,19 +112,13 @@ function NavTabs() {
               prefetch={false}
               onClick={(event) => onTabClick(event, page.path)}
             >
-              {page.label}
+              <span className="nav-tabs-label">
+                {page.label}
+                {current ? <span className="nav-tabs-indicator" /> : null}
+              </span>
             </Link>
           );
         })}
-        <span
-          className="nav-tabs-indicator"
-          style={{
-            transform: `translateX(${indicator.x}px)`,
-            width: indicator.width,
-            opacity: indicator.width ? 1 : 0,
-          }}
-          aria-hidden="true"
-        />
       </div>
     </nav>
   );
