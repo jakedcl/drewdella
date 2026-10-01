@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { CircularProgress, Box } from "@mui/material";
 import { client } from "../../lib/sanity";
 import {
   SearchResults,
@@ -12,13 +11,14 @@ import {
 } from "../../components/SearchResults/SearchResults.jsx";
 import SerpMessage from "../../components/SerpMessage/SerpMessage.jsx";
 
-export default function ConnectPage() {
-  const [socialLinks, setSocialLinks] = useState([]);
-  const [loading, setLoading] = useState(true);
+export default function ConnectPage({ initialLinks = null, initialElapsed = "0.12" }) {
+  const [socialLinks, setSocialLinks] = useState(initialLinks || []);
+  const [loading, setLoading] = useState(initialLinks == null);
   const [error, setError] = useState(null);
-  const [elapsed, setElapsed] = useState("0.12");
+  const [elapsed, setElapsed] = useState(initialElapsed);
 
   useEffect(() => {
+    if (initialLinks) return undefined;
     const fetchSocialLinks = async () => {
       const started = performance.now();
       try {
@@ -44,19 +44,11 @@ export default function ConnectPage() {
     };
 
     fetchSocialLinks();
-  }, []);
+    return undefined;
+  }, [initialLinks]);
 
   if (loading) {
-    return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        minHeight="200px"
-      >
-        <CircularProgress />
-      </Box>
-    );
+    return <p className="serp-stats">Loading socials…</p>;
   }
 
   if (error) {

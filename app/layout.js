@@ -1,32 +1,27 @@
-import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import JsonLd from "@/components/JsonLd.jsx";
+import { getSocials } from "@/lib/content";
+import { siteJsonLd } from "@/lib/seo";
 import "./globals.css";
 
 export const metadata = {
-  title: "Drew Della",
+  metadataBase: new URL("https://drewdella.com"),
+  title: {
+    default: "Drew Della",
+    template: "%s — Drew Della",
+  },
   description:
-    "Drew Della - Artist, musician, creator. Explore music, lyrics, videos, blog posts, and more.",
-  keywords: ["Drew Della", "music", "artist", "lyrics", "songs"],
+    "Drew Della — artist, musician, creator. Explore music, lyrics, videos, blog posts, and more.",
+  applicationName: "Drew Della",
+  authors: [{ name: "Drew Della", url: "https://drewdella.com" }],
   openGraph: {
-    title: "Drew Della",
-    description:
-      "Artist, musician, and creator. Explore music, lyrics, videos, blog posts, and more.",
     type: "website",
-    url: "https://drewdella.com",
-    images: [
-      {
-        url: "https://drewdella.com/og.jpg",
-        width: 1200,
-        height: 630,
-        alt: "Drew Della",
-      },
-    ],
+    siteName: "Drew Della",
+    locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",
-    images: ["https://drewdella.com/og.jpg"],
-  },
-  icons: {
-    icon: "/logo.png",
   },
 };
 
@@ -36,11 +31,17 @@ export const viewport = {
   viewportFit: "cover",
 };
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
+  const socials = await getSocials().catch(() => []);
+  const sameAs = (socials || []).map((item) => item.url).filter(Boolean);
+
   return (
     <html lang="en">
       <body>
-        <AppRouterCacheProvider>{children}</AppRouterCacheProvider>
+        {children}
+        <JsonLd data={siteJsonLd(sameAs)} />
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

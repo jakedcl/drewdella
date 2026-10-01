@@ -54,6 +54,13 @@ function HangoutsChat() {
   const [messages, setMessages] = useState([]);
   const [status, setStatus] = useState("");
   const [sending, setSending] = useState(false);
+  const [emailOpen, setEmailOpen] = useState(false);
+  const [email, setEmail] = useState("");
+  const [emailBody, setEmailBody] = useState("");
+  const [mailingList, setMailingList] = useState(false);
+  const [company, setCompany] = useState("");
+  const [emailStatus, setEmailStatus] = useState("");
+  const [emailSending, setEmailSending] = useState(false);
   const listRef = useRef(null);
   const stickBottom = useRef(true);
   const inputRef = useRef(null);
@@ -226,6 +233,35 @@ function HangoutsChat() {
     }
   };
 
+  const sendEmail = async (event) => {
+    event.preventDefault();
+    if (emailSending) return;
+    setEmailSending(true);
+    setEmailStatus("");
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: name.trim(),
+          email: email.trim(),
+          message: emailBody.trim(),
+          mailingList,
+          company,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Couldn’t send that.");
+      setEmailBody("");
+      setMailingList(false);
+      setEmailStatus("Sent. Drew will see it.");
+    } catch (error) {
+      setEmailStatus(error.message || "Couldn’t send that.");
+    } finally {
+      setEmailSending(false);
+    }
+  };
+
   const myName = name.trim().toLowerCase();
 
   return (
@@ -365,6 +401,65 @@ function HangoutsChat() {
             </div>
             {status ? <p className="hangouts-status">{status}</p> : null}
           </form>
+          <button
+            type="button"
+            className="hangouts-email-toggle"
+            onClick={() => setEmailOpen((open) => !open)}
+          >
+            {emailOpen ? "Back to chat" : "Email Drew"}
+          </button>
+          {emailOpen ? (
+            <form className="hangouts-email" onSubmit={sendEmail}>
+                <label className="hangouts-hp" aria-hidden="true">
+                  Website
+                  <input
+                    tabIndex={-1}
+                    autoComplete="off"
+                    value={company}
+                    onChange={(e) => setCompany(e.target.value)}
+                  />
+                </label>
+                <input
+                  className="hangouts-name"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Your email"
+                  aria-label="Your email"
+                  autoComplete="email"
+                  required
+                />
+                <textarea
+                  className="hangouts-email-body"
+                  value={emailBody}
+                  onChange={(e) => setEmailBody(e.target.value.slice(0, 2000))}
+                  placeholder="Message"
+                  aria-label="Message to Drew"
+                  required
+                  minLength={10}
+                  maxLength={2000}
+                />
+                <label className="hangouts-mail-list">
+                  <input
+                    type="checkbox"
+                    checked={mailingList}
+                    onChange={(e) => setMailingList(e.target.checked)}
+                  />
+                  Add me to the mailing list
+                </label>
+                <button
+                  type="submit"
+                  className="hangouts-send"
+                  disabled={emailSending || !name.trim()}
+                >
+                  {emailSending ? "Sending" : "Send email"}
+                </button>
+                {!name.trim() ? (
+                  <p className="hangouts-status">Add your name above first.</p>
+                ) : null}
+                {emailStatus ? <p className="hangouts-status">{emailStatus}</p> : null}
+            </form>
+          ) : null}
         </div>
       ) : null}
 

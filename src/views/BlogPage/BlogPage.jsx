@@ -55,12 +55,12 @@ function blogImageResponsiveSources(asset, sizeKey) {
     };
 }
 
-function BlogPage() {
+function BlogPage({ slug: slugProp, initialPost = null, initialPosts = null }) {
     const params = useParams() || {};
-  const slug = params.slug;
-    const [blogPosts, setBlogPosts] = useState([]);
-    const [post, setPost] = useState(null);
-    const [loading, setLoading] = useState(true);
+  const slug = slugProp !== undefined ? slugProp : params.slug;
+    const [blogPosts, setBlogPosts] = useState(initialPosts || []);
+    const [post, setPost] = useState(initialPost);
+    const [loading, setLoading] = useState(slug ? !initialPost : !initialPosts);
     const [error, setError] = useState(null);
     const [elapsed, setElapsed] = useState("0.12");
     const [query, setQuery] = useState("");
@@ -68,10 +68,13 @@ function BlogPage() {
 
     useEffect(() => {
         if (slug) {
+            const current = post?.slug?.current || post?.slug;
+            if (current === slug) return;
             fetchPost(slug);
-        } else {
-            fetchPosts();
+            return;
         }
+        if (initialPosts) return;
+        fetchPosts();
     }, [slug]);
 
     const fetchPosts = async () => {

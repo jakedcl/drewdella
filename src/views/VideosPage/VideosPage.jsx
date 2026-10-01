@@ -1,8 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import axios from "axios";
-import { Box, CircularProgress } from "@mui/material";
 import {
   SearchResults,
   VideoResult,
@@ -10,21 +8,23 @@ import {
 } from "../../components/SearchResults/SearchResults.jsx";
 import SerpMessage from "../../components/SerpMessage/SerpMessage.jsx";
 
-function VideosPage() {
-  const [videos, setVideos] = useState([]);
-  const [loading, setLoading] = useState(true);
+function VideosPage({ initialVideos = null, initialElapsed = "0.12" }) {
+  const [videos, setVideos] = useState(initialVideos || []);
+  const [loading, setLoading] = useState(initialVideos == null);
   const [error, setError] = useState(null);
-  const [elapsed, setElapsed] = useState("0.12");
+  const [elapsed, setElapsed] = useState(initialElapsed);
 
   useEffect(() => {
+    if (initialVideos) return undefined;
     const fetchVideos = async () => {
       const started = performance.now();
       try {
         setLoading(true);
-        const response = await axios.get("/api/videos");
+        const response = await fetch("/api/videos");
+        const body = await response.json().catch(() => ({}));
 
-        const list = response.data?.videos;
-        if (response.data?.error || !Array.isArray(list)) {
+        const list = body?.videos;
+        if (!response.ok || body?.error || !Array.isArray(list)) {
           throw new Error("Failed to load videos");
         }
 
@@ -39,14 +39,11 @@ function VideosPage() {
     };
 
     fetchVideos();
-  }, []);
+    return undefined;
+  }, [initialVideos]);
 
   if (loading) {
-    return (
-      <Box display="flex" justifyContent="center" p={3}>
-        <CircularProgress />
-      </Box>
-    );
+    return <p className="serp-stats">Loading videos…</p>;
   }
 
   if (error) {

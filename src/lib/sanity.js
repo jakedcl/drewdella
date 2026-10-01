@@ -14,6 +14,19 @@ export function urlFor(source) {
   return builder.image(source);
 }
 
+/** Sanity CDN URL with format negotiation. Pass an image field or asset. */
+export function sanityImage(source, { width, height, quality = 75 } = {}) {
+  if (!source) return "";
+  try {
+    let image = urlFor(source).auto("format").quality(quality).fit("max");
+    if (width) image = image.width(Math.round(width));
+    if (height) image = image.height(Math.round(height));
+    return image.url();
+  } catch {
+    return "";
+  }
+}
+
 export async function fetchSanityData(query) {
   try {
     const data = await client.fetch(query);
