@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { searchSuggestions } from "../../constants/searchSuggestions";
 import { safeHref } from "../../lib/safeHref.js";
@@ -179,7 +180,7 @@ function SerpRelated() {
       <ul>
         {items.map((item) => (
           <li key={item.name}>
-            <Link href={item.path}>{item.name}</Link>
+            <Link href={item.path} prefetch={false}>{item.name}</Link>
           </li>
         ))}
       </ul>
@@ -200,7 +201,7 @@ export function SearchResult({
   const titleEl = !safe ? (
     <span className={className}>{title}</span>
   ) : internal || safe.startsWith("/") ? (
-    <Link className={className} href={safe}>
+    <Link className={className} href={safe} prefetch={false}>
       {title}
     </Link>
   ) : (
@@ -218,9 +219,7 @@ export function SearchResult({
   const citeEl = citeText ? (
     <cite className="serp-cite">
       {sponsored && (
-        <span className="serp-ad" aria-label="Advertisement">
-          Ad
-        </span>
+        <span className="serp-ad">Ad</span>
       )}
       {citeText}
       {!sponsored && (
@@ -280,9 +279,17 @@ export function VideoResult({ video }) {
         href={href}
         target="_blank"
         rel="noopener noreferrer"
-        aria-label={`Play ${video.title}`}
+        aria-label={`Play ${video.title}${video.duration ? `, ${video.duration}` : ""}`}
       >
-        <img src={video.thumbnail} alt="" />
+        {video.thumbnail ? (
+          <Image
+            src={video.thumbnail}
+            alt=""
+            width={120}
+            height={90}
+            sizes="120px"
+          />
+        ) : null}
         <span className="video-result-play" aria-hidden />
         {video.duration ? (
           <span className="video-result-time">{video.duration}</span>

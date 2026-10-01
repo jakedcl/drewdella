@@ -10,6 +10,7 @@ export default function NotFoundPage() {
       <p className="not-found-stats">About 0 results (0.42 seconds)</p>
 
       <div className="not-found-body">
+        <h1 className="sr-only">Page not found</h1>
         <p className="not-found-lead">
           <b>404.</b> That’s an error.
         </p>
