@@ -1,5 +1,5 @@
 /**
- * Only allow http(s) URLs or same-site relative paths.
+ * Only allow http(s) URLs, mailto links, or same-site relative paths.
  * Blocks javascript:, data:, //evil.com, etc.
  *
  * @param {unknown} raw
@@ -19,6 +19,10 @@ export function safeHref(raw) {
     const url = new URL(trimmed);
     if (url.protocol === "http:" || url.protocol === "https:") {
       return url.href;
+    }
+    if (url.protocol === "mailto:") {
+      const address = decodeURIComponent(url.pathname);
+      if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(address)) return url.href;
     }
   } catch {
     /* invalid */
