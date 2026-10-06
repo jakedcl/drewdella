@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { client } from "../../lib/sanity";
 import "./Map.css";
 
 function prefersReducedMotion() {
@@ -57,15 +56,15 @@ async function resolvePlaces(raw, token) {
   return places;
 }
 
-export default function Map() {
+export default function Map({ locations = [], loadError = "" }) {
   const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "";
   const mapNode = useRef(null);
   const mapRef = useRef(null);
   const markersRef = useRef([]);
 
   const [places, setPlaces] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(!loadError);
+  const [error, setError] = useState(loadError);
   const [mapReady, setMapReady] = useState(false);
   const [mapFailed, setMapFailed] = useState("");
   const [webgl, setWebgl] = useState(true);
@@ -77,16 +76,20 @@ export default function Map() {
   }, []);
 
   useEffect(() => {
+    if (loadError) {
+      setPlaces([]);
+      setError(loadError);
+      setLoading(false);
+      return undefined;
+    }
+
     let cancelled = false;
     (async () => {
       try {
-        const data = await client.fetch(`*[_type == "mapLocation"] {
-          _id, venueName, address, coordinates
-        }`);
-        const next = await resolvePlaces(data, token);
+        const next = await resolvePlaces(locations, token);
         if (!cancelled) setPlaces(next);
       } catch (err) {
-        console.error("Error fetching locations:", err);
+        console.error("Error resolving locations:", err);
         if (!cancelled) setError("Couldn’t load venues right now. Try again in a bit.");
       } finally {
         if (!cancelled) setLoading(false);
@@ -95,7 +98,7 @@ export default function Map() {
     return () => {
       cancelled = true;
     };
-  }, [token]);
+  }, [locations, token, loadError]);
 
   const canDraw = Boolean(token) && webgl && !mapFailed;
 

@@ -344,6 +344,32 @@ export const getSocials = cache(async () => {
   }`);
 });
 
+export const getMapLocations = cache(async () => {
+  return client.fetch(`*[_type == "mapLocation"] {
+    _id, venueName, address, coordinates
+  }`);
+});
+
+export const getGallery = cache(async () => {
+  const started = Date.now();
+  const data = await client.fetch(`*[_type == "imageGallery"][0] {
+    title,
+    galleryImages[] {
+      asset->{
+        _id,
+        url,
+        metadata { dimensions }
+      },
+      alt,
+      caption,
+      "id": _key
+    }
+  }`);
+  const images = (data?.galleryImages || []).filter((img) => img && img.asset);
+  const elapsed = Math.max((Date.now() - started) / 1000, 0.04).toFixed(2);
+  return { images, elapsed };
+});
+
 export const getAllFeed = cache(async () => {
   const started = Date.now();
   const query = `{

@@ -12,10 +12,22 @@ export const metadata = pageMetadata({
   path: "/",
 });
 
+const EMPTY_FEED = {
+  data: {
+    releases: [],
+    posts: [],
+    songs: [],
+    socials: [],
+    images: [],
+  },
+  latestVideo: null,
+  elapsed: "0.12",
+};
+
 export default async function Page() {
   const feed = await getAllFeed().catch((error) => {
     console.error("All results error:", error);
-    return null;
+    return EMPTY_FEED;
   });
-  return <AllPage feed={feed} />;
+  return <AllPage feed={feed || EMPTY_FEED} />;
 }

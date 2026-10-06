@@ -1,13 +1,11 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
-import { client, urlFor } from "../../lib/sanity";
+import { urlFor } from "../../lib/imageUrl";
 import {
   SearchResults,
   SearchResult,
-  formatElapsed,
   blogPreviewSnippet,
   pathCite,
   formatListingDate,
@@ -55,91 +53,12 @@ function blogImageResponsiveSources(asset, sizeKey) {
     };
 }
 
-function BlogPage({ slug: slugProp, initialPost = null, initialPosts = null }) {
-    const params = useParams() || {};
-  const slug = slugProp !== undefined ? slugProp : params.slug;
-    const [blogPosts, setBlogPosts] = useState(initialPosts || []);
-    const [post, setPost] = useState(initialPost);
-    const [loading, setLoading] = useState(slug ? !initialPost : !initialPosts);
-    const [error, setError] = useState(null);
-    const [elapsed, setElapsed] = useState("0.12");
+function BlogPage({ slug, initialPost = null, initialPosts = null }) {
+    const blogPosts = initialPosts || [];
+    const post = initialPost;
+    const elapsed = "0.12";
     const [query, setQuery] = useState("");
     const [sort, setSort] = useState("newest");
-
-    useEffect(() => {
-        if (slug) {
-            const current = post?.slug?.current || post?.slug;
-            if (current === slug) return;
-            fetchPost(slug);
-            return;
-        }
-        if (initialPosts) return;
-        fetchPosts();
-    }, [slug]);
-
-    const fetchPosts = async () => {
-        const started = performance.now();
-        try {
-            setLoading(true);
-            setError(null);
-            const query = `*[_type == "blogPost"] | order(date desc) {
-              _id,
-              title,
-              date,
-              slug,
-              "preview": pt::text(content),
-              "imageCount": count(content[_type == "image"])
-            }`;
-            const data = await client.fetch(query);
-            setBlogPosts(data);
-            setElapsed(formatElapsed(performance.now() - started));
-        } catch (err) {
-            console.error("Error fetching blog posts:", err);
-            setError("load-failed");
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const fetchPost = async (postSlug) => {
-        try {
-            setLoading(true);
-            setError(null);
-            const query = `*[_type == "blogPost" && slug.current == $slug][0] {
-              _id,
-              title,
-              date,
-              content[]{
-                ...,
-                _type == "image" => {
-                  ...,
-                  asset->
-                },
-                _type == "block" => {
-                  ...,
-                  markDefs[]{
-                    ...,
-                    _type == "link" => {
-                      ...
-                    }
-                  }
-                }
-              },
-              slug
-            }`;
-            const data = await client.fetch(query, { slug: postSlug });
-            if (!data) {
-                setError("not-found");
-            } else {
-                setPost(data);
-            }
-        } catch (err) {
-            console.error("Error fetching blog post:", err);
-            setError("load-failed");
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const renderContent = (content) => {
         if (!content) return null;
@@ -256,26 +175,24 @@ function BlogPage({ slug: slugProp, initialPost = null, initialPosts = null }) {
         });
     };
 
-    if (loading) {
+    if (!slug && initialPosts == null) {
         return (
-            <div className="blog-page">
-                <div className="blog-loading">
-                    <p>Loading...</p>
-                </div>
-            </div>
+            <SerpMessage
+                title="Blog is taking a break."
+                detail="Couldn’t load the blog right now. Try again in a bit."
+                links={[
+                    { to: "/", label: "All results" },
+                    { to: "/home", label: "Home" },
+                ]}
+            />
         );
     }
 
-    if (error) {
-        const missing = error === "not-found";
+    if (slug && !post) {
         return (
             <SerpMessage
-                title={missing ? "That post isn’t here." : "Blog is taking a break."}
-                detail={
-                    missing
-                        ? "The link may be old, or the title changed. Try the blog again."
-                        : "Couldn’t load the blog right now. Try again in a bit."
-                }
+                title="That post isn’t here."
+                detail="The link may be old, or the title changed. Try the blog again."
                 links={[
                     { to: "/blog", label: "All posts" },
                     { to: "/", label: "All results" },

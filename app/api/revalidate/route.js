@@ -11,6 +11,7 @@ export async function POST(request) {
   }
 
   revalidatePath("/", "layout");
+  revalidatePath("/api/search");
   return Response.json(
     { revalidated: true },
     { headers: { "Cache-Control": "no-store" } }

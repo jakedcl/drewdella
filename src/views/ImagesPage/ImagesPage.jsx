@@ -9,13 +9,13 @@ import React, {
 } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { Masonry } from "@mui/lab";
-import { CircularProgress, Box } from "@mui/material";
+import { Box } from "@mui/material";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import OpenInNewRoundedIcon from "@mui/icons-material/OpenInNewRounded";
 import IosShareRoundedIcon from "@mui/icons-material/IosShareRounded";
 import BookmarkBorderRoundedIcon from "@mui/icons-material/BookmarkBorderRounded";
-import { urlFor, fetchSanityData } from "../../lib/sanity";
-import { formatElapsed, SerpFooter } from "../../components/SearchResults/SearchResults.jsx";
+import { urlFor } from "../../lib/imageUrl";
+import { SerpFooter } from "../../components/SearchResults/SearchResults.jsx";
 import SerpMessage from "../../components/SerpMessage/SerpMessage.jsx";
 import "./ImagesPage.css";
 
@@ -51,14 +51,10 @@ function imageLabel(image) {
   return image?.caption || image?.alt || "Photo";
 }
 
-function ImagesPage() {
+function ImagesPage({ images = [], elapsed = "0.12" }) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
-  const [images, setImages] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [elapsed, setElapsed] = useState("0.12");
   const [activeImage, setActiveImage] = useState(null);
   const [suggested, setSuggested] = useState([]);
   const [heroSrc, setHeroSrc] = useState("");
@@ -185,56 +181,9 @@ function ImagesPage() {
     closeBtnRef.current?.focus();
   }, [activeImage]);
 
-  useEffect(() => {
-    const fetchImages = async () => {
-      const started = performance.now();
-      try {
-        setLoading(true);
-        setError(null);
-
-        const query = `*[_type == "imageGallery"][0] {
-          title,
-          galleryImages[] {
-            asset->{
-              _id,
-              url,
-              metadata {
-                dimensions
-              }
-            },
-            alt,
-            caption,
-            "id": _key
-          }
-        }`;
-
-        const data = await fetchSanityData(query);
-
-        if (!data || !data.galleryImages) {
-          setImages([]);
-        } else {
-          const validImages = data.galleryImages.filter(
-            (img) => img && img.asset
-          );
-          setImages(validImages);
-        }
-        setElapsed(formatElapsed(performance.now() - started));
-      } catch (err) {
-        console.error("Error fetching images:", err);
-        setError(
-          err.message || "Failed to load images. Please try again later."
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchImages();
-  }, []);
-
   /* Open panel when arriving from All (or a shared ?img= link) */
   useEffect(() => {
-    if (loading || !images.length || openedFromQuery.current) return;
+    if (!images.length || openedFromQuery.current) return;
     const want = searchParams.get("img");
     if (!want) return;
     const match = images.find(
@@ -248,7 +197,7 @@ function ImagesPage() {
         shuffle(images.filter((img) => imageKey(img) !== imageKey(match)))
       );
     }
-  }, [loading, images, searchParams]);
+  }, [images, searchParams]);
 
   useEffect(() => {
     if (!activeImage) return undefined;
@@ -268,34 +217,6 @@ function ImagesPage() {
       document.body.style.overflow = prevOverflow;
     };
   }, [activeImage, closePanel]);
-
-  if (loading) {
-    return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        minHeight="200px"
-      >
-        <CircularProgress />
-      </Box>
-    );
-  }
-
-  if (error) {
-    return (
-      <Box p={2}>
-        <SerpMessage
-          title="Images are taking a break."
-          detail="Couldn’t load photos right now. Try again in a bit."
-          links={[
-            { to: "/", label: "All results" },
-            { to: "/home", label: "Home" },
-          ]}
-        />
-      </Box>
-    );
-  }
 
   if (!images.length) {
     return (
