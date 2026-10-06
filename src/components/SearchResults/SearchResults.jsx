@@ -198,12 +198,17 @@ export function SearchResult({
 }) {
   const className = "serp-title";
   const safe = safeHref(href);
+  const mail = safe?.startsWith("mailto:");
   const titleEl = !safe ? (
     <span className={className}>{title}</span>
   ) : internal || safe.startsWith("/") ? (
     <Link className={className} href={safe} prefetch={false}>
       {title}
     </Link>
+  ) : mail ? (
+    <a className={className} href={safe}>
+      {title}
+    </a>
   ) : (
     <a
       className={className}
