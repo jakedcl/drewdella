@@ -8,10 +8,10 @@ const Map = dynamic(() => import("../../components/Map/Map.jsx"), {
   loading: () => <div className="map-loading">Loading map…</div>,
 });
 
-export default function MapPage() {
+export default function MapPage({ locations = [], loadError = "" }) {
   return (
     <div className="map-page">
-      <Map />
+      <Map locations={locations} loadError={loadError} />
     </div>
   );
 }

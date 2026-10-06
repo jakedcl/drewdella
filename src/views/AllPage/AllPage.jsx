@@ -9,7 +9,6 @@ import {
   SearchResult,
   VideoResult,
   formatCite,
-  formatElapsed,
   pathCite,
   datedSnippet,
   snippetFromPortableText,
@@ -187,75 +186,15 @@ function mixResults({ releases, posts, songs, socials }) {
 }
 
 export default function AllPage({ feed = null }) {
-  const [data, setData] = useState(
-    feed?.data || {
-      releases: [],
-      posts: [],
-      songs: [],
-      socials: [],
-      images: [],
-    }
-  );
-  const [loading, setLoading] = useState(!feed);
-  const [elapsed, setElapsed] = useState(feed?.elapsed || "0.12");
-  const [latestVideo, setLatestVideo] = useState(feed?.latestVideo || null);
-
-  useEffect(() => {
-    if (feed) return undefined;
-    const fetchAll = async () => {
-      const started = performance.now();
-      try {
-        const query = `{
-          "releases": *[_type == "musicRelease"] | order(order asc)[0...1] {
-            _id, title, description, url, date, "slug": slug.current
-          },
-          "posts": *[_type == "blogPost"] | order(date desc)[0...3] {
-            _id, title, date, slug, "preview": pt::text(content), "imageCount": count(content[_type == "image"])
-          },
-          "songs": *[_type == "song"] | order(albumOrder asc, order asc)[0...3] {
-            _id, title, album, slug, "preview": pt::text(lyrics),
-            "date": *[_type == "musicRelease" && lower(title) == lower(^.album)][0].date
-          },
-          "socials": *[_type == "socialLink"] | order(order asc)[0...3] {
-            _id, title, url, description
-          },
-          "images": *[_type == "imageGallery"][0].galleryImages[0...6] {
-            asset->{_id},
-            alt,
-            "id": _key
-          }
-        }`;
-        const { client, sanityImage } = await import("../../lib/sanity");
-        const [next, videosRes] = await Promise.all([
-          client.fetch(query),
-          fetch("/api/videos").then((res) => (res.ok ? res.json() : null)).catch(() => null),
-        ]);
-        if (next?.images) {
-          next.images = next.images
-            .map((img) => ({
-              id: img.id,
-              alt: img.alt || "",
-              src: sanityImage(img.asset, { width: 240, height: 180, quality: 70 }),
-            }))
-            .filter((img) => img.src);
-        }
-        setData(next || {});
-        setLatestVideo(videosRes?.videos?.[0] || null);
-        setElapsed(formatElapsed(performance.now() - started));
-      } catch (err) {
-        console.error("Error fetching all results:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchAll();
-    return undefined;
-  }, [feed]);
-
-  if (loading) {
-    return <p className="serp-stats">Loading results…</p>;
-  }
+  const data = feed?.data || {
+    releases: [],
+    posts: [],
+    songs: [],
+    socials: [],
+    images: [],
+  };
+  const elapsed = feed?.elapsed || "0.12";
+  const latestVideo = feed?.latestVideo || null;
 
   const releases = data.releases || [];
   const latest = releases[0];

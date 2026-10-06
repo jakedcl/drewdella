@@ -1,4 +1,5 @@
 import ConnectPage from "@/views/ConnectPage/ConnectPage.jsx";
+import SerpMessage from "@/components/SerpMessage/SerpMessage.jsx";
 import { getSocials } from "@/lib/content";
 import { pageMetadata } from "@/lib/seo";
 
@@ -16,6 +17,15 @@ export default async function Page() {
     return <ConnectPage initialLinks={links || []} />;
   } catch (error) {
     console.error("Socials page error:", error);
-    return <ConnectPage />;
+    return (
+      <SerpMessage
+        title="Socials are taking a break."
+        detail="Couldn’t load socials right now. Try again in a bit."
+        links={[
+          { to: "/", label: "All results" },
+          { to: "/home", label: "Home" },
+        ]}
+      />
+    );
   }
 }

@@ -1,13 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
-import { client } from "../../lib/sanity";
 import {
   SearchResults,
   SearchResult,
-  formatElapsed,
   snippetFromPortableText,
   pathCite,
   datedSnippet,
@@ -16,97 +13,12 @@ import SerpMessage from "../../components/SerpMessage/SerpMessage.jsx";
 import { safeHref } from "../../lib/safeHref.js";
 import "./LyricsPage.css";
 
-function LyricsPage({ slug: slugProp, initialSong = null, initialSongs = null }) {
-  const params = useParams() || {};
-  const slug = slugProp !== undefined ? slugProp : params.slug;
-  const [songs, setSongs] = useState(initialSongs || []);
-  const [song, setSong] = useState(initialSong);
-  const [loading, setLoading] = useState(slug ? !initialSong : !initialSongs);
-  const [error, setError] = useState(null);
-  const [elapsed, setElapsed] = useState("0.12");
+function LyricsPage({ slug, initialSong = null, initialSongs = null }) {
+  const songs = initialSongs || [];
+  const song = initialSong;
+  const elapsed = "0.12";
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState("album");
-
-  useEffect(() => {
-    if (slug) {
-      const current = song?.slug?.current || song?.slug;
-      if (current === slug) return;
-      fetchSong(slug);
-      return;
-    }
-    if (initialSongs) return;
-    fetchSongs();
-  }, [slug]);
-
-  const fetchSongs = async () => {
-    const started = performance.now();
-    try {
-      setLoading(true);
-      setError(null);
-
-      const query = `*[_type == "song"] | order(albumOrder asc, album asc, order asc) {
-        _id,
-        title,
-        album,
-        albumOrder,
-        order,
-        slug,
-        "preview": pt::text(lyrics),
-        "date": *[_type == "musicRelease" && lower(title) == lower(^.album)][0].date
-      }`;
-
-      const data = await client.fetch(query);
-      setSongs(data);
-      setElapsed(formatElapsed(performance.now() - started));
-    } catch (err) {
-      console.error("Error fetching songs:", err);
-      setError("load-failed");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchSong = async (songSlug) => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const query = `*[_type == "song" && slug.current == $slug][0] {
-        _id,
-        title,
-        album,
-        lyrics[]{
-          ...,
-          _type == "image" => {
-            ...,
-            asset->
-          },
-          _type == "block" => {
-            ...,
-            markDefs[]{
-              ...,
-              _type == "link" => {
-                ...
-              }
-            }
-          }
-        },
-        slug
-      }`;
-
-      const data = await client.fetch(query, { slug: songSlug });
-      if (!data) {
-        setError("not-found");
-      } else {
-        setSong(data);
-      }
-    } catch (err) {
-      console.error("Error fetching song:", err);
-      setError("load-failed");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const renderLyrics = (lyrics) => {
     if (!lyrics) return null;
@@ -193,20 +105,24 @@ function LyricsPage({ slug: slugProp, initialSong = null, initialSongs = null })
     });
   };
 
-  if (loading) {
-    return <p className="serp-stats">Loading lyrics…</p>;
-  }
-
-  if (error) {
-    const missing = error === "not-found";
+  if (!slug && initialSongs == null) {
     return (
       <SerpMessage
-        title={missing ? "That song isn’t here." : "Lyrics are taking a break."}
-        detail={
-          missing
-            ? "The link may be old, or the title changed. Try searching lyrics again."
-            : "Couldn’t load lyrics right now. Try again in a bit."
-        }
+        title="Lyrics are taking a break."
+        detail="Couldn’t load lyrics right now. Try again in a bit."
+        links={[
+          { to: "/music", label: "Music" },
+          { to: "/", label: "All results" },
+        ]}
+      />
+    );
+  }
+
+  if (slug && !song) {
+    return (
+      <SerpMessage
+        title="That song isn’t here."
+        detail="The link may be old, or the title changed. Try searching lyrics again."
         links={[
           { to: "/lyrics", label: "All lyrics" },
           { to: "/music", label: "Music" },
@@ -216,7 +132,6 @@ function LyricsPage({ slug: slugProp, initialSong = null, initialSongs = null })
     );
   }
 
-  // Detail view (individual song)
   if (slug && song) {
     return (
       <div className="lyrics-page">

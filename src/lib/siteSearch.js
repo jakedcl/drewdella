@@ -1,95 +1,5 @@
-import { client } from "./sanity";
-import { slugify } from "./slug";
-
-const PAGES = [
-  {
-    id: "page-all",
-    title: "Drew Della",
-    href: "/",
-    source: "All",
-    internal: true,
-    haystack: "official site home all music lyrics videos blog live shows chat hangouts",
-  },
-  {
-    id: "page-home",
-    title: "Drew Della homepage",
-    href: "/home",
-    source: "All",
-    internal: true,
-    haystack: "search homepage logo",
-  },
-  {
-    id: "page-music",
-    title: "Music",
-    href: "/music",
-    source: "Music",
-    internal: true,
-    haystack: "discography albums singles listen",
-  },
-  {
-    id: "page-images",
-    title: "Images",
-    href: "/images",
-    source: "Images",
-    internal: true,
-    haystack: "photos pics pictures gallery photo",
-  },
-  {
-    id: "page-videos",
-    title: "Videos",
-    href: "/videos",
-    source: "Videos",
-    internal: true,
-    haystack: "youtube clips",
-  },
-  {
-    id: "page-blog",
-    title: "Blog",
-    href: "/blog",
-    source: "Blog",
-    internal: true,
-    haystack: "posts writing journal",
-  },
-  {
-    id: "page-connect",
-    title: "Socials",
-    href: "/connect",
-    source: "Socials",
-    internal: true,
-    haystack: "instagram twitter follow connect",
-  },
-  {
-    id: "page-lyrics",
-    title: "Lyrics",
-    href: "/lyrics",
-    source: "Lyrics",
-    internal: true,
-    haystack: "songs words",
-  },
-  {
-    id: "page-shop",
-    title: "Shop",
-    href: "/shop",
-    source: "Store",
-    internal: true,
-    haystack: "merch store coming soon",
-  },
-  {
-    id: "page-maps",
-    title: "Live shows",
-    href: "/maps",
-    source: "Maps",
-    internal: true,
-    haystack: "venues map tour dates places hosted",
-  },
-];
-
 let cached = null;
 let pending = null;
-
-function slugOf(item) {
-  return item?.slug?.current || item?.slug || "";
-}
 
 function snippetAround(text, query, max = 90) {
   const raw = String(text || "").replace(/\s+/g, " ").trim();
@@ -107,7 +17,7 @@ function snippetAround(text, query, max = 90) {
   return `${prefix}${chunk.trim()}${suffix}`;
 }
 
-function doc({ id, title, href, source, internal, haystack, snippet }) {
+export function toSearchDoc({ id, title, href, source, internal, haystack, snippet }) {
   return {
     id,
     title,
@@ -119,154 +29,24 @@ function doc({ id, title, href, source, internal, haystack, snippet }) {
   };
 }
 
-async function loadIndex() {
-  const query = `{
-    "releases": *[_type == "musicRelease"] {
-      _id, title, description, url, "slug": slug.current
-    },
-    "posts": *[_type == "blogPost"] {
-      _id, title, slug, "body": pt::text(content)
-    },
-    "songs": *[_type == "song"] {
-      _id, title, album, slug, "lyrics": pt::text(lyrics)
-    },
-    "socials": *[_type == "socialLink"] {
-      _id, title, url, description
-    },
-    "venues": *[_type == "mapLocation"] {
-      _id, venueName, address
-    },
-    "images": *[_type == "imageGallery"][0].galleryImages[] {
-      alt, caption, "id": _key
-    }
-  }`;
-
-  const [data, videosRes] = await Promise.all([
-    client.fetch(query).catch(() => ({})),
-    fetch("/api/videos")
-      .then((res) => (res.ok ? res.json() : null))
-      .catch(() => null),
-  ]);
-
-  const docs = [...PAGES];
-
-  for (const item of data?.releases || []) {
-    const slug = item.slug || slugify(item.title);
-    docs.push(
-      doc({
-        id: item._id,
-        title: item.title,
-        href: slug ? `/music/${slug}` : item.url,
-        source: "Music",
-        internal: Boolean(slug),
-        haystack: `${item.description || ""} ${item.url || ""}`,
-        snippet: item.description || "",
-      })
-    );
-  }
-
-  for (const item of data?.posts || []) {
-    const slug = slugOf(item);
-    if (!slug) continue;
-    docs.push(
-      doc({
-        id: item._id,
-        title: item.title,
-        href: `/blog/${slug}`,
-        source: "Blog",
-        internal: true,
-        haystack: item.body || "",
-        snippet: item.body || "",
-      })
-    );
-  }
-
-  for (const item of data?.songs || []) {
-    const slug = slugOf(item);
-    if (!slug) continue;
-    docs.push(
-      doc({
-        id: item._id,
-        title: item.title,
-        href: `/lyrics/${slug}`,
-        source: "Lyrics",
-        internal: true,
-        haystack: `${item.album || ""} ${item.lyrics || ""}`,
-        snippet: item.album ? `Lyrics from ${item.album}` : "Single",
-      })
-    );
-  }
-
-  for (const item of data?.socials || []) {
-    docs.push(
-      doc({
-        id: item._id,
-        title: item.title,
-        href: item.url,
-        source: "Socials",
-        internal: false,
-        haystack: item.description || "",
-        snippet: item.description || "",
-      })
-    );
-  }
-
-  for (const item of data?.venues || []) {
-    docs.push(
-      doc({
-        id: item._id,
-        title: item.venueName,
-        href: "/maps",
-        source: "Maps",
-        internal: true,
-        haystack: item.address || "",
-        snippet: item.address || "Live show venue",
-      })
-    );
-  }
-
-  for (const item of data?.images || []) {
-    const label = item.caption || item.alt;
-    if (!label) continue;
-    const imgId = item.id || "";
-    docs.push(
-      doc({
-        id: imgId || label,
-        title: label,
-        href: imgId ? `/images?img=${encodeURIComponent(imgId)}` : "/images",
-        source: "Images",
-        internal: true,
-        haystack: `${item.caption || ""} ${item.alt || ""} photos pics photo picture`,
-        snippet: "Photo",
-      })
-    );
-  }
-
-  for (const video of videosRes?.videos || []) {
-    docs.push(
-      doc({
-        id: video.id,
-        title: video.title,
-        href: `https://www.youtube.com/watch?v=${video.id}`,
-        source: "Videos",
-        internal: false,
-        haystack: "",
-        snippet: "YouTube",
-      })
-    );
-  }
-
-  return docs;
-}
-
+/**
+ * Loads the header search index from our own route, not the Sanity API.
+ * The browser keeps one copy for the tab; the route itself revalidates hourly.
+ */
 export async function getSearchIndex() {
   if (cached) return cached;
   if (!pending) {
-    pending = loadIndex()
+    pending = fetch("/api/search")
+      .then(async (res) => {
+        if (!res.ok) return [];
+        const data = await res.json();
+        return Array.isArray(data) ? data : [];
+      })
       .then((docs) => {
-        cached = docs;
+        if (docs.length) cached = docs;
         return docs;
       })
+      .catch(() => [])
       .finally(() => {
         pending = null;
       });
