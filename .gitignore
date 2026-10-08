@@ -33,13 +33,12 @@ lerna-debug.log*
 ehthumbs.db
 Thumbs.db
 
-# Editor / agent tooling
+# Editor / agent tooling (local only — AGENTS.md is committed for shared agent context)
 .vscode/*
 !.vscode/extensions.json
 .idea/
 .cursor/
 .claude/
-AGENTS.md
 CLAUDE.md
 .cursorrules
 
