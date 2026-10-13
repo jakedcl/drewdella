@@ -30,7 +30,7 @@
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  padding: 0 8px 0 4px;
+  padding: 0 8px 0 16px;
 }
 
 .header-spacer {
@@ -51,54 +51,60 @@
   .header {
     height: auto;
     min-height: 56px;
-    padding: 8px 10px 8px 8px;
-    gap: 6px;
+    /* Match .site-main's 1rem side margin */
+    padding: 8px 1rem;
+    gap: 8px;
     max-width: 100%;
   }
 
   .header-logo-group {
-    flex: 1 1 auto;
+    flex: 0 1 156px;
     gap: 0;
     min-width: 0;
-    max-width: none;
+    /* Leave room for the icon, link pair, and the gaps between them. */
+    max-width: calc(100% - 148px);
     overflow: hidden;
   }
 
   .header .logo-container {
     flex-shrink: 1 !important;
-    width: auto;
-    max-width: 100% !important;
+    width: 100%;
+    max-width: 156px !important;
     min-width: 0 !important;
+    height: auto;
   }
 
   .header .logo {
-    height: 28px;
+    display: block;
+    width: 100%;
+    height: auto;
     max-height: 28px;
-    width: auto;
-    max-width: 100%;
+    aspect-ratio: 1229 / 222;
   }
 
   .header-search-wrap {
     flex: 0 0 auto;
-    justify-content: flex-end;
-    min-width: 36px;
+    justify-content: flex-start;
+    min-width: 0;
     padding: 0;
     position: relative;
     z-index: 3;
   }
 
   .header-spacer {
-    display: none;
+    display: block;
+    flex: 1 1 auto;
+    min-width: 8px;
   }
 
   .header-links {
     flex: 0 0 auto;
-    gap: 0;
+    gap: 16px;
     margin-left: 0;
   }
 
   .header .header-link {
-    margin-left: 10px;
+    margin-left: 0;
     margin-right: 0;
     font-size: 13px;
   }
