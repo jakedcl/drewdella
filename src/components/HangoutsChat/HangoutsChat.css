@@ -341,9 +341,9 @@
 .hangouts-launcher {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 0;
   min-height: 48px;
-  padding: 6px 16px 6px 6px;
+  padding: 0;
   border: 0;
   border-radius: 999px;
   background: transparent;
@@ -427,6 +427,11 @@
   width: 22px;
   height: 22px;
   color: #5f6368;
+}
+
+.hangouts-launcher--open {
+  gap: 10px;
+  padding: 6px 16px 6px 6px;
 }
 
 .hangouts-launcher-label {
