@@ -12,10 +12,6 @@ function loadSearch() {
   return searchApi.current;
 }
 
-function isMobileSearch() {
-  return window.matchMedia("(max-width: 768px)").matches;
-}
-
 function SearchBar({
   suggestions = [],
   currentPath = "/home",
@@ -25,7 +21,6 @@ function SearchBar({
 }) {
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const [inputValue, setInputValue] = useState(initialQuery);
-  const [isReadonly, setIsReadonly] = useState(true);
   const [isExpanded, setIsExpanded] = useState(false);
   const [index, setIndex] = useState([]);
   const [searchSite, setSearchSite] = useState(() => () => []);
@@ -65,23 +60,47 @@ function SearchBar({
       }));
 
   const collapseSearch = () => {
+    document.body.classList.remove("search-open");
     setIsDropdownVisible(false);
-    setIsReadonly(true);
     setIsExpanded(false);
     setActiveIndex(0);
+  };
+
+  // iOS Safari only shows the keyboard when focus() runs inside the tap.
+  const focusInput = () => {
+    const input = inputRef.current;
+    if (!input) return;
+    try {
+      input.focus({ preventScroll: true });
+    } catch {
+      input.focus();
+    }
+  };
+
+  const openSearch = () => {
+    searchBarRef.current?.classList.add(
+      "searchbar-container--expanded",
+      "searchbar-container--open"
+    );
+    document.body.classList.add("search-open");
+    setIsExpanded(true);
+    setIsDropdownVisible(true);
+    warmIndex();
+    focusInput();
+  };
+
+  // preventDefault so the icon doesn't take focus away from the field
+  // before iOS has opened the keyboard.
+  const openFromIcon = (event) => {
+    if (event.button != null && event.button !== 0) return;
+    event.preventDefault();
+    openSearch();
   };
 
   const handleClickOutside = (event) => {
     if (searchBarRef.current && !searchBarRef.current.contains(event.target)) {
       collapseSearch();
     }
-  };
-
-  const allowTyping = () => {
-    setIsReadonly(false);
-    setTimeout(() => {
-      inputRef.current?.focus();
-    }, 50);
   };
 
   const warmIndex = () => {
@@ -94,20 +113,8 @@ function SearchBar({
       .catch(() => setIndex([]));
   };
 
-  const activateInput = () => {
-    setIsExpanded(true);
-    setIsDropdownVisible(true);
-    warmIndex();
-    if (isMobileSearch()) return;
-    allowTyping();
-  };
-
   const handleInputClick = () => {
-    if (isMobileSearch() && isReadonly && isDropdownVisible) {
-      allowTyping();
-      return;
-    }
-    activateInput();
+    openSearch();
   };
 
   const goTo = (row) => {
@@ -148,6 +155,7 @@ function SearchBar({
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+      document.body.classList.remove("search-open");
     };
   }, []);
 
@@ -162,7 +170,7 @@ function SearchBar({
     setInputValue(q);
     setIsExpanded(true);
     setIsDropdownVisible(true);
-    setIsReadonly(false);
+    document.body.classList.add("search-open");
     warmIndex();
   }, [initialQuery]);
 
@@ -179,11 +187,11 @@ function SearchBar({
 
   const submitSearch = () => {
     if (!query) {
-      activateInput();
+      openSearch();
       return;
     }
     if (!rows.length) {
-      activateInput();
+      openSearch();
       return;
     }
     goTo(rows[activeIndex] || rows[0]);
@@ -207,8 +215,8 @@ function SearchBar({
           onChange={(event) => setInputValue(event.target.value)}
           onFocus={() => setIsDropdownVisible(true)}
           onKeyDown={handleKeyDown}
-          readOnly={isReadonly}
-          inputMode={isReadonly ? "none" : "search"}
+          inputMode="search"
+          onPointerDown={handleInputClick}
           onClick={handleInputClick}
           autoComplete="off"
           spellCheck={false}
@@ -246,7 +254,8 @@ function SearchBar({
       <button
         type="button"
         className="search-icon"
-        onClick={activateInput}
+        onPointerDown={openFromIcon}
+        onClick={openSearch}
         aria-label="Search"
       >
         <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
