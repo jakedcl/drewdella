@@ -56,15 +56,16 @@
   left: -1px;
   right: -1px;
   top: 100%;
-  z-index: 1;
+  z-index: 2;
   margin: 0;
   padding: 0;
-  background: #fff;
+  background-color: #fff;
+  opacity: 1;
   overflow: hidden;
   border: 1px solid #4d90fe;
   border-top: 1px solid #dfe1e5;
   border-radius: 0 0 22px 22px;
-  box-shadow: 0 1px 6px rgba(32, 33, 36, 0.28);
+  box-shadow: 0 4px 12px rgba(32, 33, 36, 0.28);
 }
 
 .dropdown-item {
@@ -78,6 +79,7 @@
   color: purple;
   border-bottom: 1px solid #dfe1e5;
   text-decoration: none;
+  background-color: #fff;
   background-image: url("/recentsearch.png");
   background-repeat: no-repeat;
   background-size: 20px 20px;
@@ -92,6 +94,7 @@
 
 .dropdown-item--hit {
   color: #1a0dab;
+  background-color: #fff;
   background-image: none;
   padding-left: 20px;
   margin-left: 0;
@@ -120,6 +123,7 @@
   font-size: 13px;
   color: #545454;
   text-align: left;
+  background-color: #fff;
 }
 
 .search-icon {
@@ -212,7 +216,22 @@
     display: flex;
     flex-shrink: 0;
     position: relative;
-    z-index: 3;
+    z-index: 4;
+  }
+
+  /* display:none makes iOS ignore focus() even in the same tap.
+     Keep the field painted; hide it until the search opens. */
+  .header .searchbar-shell {
+    display: block;
+    position: fixed;
+    top: 8px;
+    left: 12px;
+    right: 12px;
+    width: auto;
+    background-color: #fff;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 5000;
   }
 
   .header .searchbar-container--expanded .search-icon {
@@ -220,12 +239,25 @@
   }
 
   .header .searchbar-container--expanded .searchbar-shell {
-    display: block;
-    position: fixed;
-    top: 8px;
-    left: 12px;
-    right: 12px;
-    width: auto;
-    z-index: 1400;
+    opacity: 1;
+    pointer-events: auto;
   }
+}
+
+/* view-transition-name on .header traps the menu under tabs, results,
+   and images. Lift the open search above those stacking contexts. */
+body.search-open .header {
+  position: relative;
+  z-index: 5000;
+  view-transition-name: none;
+}
+
+.searchbar-container--open {
+  z-index: 5000;
+}
+
+.searchbar-container--open .searchbar-shell,
+.searchbar-container--open .dropdown-menu,
+.searchbar-container--open .dropdown-empty {
+  background-color: #fff;
 }
