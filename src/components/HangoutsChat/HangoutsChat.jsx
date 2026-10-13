@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { CONTACT_EMAIL, contactMailto } from "../../lib/contact";
 import { useVisualViewportBottom } from "../../lib/useVisualViewportBottom";
 import "./HangoutsChat.css";
 
@@ -366,10 +365,6 @@ function HangoutsChat() {
             </div>
             {status ? <p className="hangouts-status">{status}</p> : null}
           </form>
-          <a className="hangouts-email-link" href={contactMailto()}>
-            Email Drew
-            <span>{CONTACT_EMAIL}</span>
-          </a>
         </div>
       ) : null}
 

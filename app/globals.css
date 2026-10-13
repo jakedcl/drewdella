@@ -14,6 +14,14 @@ html {
   zoom: var(--ui-zoom);
 }
 
+/* Phone widths are already dense. The desktop zoom makes 100% layouts
+   wider than the screen and opens a horizontal scroll. */
+@media (max-width: 768px) {
+  html {
+    zoom: 1;
+  }
+}
+
 /* Sanity Studio has its own density — leave it at native scale */
 html:has(.studio-root) {
   zoom: 1;

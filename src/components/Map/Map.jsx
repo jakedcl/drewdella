@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { applyGoogleBasemap } from "./googleBasemap";
 import "./Map.css";
 
 function prefersReducedMotion() {
@@ -16,9 +17,21 @@ function hasWebGL() {
   }
 }
 
-const pinSVG = `<svg width="27" height="36" viewBox="0 0 27 36" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-  <path d="M13.5 1.2C7.1 1.2 2 6.3 2 12.7 2 21.2 13.5 34.2 13.5 34.2S25 21.2 25 12.7C25 6.3 19.9 1.2 13.5 1.2z" fill="#EA4335" stroke="#fff" stroke-width="1.4"/>
-  <circle cx="13.5" cy="12.6" r="4.2" fill="#fff"/>
+function useNarrow(maxWidth = 768) {
+  const [narrow, setNarrow] = useState(false);
+  useEffect(() => {
+    const query = window.matchMedia(`(max-width: ${maxWidth}px)`);
+    const apply = () => setNarrow(query.matches);
+    apply();
+    query.addEventListener("change", apply);
+    return () => query.removeEventListener("change", apply);
+  }, [maxWidth]);
+  return narrow;
+}
+
+const pinSVG = `<svg width="27" height="41" viewBox="0 0 27 41" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <path d="M13.5 1.15C7.35 1.15 2.35 6.15 2.35 12.3 2.35 20.85 13.5 38.6 13.5 38.6S24.65 20.85 24.65 12.3C24.65 6.15 19.65 1.15 13.5 1.15z" fill="#EA4335" stroke="#C5221F" stroke-width="0.75"/>
+  <circle cx="13.5" cy="12.15" r="4.35" fill="#fff"/>
 </svg>`;
 
 async function geocode(query, token) {
@@ -56,11 +69,26 @@ async function resolvePlaces(raw, token) {
   return places;
 }
 
+function placeCard(place) {
+  const root = document.createElement("div");
+  root.className = "gmaps-pop";
+  const title = document.createElement("strong");
+  title.textContent = place.venueName;
+  const address = document.createElement("p");
+  address.textContent = place.address || "Live show venue";
+  root.append(title, address);
+  return root;
+}
+
 export default function Map({ locations = [], loadError = "" }) {
   const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "";
   const mapNode = useRef(null);
   const mapRef = useRef(null);
+  const mapboxRef = useRef(null);
   const markersRef = useRef([]);
+  const popupRef = useRef(null);
+  const searchWrapRef = useRef(null);
+  const inputRef = useRef(null);
 
   const [places, setPlaces] = useState([]);
   const [loading, setLoading] = useState(!loadError);
@@ -70,6 +98,9 @@ export default function Map({ locations = [], loadError = "" }) {
   const [webgl, setWebgl] = useState(true);
   const [query, setQuery] = useState("");
   const [activeId, setActiveId] = useState(null);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [highlight, setHighlight] = useState(-1);
+  const narrow = useNarrow();
 
   useEffect(() => {
     setWebgl(hasWebGL());
@@ -114,6 +145,7 @@ export default function Map({ locations = [], loadError = "" }) {
       if (cancelled || !mapNode.current) return;
 
       mapboxgl.accessToken = token;
+      mapboxRef.current = mapboxgl;
       map = new mapboxgl.Map({
         container: mapNode.current,
         style: "mapbox://styles/mapbox/streets-v12",
@@ -134,6 +166,7 @@ export default function Map({ locations = [], loadError = "" }) {
 
       map.on("load", () => {
         if (cancelled) return;
+        applyGoogleBasemap(map);
         map.resize();
         markersRef.current = places.map((place) => {
           const el = document.createElement("button");
@@ -166,36 +199,152 @@ export default function Map({ locations = [], loadError = "" }) {
       cancelled = true;
       markersRef.current.forEach((item) => item.marker.remove());
       markersRef.current = [];
+      popupRef.current?.remove();
+      popupRef.current = null;
       map?.remove();
       mapRef.current = null;
+      mapboxRef.current = null;
       setMapReady(false);
     };
   }, [canDraw, places, token]);
 
   useEffect(() => {
     markersRef.current.forEach((item) => {
-      item.marker.getElement()?.classList.toggle("is-active", item.id === activeId);
+      const el = item.marker.getElement();
+      const on = item.id === activeId;
+      el?.classList.toggle("is-active", on);
+      if (el) el.style.zIndex = on ? "2" : "";
     });
-    if (!activeId || !mapRef.current) return;
+
+    const map = mapRef.current;
+    const mapboxgl = mapboxRef.current;
+    const existing = popupRef.current;
+    if (!activeId || !map || !mapboxgl || !mapReady) {
+      if (existing) {
+        popupRef.current = null;
+        existing.remove();
+      }
+      return undefined;
+    }
+
     const place = places.find((item) => item.id === activeId);
-    if (!place) return;
-    mapRef.current.easeTo({
+    if (!place) return undefined;
+
+    if (existing) {
+      popupRef.current = null;
+      existing.remove();
+    }
+
+    const popup = new mapboxgl.Popup({
+      closeButton: true,
+      closeOnClick: false,
+      maxWidth: "280px",
+      offset: 42,
+      className: "gmaps-popup",
+      anchor: "bottom",
+      focusAfterOpen: false,
+    })
+      .setLngLat(place.lngLat)
+      .setDOMContent(placeCard(place))
+      .addTo(map);
+
+    popupRef.current = popup;
+    popup.on("close", () => {
+      if (popupRef.current !== popup) return;
+      popupRef.current = null;
+      setActiveId((id) => (id === place.id ? null : id));
+    });
+
+    map.flyTo({
       center: place.lngLat,
-      zoom: Math.max(mapRef.current.getZoom(), 14),
-      duration: prefersReducedMotion() ? 0 : 600,
+      zoom: Math.max(map.getZoom(), 15),
+      padding: { top: 168, bottom: 56, left: 48, right: 72 },
+      duration: prefersReducedMotion() ? 0 : 1300,
       essential: true,
     });
-  }, [activeId, places]);
 
+    document.getElementById(`venue-row-${place.id}`)?.scrollIntoView({ block: "nearest" });
+    return undefined;
+  }, [activeId, mapReady, places]);
+
+  const queryText = query.trim().toLowerCase();
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return places;
+    if (!queryText) return places;
     return places.filter((place) =>
-      `${place.venueName} ${place.address}`.toLowerCase().includes(q)
+      `${place.venueName} ${place.address}`.toLowerCase().includes(queryText)
     );
-  }, [places, query]);
+  }, [places, queryText]);
 
-  const active = places.find((place) => place.id === activeId) || null;
+  const suggestList = narrow && !queryText ? places : filtered;
+  const showSuggest = searchOpen && (narrow || queryText.length > 0);
+  const activeOptionId =
+    highlight >= 0 && suggestList[highlight]
+      ? `venue-opt-${suggestList[highlight].id}`
+      : undefined;
+
+  useEffect(() => {
+    if (!showSuggest || highlight < 0) return;
+    document.getElementById(activeOptionId)?.scrollIntoView({ block: "nearest" });
+  }, [showSuggest, highlight, activeOptionId]);
+
+  useEffect(() => {
+    if (!searchOpen) return undefined;
+    const onPointer = (event) => {
+      if (searchWrapRef.current?.contains(event.target)) return;
+      setSearchOpen(false);
+      setHighlight(-1);
+      if (mapNode.current?.contains(event.target)) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    };
+    document.addEventListener("pointerdown", onPointer, true);
+    return () => document.removeEventListener("pointerdown", onPointer, true);
+  }, [searchOpen]);
+
+  const chooseSuggestion = (place) => {
+    setActiveId(place.id);
+    setQuery(place.venueName);
+    setSearchOpen(false);
+    setHighlight(-1);
+    inputRef.current?.blur();
+  };
+
+  const onSearchKeyDown = (event) => {
+    const items = suggestList;
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      setSearchOpen(true);
+      if (!items.length) return;
+      setHighlight((index) => (index + 1) % items.length);
+      return;
+    }
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      setSearchOpen(true);
+      if (!items.length) return;
+      setHighlight((index) => (index <= 0 ? items.length - 1 : index - 1));
+      return;
+    }
+    if (event.key === "Enter") {
+      const pick = highlight >= 0 ? items[highlight] : items[0];
+      if (pick && (showSuggest || queryText)) {
+        event.preventDefault();
+        chooseSuggestion(pick);
+      }
+      return;
+    }
+    if (event.key === "Escape") {
+      if (!searchOpen && !query) return;
+      event.preventDefault();
+      if (searchOpen) {
+        setSearchOpen(false);
+        setHighlight(-1);
+        return;
+      }
+      setQuery("");
+    }
+  };
 
   const zoom = (delta) => {
     const map = mapRef.current;
@@ -219,53 +368,143 @@ export default function Map({ locations = [], loadError = "" }) {
       ? "This browser can’t draw the map. The venues are listed here."
       : mapFailed;
 
+  const suggestStatus = loading
+    ? "Loading venues…"
+    : error
+      ? error
+      : !suggestList.length
+        ? places.length
+          ? "No venues match that search."
+          : "No venues pinned yet."
+        : "";
+
   return (
     <div className="gmaps">
       <aside className="gmaps-panel">
-        <form
-          className="gmaps-search"
-          onSubmit={(event) => {
-            event.preventDefault();
-            if (filtered[0]) setActiveId(filtered[0].id);
-          }}
+        <div
+          className={`gmaps-search-wrap${showSuggest ? " is-open" : ""}`}
+          ref={searchWrapRef}
         >
-          <label className="sr-only" htmlFor="venue-search">
-            Search venues
-          </label>
-          <input
-            id="venue-search"
-            type="search"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search venues"
-            autoComplete="off"
-          />
-        </form>
-        <p className="gmaps-note">Shoutout to the venues that have hosted me</p>
-        {loading ? <p className="gmaps-status">Loading venues…</p> : null}
-        {error ? <p className="gmaps-status">{error}</p> : null}
-        {!loading && !error && !filtered.length ? (
-          <p className="gmaps-status">
-            {places.length ? "No venues match that search." : "No venues pinned yet."}
-          </p>
-        ) : null}
-        <ul className="gmaps-results">
-          {filtered.map((place) => (
-            <li key={place.id}>
+          <form
+            className="gmaps-search"
+            role="search"
+            onSubmit={(event) => {
+              event.preventDefault();
+              const pick = highlight >= 0 ? suggestList[highlight] : suggestList[0];
+              if (pick) chooseSuggestion(pick);
+            }}
+          >
+            <label className="sr-only" htmlFor="venue-search">
+              Search venues
+            </label>
+            <input
+              ref={inputRef}
+              id="venue-search"
+              type="search"
+              role="combobox"
+              aria-expanded={showSuggest}
+              aria-controls="venue-suggestions"
+              aria-autocomplete="list"
+              aria-activedescendant={showSuggest ? activeOptionId : undefined}
+              value={query}
+              onChange={(event) => {
+                setQuery(event.target.value);
+                setHighlight(-1);
+                setSearchOpen(true);
+              }}
+              onFocus={() => setSearchOpen(true)}
+              onKeyDown={onSearchKeyDown}
+              placeholder="Search venues"
+              autoComplete="off"
+              autoCorrect="off"
+              spellCheck={false}
+              enterKeyHint="search"
+            />
+            {query ? (
               <button
                 type="button"
-                className={place.id === activeId ? "is-active" : ""}
-                onClick={() => setActiveId(place.id)}
+                className="gmaps-search-clear"
+                aria-label="Clear search"
+                onClick={() => {
+                  setQuery("");
+                  setHighlight(-1);
+                  setSearchOpen(true);
+                  inputRef.current?.focus();
+                }}
               >
-                <span className="gmaps-pin-dot" aria-hidden="true" />
-                <span>
-                  <strong>{place.venueName}</strong>
-                  <em>{place.address || "Live show venue"}</em>
-                </span>
+                ×
               </button>
-            </li>
-          ))}
-        </ul>
+            ) : null}
+          </form>
+          {showSuggest ? (
+            <div className="gmaps-suggest">
+              <p className="gmaps-suggest-note">Shoutout to the venues that have hosted me</p>
+              {suggestStatus ? (
+                <p className="gmaps-suggest-empty" role="status">
+                  {suggestStatus}
+                </p>
+              ) : null}
+              <ul id="venue-suggestions" role="listbox" aria-label="Venues">
+                {suggestList.map((place, index) => (
+                  <li key={place.id} role="presentation">
+                    <button
+                      type="button"
+                      id={`venue-opt-${place.id}`}
+                      role="option"
+                      aria-selected={index === highlight}
+                      className={index === highlight ? "is-active" : ""}
+                      onMouseEnter={() => setHighlight(index)}
+                      onMouseDown={(event) => {
+                        event.preventDefault();
+                        chooseSuggestion(place);
+                      }}
+                    >
+                      <span className="gmaps-pin-dot" aria-hidden="true" />
+                      <span>
+                        <strong>{place.venueName}</strong>
+                        <em>{place.address || "Live show venue"}</em>
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+        </div>
+
+        {loading ? <p className="gmaps-alert">Loading venues…</p> : null}
+        {error ? <p className="gmaps-alert">{error}</p> : null}
+
+        <div className="gmaps-browse">
+          <p className="gmaps-note">Shoutout to the venues that have hosted me</p>
+          {loading ? <p className="gmaps-status">Loading venues…</p> : null}
+          {error ? <p className="gmaps-status">{error}</p> : null}
+          {!loading && !error && !places.length ? (
+            <p className="gmaps-status">No venues pinned yet.</p>
+          ) : null}
+          <ul className="gmaps-results">
+            {places.map((place) => (
+              <li key={place.id}>
+                <button
+                  type="button"
+                  id={`venue-row-${place.id}`}
+                  className={place.id === activeId ? "is-active" : ""}
+                  onClick={() => {
+                    setActiveId(place.id);
+                    setSearchOpen(false);
+                    setHighlight(-1);
+                  }}
+                >
+                  <span className="gmaps-pin-dot" aria-hidden="true" />
+                  <span>
+                    <strong>{place.venueName}</strong>
+                    <em>{place.address || "Live show venue"}</em>
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
       </aside>
 
       <div className="gmaps-stage">
@@ -274,35 +513,22 @@ export default function Map({ locations = [], loadError = "" }) {
             <div ref={mapNode} className="gmaps-canvas" />
             {!mapReady ? <div className="gmaps-veil">Loading map…</div> : null}
             <div className="gmaps-controls">
-              <button type="button" onClick={() => zoom(1)} aria-label="Zoom in">
-                +
-              </button>
-              <button type="button" onClick={() => zoom(-1)} aria-label="Zoom out">
-                −
-              </button>
-              <button type="button" onClick={resetNorth} aria-label="Reset north">
-                <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-                  <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeWidth="1.6" />
-                  <path d="M12 5.5 14.2 12 12 10.6 9.8 12Z" fill="#EA4335" />
-                  <path d="M12 18.5 9.8 12 12 13.4 14.2 12Z" fill="#9aa0a6" />
+              <div className="gmaps-zoom">
+                <button type="button" onClick={() => zoom(1)} aria-label="Zoom in">
+                  +
+                </button>
+                <button type="button" onClick={() => zoom(-1)} aria-label="Zoom out">
+                  −
+                </button>
+              </div>
+              <button type="button" className="gmaps-compass" onClick={resetNorth} aria-label="Reset north">
+                <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+                  <circle cx="12" cy="12" r="8.25" fill="none" stroke="currentColor" strokeWidth="1.6" />
+                  <path d="M12 4.6 14.35 12 12 10.45 9.65 12Z" fill="#EA4335" />
+                  <path d="M12 19.4 9.65 12 12 13.55 14.35 12Z" fill="#9aa0a6" />
                 </svg>
               </button>
             </div>
-            {active ? (
-              <div className="gmaps-card" role="dialog" aria-label={active.venueName}>
-                <button
-                  type="button"
-                  className="gmaps-card-x"
-                  onClick={() => setActiveId(null)}
-                  aria-label={`Close ${active.venueName}`}
-                >
-                  ×
-                </button>
-                <p className="gmaps-card-kicker">Maps · Drew Della</p>
-                <h2>{active.venueName}</h2>
-                <p>{active.address || "Live show venue"}</p>
-              </div>
-            ) : null}
           </>
         ) : (
           <div className="gmaps-fallback" role="status">

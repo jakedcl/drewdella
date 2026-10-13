@@ -1,5 +1,5 @@
 /**
- * Public contact address for the Hangouts mailto link.
+ * Public contact address for the Socials email result.
  * Not in Sanity, site copy, or JSON-LD. Published as the contact on the
  * merch store terms of service, which is the shop this site already links to:
  * https://drewdellamerch.com/policies/terms-of-service

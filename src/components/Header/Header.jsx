@@ -5,13 +5,9 @@ import Link from "next/link";
 import GoogleLogo from "../GoogleLogo/GoogleLogo";
 import SearchBar from "../SearchBar/SearchBar";
 import { searchSuggestions } from "../../constants/searchSuggestions";
-import { DEFAULT_SHOP_PATH } from "../../lib/shopLink";
 import "./Header.css";
 
-const Header = ({
-  currentPath = "",
-  shop = { href: DEFAULT_SHOP_PATH, external: false },
-}) => {
+const Header = ({ currentPath = "" }) => {
 
   const googleLogoStyles = {
     display: "flex",
@@ -36,20 +32,9 @@ const Header = ({
         <Link href="/maps" className="header-link" prefetch={false}>
           Maps
         </Link>
-        {shop.external ? (
-          <a
-            href={shop.href}
-            className="header-link"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Store
-          </a>
-        ) : (
-          <Link href={shop.href} className="header-link">
-            Store
-          </Link>
-        )}
+        <Link href="/connect" className="header-link" prefetch={false}>
+          Contact
+        </Link>
       </div>
     </header>
   );

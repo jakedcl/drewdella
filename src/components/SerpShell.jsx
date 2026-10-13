@@ -14,7 +14,7 @@ const HangoutsChat = dynamic(
   { ssr: false }
 );
 
-export default function SerpShell({ children, shop }) {
+export default function SerpShell({ children }) {
   const pathname = usePathname();
   const isMaps = pathname === "/maps";
 
@@ -24,7 +24,7 @@ export default function SerpShell({ children, shop }) {
 
   return (
     <div className={`site-layout${isMaps ? " site-layout--maps" : ""}`}>
-      <Header currentPath={pathname} shop={shop} />
+      <Header currentPath={pathname} />
       <NavTabs />
       <main className={isMaps ? "site-main site-main--maps" : "site-main"}>
         <PageHeading pathname={pathname} />
