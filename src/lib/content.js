@@ -357,7 +357,6 @@ export const getGallery = cache(async () => {
     galleryImages[] {
       asset->{
         _id,
-        url,
         metadata { dimensions }
       },
       alt,

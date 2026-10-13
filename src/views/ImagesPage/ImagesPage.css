@@ -71,18 +71,6 @@
   box-shadow: 0 0 0 2px #fff, 0 0 0 4px #1a73e8;
 }
 
-.images-result-title {
-  display: block;
-  margin-top: 4px;
-  font-size: 11px;
-  line-height: 1.3;
-  color: #4d5156;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 /* ---- Detail panel ---- */
 .images-panel {
   position: fixed;
@@ -110,26 +98,6 @@
     width: min(520px, 46vw);
     border-left: 1px solid #dadce0;
     overflow-y: auto;
-  }
-
-  .images-panel-backdrop {
-    position: fixed;
-    top: 105px;
-    left: 0;
-    right: min(520px, 46vw);
-    bottom: 0;
-    z-index: 1190;
-    margin: 0;
-    padding: 0;
-    border: none;
-    background: transparent;
-    cursor: default;
-  }
-}
-
-@media (max-width: 899px) {
-  .images-panel-backdrop {
-    display: none;
   }
 }
 

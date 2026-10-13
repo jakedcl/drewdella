@@ -1,4 +1,3 @@
-import { Suspense } from "react";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
 import ImagesPage from "@/views/ImagesPage/ImagesPage.jsx";
 import SerpMessage from "@/components/SerpMessage/SerpMessage.jsx";
@@ -18,9 +17,7 @@ export default async function Page() {
     const { images, elapsed } = await getGallery();
     return (
       <AppRouterCacheProvider>
-        <Suspense fallback={null}>
-          <ImagesPage images={images || []} elapsed={elapsed} />
-        </Suspense>
+        <ImagesPage images={images || []} elapsed={elapsed} />
       </AppRouterCacheProvider>
     );
   } catch (error) {
