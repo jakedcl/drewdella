@@ -7,7 +7,7 @@ import React, {
   useMemo,
   useRef,
 } from "react";
-import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { Masonry } from "@mui/lab";
 import { Box } from "@mui/material";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
@@ -51,8 +51,42 @@ function imageLabel(image) {
   return image?.caption || image?.alt || "Photo";
 }
 
+const THUMB_SIZES =
+  "(max-width: 599px) 33vw, (max-width: 899px) 25vw, (max-width: 1199px) 20vw, 16vw";
+
+function thumbProps(asset) {
+  if (!asset) return null;
+  const dims = asset.metadata?.dimensions;
+  const make = (width) =>
+    urlFor(asset).width(width).auto("format").quality(60).fit("max").url();
+  return {
+    src: make(640),
+    srcSet: `${make(320)} 320w, ${make(640)} 640w`,
+    sizes: THUMB_SIZES,
+    width: dims?.width || 4,
+    height: dims?.height || 3,
+  };
+}
+
+function ThumbImage({ asset, alt }) {
+  const thumb = thumbProps(asset);
+  if (!thumb) return null;
+  return (
+    <img
+      src={thumb.src}
+      srcSet={thumb.srcSet}
+      sizes={thumb.sizes}
+      width={thumb.width}
+      height={thumb.height}
+      alt={alt || "Gallery image"}
+      loading="lazy"
+      decoding="async"
+      draggable={false}
+    />
+  );
+}
+
 function ImagesPage({ images = [], elapsed = "0.12" }) {
-  const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
   const [activeImage, setActiveImage] = useState(null);
@@ -103,10 +137,7 @@ function ImagesPage({ images = [], elapsed = "0.12" }) {
   );
 
   const thumbUrl = useMemo(
-    () =>
-      activeImage
-        ? urlFor(activeImage.asset).width(800).auto("format").url()
-        : "",
+    () => (activeImage ? thumbProps(activeImage.asset)?.src || "" : ""),
     [activeImage]
   );
 
@@ -181,10 +212,11 @@ function ImagesPage({ images = [], elapsed = "0.12" }) {
     closeBtnRef.current?.focus();
   }, [activeImage]);
 
-  /* Open panel when arriving from All (or a shared ?img= link) */
+  /* Open panel when arriving from All (or a shared ?img= link).
+     Read the query here so the grid can render in the first HTML. */
   useEffect(() => {
     if (!images.length || openedFromQuery.current) return;
-    const want = searchParams.get("img");
+    const want = new URLSearchParams(window.location.search).get("img");
     if (!want) return;
     const match = images.find(
       (img) => imageKey(img) === want || img.asset?._id === want
@@ -197,7 +229,7 @@ function ImagesPage({ images = [], elapsed = "0.12" }) {
         shuffle(images.filter((img) => imageKey(img) !== imageKey(match)))
       );
     }
-  }, [images, searchParams]);
+  }, [images]);
 
   useEffect(() => {
     if (!activeImage) return undefined;
@@ -264,21 +296,7 @@ function ImagesPage({ images = [], elapsed = "0.12" }) {
                       : "Open image detail"
                   }
                 >
-                  <img
-                    src={urlFor(image.asset).width(360).auto("format").url()}
-                    alt={image.alt || "Gallery image"}
-                    loading="lazy"
-                    draggable={false}
-                    onError={(e) => {
-                      console.error("Image failed to load:", image.asset._id);
-                      e.target.style.display = "none";
-                    }}
-                  />
-                  {(image.caption || image.alt) && (
-                    <span className="images-result-title">
-                      {image.caption || image.alt}
-                    </span>
-                  )}
+                  <ThumbImage asset={image.asset} alt={image.alt} />
                 </button>
               )}
             </div>
@@ -291,12 +309,6 @@ function ImagesPage({ images = [], elapsed = "0.12" }) {
 
       {activeImage && (
         <>
-          <button
-            type="button"
-            className="images-panel-backdrop"
-            aria-label="Close image detail"
-            onClick={closePanel}
-          />
           <aside
             ref={panelRef}
             className="images-panel"
@@ -401,16 +413,7 @@ function ImagesPage({ images = [], elapsed = "0.12" }) {
                             : "Open image detail"
                         }
                       >
-                        <img
-                          src={urlFor(image.asset)
-                            .width(500)
-                            .auto("format")
-                            .url()}
-                          alt={image.alt || "Gallery image"}
-                          loading="lazy"
-                          fetchPriority="low"
-                          draggable={false}
-                        />
+                        <ThumbImage asset={image.asset} alt={image.alt} />
                       </button>
                       <p className="images-suggested-title">
                         {imageLabel(image)}
