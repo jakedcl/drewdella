@@ -45,6 +45,9 @@ Only variables starting with `NEXT_PUBLIC_` reach the browser. Never put a Sanit
 
 ## Project layout
 
+More detail on the video sync, chat protection, key restrictions and deployment is in [docs/how-it-works.md](docs/how-it-works.md).
+
+
 - `app/` routes and API handlers (`api/videos`, `api/videos-sync`, `api/chat`)
 - `src/views/` one folder per tab
 - `src/components/` shared UI, including the chat widget
