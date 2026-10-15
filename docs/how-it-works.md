@@ -4,7 +4,7 @@ Notes on the pieces behind the site that aren't obvious from the pages: where th
 
 ## Data and access
 
-All content is in Sanity (project `qcu6o4bq`, dataset `production`). The dataset is public-read, so the browser client (`src/lib/sanity.js`) has no token. Anything named `NEXT_PUBLIC_*` is shipped to the browser, so a Sanity write token must never go in one.
+All content is in Sanity (project `qcu6o4bq`, dataset `production`). The dataset is public-read. `src/lib/sanity.js` is a server-only client (`import "server-only"`) with no write token. Anything named `NEXT_PUBLIC_*` is shipped to the browser, so a Sanity write token must never go in one.
 
 The server uses `SANITY_API_TOKEN` in two places only:
 
@@ -65,4 +65,4 @@ Pushing `main` deploys on Vercel. After changing any secret:
 2. Redeploy, since `NEXT_PUBLIC_*` values are baked into the client build.
 3. Confirm `/api/videos-sync` returns 401 when called without the bearer secret.
 
-`package.json` asks for Node 20.x and `.nvmrc` says 22, so those two disagree.
+`package.json` and `.nvmrc` both ask for Node 24.
