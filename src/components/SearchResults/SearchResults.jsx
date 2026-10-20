@@ -10,8 +10,16 @@ import "./SearchResults.css";
 
 const OWN_HOST = "drewdella.com";
 
+function sectionLabel(part) {
+  if (!part || part.includes(".") || part.includes("/")) return part;
+  return part.charAt(0).toUpperCase() + part.slice(1);
+}
+
 export function pathCite(...parts) {
-  return parts.filter(Boolean).join(" › ");
+  return parts
+    .filter(Boolean)
+    .map((part, index) => (index === 0 ? sectionLabel(part) : part))
+    .join(" › ");
 }
 
 export function formatCite(url) {
@@ -23,7 +31,11 @@ export function formatCite(url) {
       .filter(Boolean)
       .slice(0, 4)
       .map((part) => decodeURIComponent(part));
-    if (host === OWN_HOST) return crumbs.join(" › ");
+    if (host === OWN_HOST) {
+      return crumbs
+        .map((part, index) => (index === 0 ? sectionLabel(part) : part))
+        .join(" › ");
+    }
     return [host, ...crumbs].join(" › ");
   } catch {
     return url;

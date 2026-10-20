@@ -137,7 +137,7 @@ function ReleaseRow({ release }) {
         <h2 className="music-row-title">
           <Link href={release.href}>{release.title}</Link>
         </h2>
-        <cite className="music-row-cite">music › {release.slug}</cite>
+        <cite className="music-row-cite">Music › {release.slug}</cite>
         {snippet ? <p className="music-row-snippet">{snippet}</p> : null}
       </div>
     </article>
@@ -182,7 +182,7 @@ export function MusicReleasePage({ release, others = [] }) {
   return (
     <article className="release">
       <p className="release-cite">
-        <Link href="/music">music</Link>
+        <Link href="/music">Music</Link>
         <span aria-hidden="true"> › </span>
         {release.slug}
       </p>
