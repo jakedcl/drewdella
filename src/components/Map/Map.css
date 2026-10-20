@@ -383,6 +383,12 @@
     padding: 12px 12px 0;
   }
 
+  /* Search pill is 12px + 48px tall and spans the map. Drop the
+     zoom and compass below it; desktop stays at top: 12px. */
+  .gmaps-controls {
+    top: 72px;
+  }
+
   .gmaps-search input {
     height: 48px;
     padding: 0 44px 0 16px;
