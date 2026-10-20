@@ -115,7 +115,7 @@ function ImagesOneBox({ images }) {
         Images for Drew Della
       </Link>
       <cite className="serp-cite">
-        images
+        {pathCite("images")}
         <span className="serp-cite-arrow" aria-hidden>
           ▼
         </span>
