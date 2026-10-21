@@ -7,6 +7,7 @@ import blogPost from './blogPost'
 import song from './song'
 import youtubeCache from './youtubeCache'
 import chatMessage from './chatMessage'
+import contact from './contact'
 
 export const schemaTypes = [
   imageGallery,
@@ -18,4 +19,5 @@ export const schemaTypes = [
   song,
   youtubeCache,
   chatMessage,
+  contact,
 ]

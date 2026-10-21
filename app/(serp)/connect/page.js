@@ -1,6 +1,6 @@
 import ConnectPage from "@/views/ConnectPage/ConnectPage.jsx";
 import SerpMessage from "@/components/SerpMessage/SerpMessage.jsx";
-import { getSocials } from "@/lib/content";
+import { getContactEmail, getSocials } from "@/lib/content";
 import { pageMetadata } from "@/lib/seo";
 
 export const revalidate = 3600;
@@ -13,8 +13,8 @@ export const metadata = pageMetadata({
 
 export default async function Page() {
   try {
-    const links = await getSocials();
-    return <ConnectPage initialLinks={links || []} />;
+    const [links, email] = await Promise.all([getSocials(), getContactEmail()]);
+    return <ConnectPage initialLinks={links || []} email={email || ""} />;
   } catch (error) {
     console.error("Socials page error:", error);
     return (

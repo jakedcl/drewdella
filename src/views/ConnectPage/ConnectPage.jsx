@@ -8,25 +8,35 @@ import {
   socialSnippet,
 } from "../../components/SearchResults/SearchResults.jsx";
 import SerpMessage from "../../components/SerpMessage/SerpMessage.jsx";
-import { CONTACT_EMAIL, contactMailto } from "../../lib/contact";
+function emailHref(email) {
+  const params = new URLSearchParams({ subject: "Hey Drew" });
+  return `mailto:${email}?${params.toString()}`;
+}
 
-function EmailResult() {
+function EmailResult({ email }) {
+  if (!email) return null;
   return (
     <SearchResult
-      href={contactMailto()}
+      href={emailHref(email)}
       title="Email Drew"
-      cite={CONTACT_EMAIL}
+      cite={email}
       snippet="Send Drew a note."
     />
   );
 }
 
-export default function ConnectPage({ initialLinks = [], initialElapsed = "0.12" }) {
+export default function ConnectPage({
+  initialLinks = [],
+  initialElapsed = "0.12",
+  email = "",
+}) {
   const socialLinks = initialLinks || [];
+  const address = String(email || "").trim();
+  const count = socialLinks.length + (address ? 1 : 0);
 
   if (!socialLinks.length) {
     return (
-      <SearchResults count={1} elapsed={initialElapsed}>
+      <SearchResults count={count} elapsed={initialElapsed}>
         <SerpMessage
           title="No socials listed yet."
           detail="Links will show up here when they’re ready."
@@ -35,13 +45,13 @@ export default function ConnectPage({ initialLinks = [], initialElapsed = "0.12"
             { to: "/blog", label: "Blog" },
           ]}
         />
-        <EmailResult />
+        <EmailResult email={address} />
       </SearchResults>
     );
   }
 
   return (
-    <SearchResults count={socialLinks.length + 1} elapsed={initialElapsed}>
+    <SearchResults count={count} elapsed={initialElapsed}>
       {socialLinks.map((link) => (
         <SearchResult
           key={link._id}
@@ -51,7 +61,7 @@ export default function ConnectPage({ initialLinks = [], initialElapsed = "0.12"
           snippet={socialSnippet(link)}
         />
       ))}
-      <EmailResult />
+      <EmailResult email={address} />
     </SearchResults>
   );
 }

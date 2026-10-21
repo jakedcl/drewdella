@@ -4,14 +4,16 @@ Notes on the pieces behind the site that aren't obvious from the pages: where th
 
 ## Data and access
 
-All content is in Sanity (project `qcu6o4bq`, dataset `production`). The dataset is public-read. `src/lib/sanity.js` is a server-only client (`import "server-only"`) with no write token. Anything named `NEXT_PUBLIC_*` is shipped to the browser, so a Sanity write token must never go in one.
+All content is in Sanity (project `qcu6o4bq`, dataset `production`). The dataset is public-read. There are no code fallbacks or backup catalogs: music, lyrics, blog posts, photos, socials, venues, the shop link, and the contact email render only from Sanity. Empty Studio fields stay empty. `src/lib/sanity.js` is a server-only client (`import "server-only"`) with no write token. Anything named `NEXT_PUBLIC_*` is shipped to the browser, so a Sanity write token must never go in one.
+
+`scripts/seed-sanity.mjs` (`npm run seed:sanity`) copies the old built-in music catalog and the contact email into production. It creates a document only when that document does not exist, and it only fills fields that are missing or blank. It needs `SANITY_API_TOKEN` and does not run as part of the site.
 
 The server uses `SANITY_API_TOKEN` in two places only:
 
 - posting chat messages and keeping the chat rate-limit counters (`lib/chat.js`)
 - saving the daily YouTube snapshot (`lib/youtubeVideos.js`, called from `/api/videos-sync`)
 
-The document types are in `studio/schemaTypes/`: `musicRelease`, `song`, `blogPost`, `imageGallery`, `socialLink`, `mapLocation`, `shopLink`, `chatMessage` and `youtubeCache`. The studio is embedded at `/studio` and `public/robots.txt` disallows it. Links that come from the CMS go through `safeHref` (`src/lib/safeHref.js`) before being rendered, so only `http(s)` URLs and same-site paths get through.
+The document types are in `studio/schemaTypes/`: `musicRelease`, `song`, `blogPost`, `imageGallery`, `socialLink`, `mapLocation`, `shopLink`, `contact`, `chatMessage` and `youtubeCache`. The studio is embedded at `/studio` and `public/robots.txt` disallows it. Links that come from the CMS go through `safeHref` (`src/lib/safeHref.js`) before being rendered, so only `http(s)` URLs and same-site paths get through.
 
 ## YouTube snapshot
 
