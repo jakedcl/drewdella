@@ -2,7 +2,6 @@ import { cache } from "react";
 import { client, sanityImage } from "./sanity";
 import { resolveShopDestination } from "./shopLink";
 import { albumKey, slugify } from "./slug";
-import { MUSIC_CATALOG } from "./musicCatalog";
 
 export { albumKey, slugify };
 
@@ -22,10 +21,6 @@ export function releaseYear(release) {
 function coverOf(release) {
   if (!release?.cover?.asset) return "";
   return sanityImage(release.cover, { width: 800, quality: 75 });
-}
-
-function text(value) {
-  return String(value ?? "").trim();
 }
 
 function lyricSlug(title, songs, albumTitles) {
@@ -137,103 +132,6 @@ export const getSongs = cache(async () => {
   );
 });
 
-function catalogLinks(entry, sanity) {
-  const authored = (sanity?.links || []).filter((link) => text(link?.url));
-  if (authored.length) {
-    const links = [];
-    if (text(sanity.url)) links.push({ label: "Listen", url: text(sanity.url) });
-    for (const link of authored) {
-      const url = text(link.url);
-      if (links.some((item) => item.url === url)) continue;
-      links.push({ label: text(link.label) || "Listen", url });
-    }
-    return links;
-  }
-  const links = (entry.links || []).map((link) => ({
-    label: link.label,
-    url: link.url,
-  }));
-  const url = text(sanity?.url);
-  if (url && !links.some((item) => item.url === url)) {
-    links.push({ label: "Listen", url });
-  }
-  return links;
-}
-
-function mergeCatalogRelease(entry, sanity, songs) {
-  const albumTitles = [entry.title, sanity?.title];
-  const sanityTracks = (sanity?.tracks || []).filter((track) => text(track?.title));
-  const tracks = withLyricLinks(
-    sanityTracks.length
-      ? sanityTracks.map((track) => ({
-          title: text(track.title),
-          duration: text(track.duration),
-          slug: "",
-        }))
-      : entry.tracks,
-    songs,
-    albumTitles
-  );
-  const sanityCover = coverOf(sanity);
-  const slug = text(sanity?.slug) || entry.slug;
-  const date = text(sanity?.date) || entry.date;
-  const year = text(sanity?.year) || releaseYear({ date, year: entry.year });
-  const gallery = (sanity?.gallery || []).some((image) => image?.asset)
-    ? shapeRelease({ ...sanity, title: text(sanity.title) || entry.title }, songs).gallery
-    : [];
-
-  return {
-    id: sanity?._id || `catalog-${entry.slug}`,
-    title: text(sanity?.title) || entry.title,
-    description: text(sanity?.description),
-    subtitle: text(sanity?.subtitle) || entry.subtitle || "",
-    story: text(sanity?.story) || entry.story || "",
-    url: text(sanity?.url) || entry.links?.[0]?.url || "",
-    date,
-    year,
-    order: typeof sanity?.order === "number" ? sanity.order : entry.order,
-    featured: entry.featured,
-    featuredFromSanity: sanity?.featured === true,
-    slug,
-    href: slug ? `/music/${slug}` : "/music",
-    cover: sanityCover || entry.cover || "",
-    coverAlt: text(sanity?.cover?.alt) || entry.coverAlt || `${entry.title} cover`,
-    tracks,
-    trackSource: sanityTracks.length ? "release" : "catalog",
-    links: catalogLinks(entry, sanity),
-    gallery,
-  };
-}
-
-export function mergeMusicCatalog(sanityReleases = [], songs = []) {
-  const used = new Set();
-  const merged = MUSIC_CATALOG.map((entry) => {
-    const sanity = (sanityReleases || []).find(
-      (release) => albumKey(release?.title) === albumKey(entry.title)
-    );
-    if (sanity?._id) used.add(sanity._id);
-    return mergeCatalogRelease(entry, sanity, songs);
-  });
-
-  for (const release of sanityReleases || []) {
-    if (release?._id && used.has(release._id)) continue;
-    merged.push({
-      ...shapeRelease(release, songs),
-      featuredFromSanity: release.featured === true,
-    });
-  }
-
-  const explicit = merged.filter((release) => release.featuredFromSanity);
-  if (explicit.length) {
-    const ids = new Set(explicit.map((release) => release.id));
-    for (const release of merged) release.featured = ids.has(release.id);
-  }
-
-  return merged
-    .map(({ featuredFromSanity, ...release }) => release)
-    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0) || a.title.localeCompare(b.title));
-}
-
 export const getReleases = cache(async () => {
   const [releases, songs] = await Promise.all([
     client
@@ -241,7 +139,9 @@ export const getReleases = cache(async () => {
       .catch(() => []),
     getSongs().catch(() => []),
   ]);
-  return mergeMusicCatalog(releases || [], songs || []);
+  return (releases || [])
+    .map((release) => shapeRelease(release, songs || []))
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0) || a.title.localeCompare(b.title));
 });
 
 export const getRelease = cache(async (slug) => {
@@ -251,11 +151,7 @@ export const getRelease = cache(async (slug) => {
 
 export function featuredRelease(releases) {
   if (!releases?.length) return null;
-  return (
-    releases.find((release) => release.featured) ||
-    releases.find((release) => albumKey(release.title) === "thx4itall") ||
-    releases[0]
-  );
+  return releases.find((release) => release.featured) || releases[0];
 }
 
 export const getLuckyPaths = cache(async () => {
@@ -342,6 +238,11 @@ export const getSocials = cache(async () => {
   return client.fetch(`*[_type == "socialLink"] | order(order asc) {
     _id, title, url, description
   }`);
+});
+
+export const getContactEmail = cache(async () => {
+  const email = await client.fetch(`*[_type == "contact" && defined(email)][0].email`);
+  return String(email || "").trim();
 });
 
 export const getMapLocations = cache(async () => {

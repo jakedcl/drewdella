@@ -177,7 +177,6 @@ export function MusicReleasePage({ release, others = [] }) {
     (release.description && release.description !== release.subtitle
       ? release.description
       : "");
-  const doodle = release.slug === "thx4itall";
 
   return (
     <article className="release">
@@ -224,20 +223,6 @@ export function MusicReleasePage({ release, others = [] }) {
               </figure>
             ))}
           </div>
-        </section>
-      ) : doodle ? (
-        <section className="release-section">
-          <h2>Imagery</h2>
-          <figure className="release-doodle">
-            <Image
-              src="/thx4itall-navbar.png"
-              alt="Thx4itall doodle"
-              width={693}
-              height={360}
-              sizes="(max-width: 768px) 90vw, 420px"
-            />
-            <figcaption>Project doodle.</figcaption>
-          </figure>
         </section>
       ) : null}
 
