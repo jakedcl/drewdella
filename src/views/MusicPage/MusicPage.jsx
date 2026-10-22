@@ -82,11 +82,30 @@ function TrackList({ release, compact = false }) {
   );
 }
 
+function PanelCover({ release }) {
+  if (!release.cover) return <Cover release={release} />;
+  // One Sanity rendition at about 2× the 340px panel. next/image here was
+  // the 96px row thumbnail (sizes="96px", lazy), stretched to the panel,
+  // so the small srcset candidate stayed on screen.
+  return (
+    <img
+      className="kp-cover"
+      src={release.cover}
+      alt={release.coverAlt || ""}
+      width={800}
+      height={800}
+      loading="eager"
+      fetchPriority="high"
+      decoding="sync"
+    />
+  );
+}
+
 function KnowledgePanel({ release }) {
   const sub = release.subtitle || release.description;
   return (
     <aside className="kp" aria-label={`${release.title} knowledge panel`}>
-      <Cover release={release} />
+      <PanelCover release={release} />
       <div className="kp-body">
         <p className="kp-kicker">
           Music
