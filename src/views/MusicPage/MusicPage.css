@@ -341,6 +341,13 @@
   color: #1a0dab;
 }
 
+@media (min-width: 1024px) {
+  .music-page {
+    max-width: none;
+    justify-content: space-between;
+  }
+}
+
 @media (max-width: 860px) {
   .music-page {
     grid-template-columns: 1fr;
