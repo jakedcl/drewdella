@@ -28,7 +28,7 @@ const CSP = [
   "manifest-src 'self'",
 ].join("; ");
 
-export function middleware(request) {
+export function proxy(request) {
   const { pathname } = request.nextUrl;
   const response = NextResponse.next();
   if (pathname.startsWith("/studio") || pathname.startsWith("/api")) {
