@@ -304,7 +304,8 @@ export function VideoResult({ video }) {
             alt=""
             width={120}
             height={90}
-            sizes="120px"
+            sizes="(max-width: 768px) 96px, 120px"
+            unoptimized
           />
         ) : null}
         <span className="video-result-play" aria-hidden />

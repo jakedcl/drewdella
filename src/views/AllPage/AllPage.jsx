@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import SanityImage from "../../components/SanityImage.jsx";
 import { slugify } from "../../lib/slug";
 import {
   SearchResults,
@@ -134,12 +135,12 @@ function ImagesOneBox({ images }) {
                 aria-label={img.alt || "View image"}
                 prefetch={false}
               >
-                <Image
+                <SanityImage
                   src={src}
                   alt={img.alt || ""}
                   width={90}
                   height={68}
-                  sizes="90px"
+                  sizes="(max-width: 768px) 72px, 90px"
                   priority={index === 0}
                 />
               </Link>
