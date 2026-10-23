@@ -21,13 +21,9 @@ const nextConfig = {
   reactStrictMode: true,
   transpilePackages: ["sanity", "@sanity/vision", "styled-components"],
   images: {
-    formats: ["image/avif", "image/webp"],
+    formats: ["image/webp"],
     remotePatterns: [
-      { protocol: "https", hostname: "cdn.sanity.io" },
-      { protocol: "https", hostname: "i.ytimg.com" },
-      { protocol: "https", hostname: "img.youtube.com" },
-      { protocol: "https", hostname: "yt3.ggpht.com" },
-      { protocol: "https", hostname: "is1-ssl.mzstatic.com" },
+      { protocol: "https", hostname: "cdn.sanity.io", pathname: "/images/**" },
     ],
   },
   experimental: {

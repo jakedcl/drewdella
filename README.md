@@ -20,6 +20,10 @@ Live at [drewdella.com](https://drewdella.com).
 
 The Videos tab does not call YouTube on each visit. A daily Vercel cron job (`/api/videos-sync`) checks the channel, drops Shorts, keeps the latest 12 videos and writes them to Sanity if anything changed. `/api/videos` only reads that saved copy. This keeps the quota use to one call a day.
 
+## Images
+
+CMS photos are served from Sanity's CDN (`cdn.sanity.io`), not Vercel Image Optimization. `next/image` passes `src/lib/sanityImageLoader.js` only for those URLs, so Sanity resizes them (`w`, `q`, `fit=max`, `auto=format`). Files in `public/` still use Vercel's optimizer. YouTube thumbnails and Apple Music (`mzstatic`) covers are `unoptimized`.
+
 ## Stack
 
 Next.js 15 (App Router), React 18, MUI, Sanity, Mapbox GL, Turf, deployed on Vercel.

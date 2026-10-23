@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
+import SanityImage from "../../components/SanityImage.jsx";
 import { featuredRelease } from "../../lib/content";
 import { safeHref } from "../../lib/safeHref.js";
 import "./MusicPage.css";
@@ -7,13 +7,13 @@ import "./MusicPage.css";
 function Cover({ release, large = false }) {
   if (release.cover) {
     return (
-      <Image
+      <SanityImage
         className={large ? "kp-cover kp-cover--large" : "kp-cover"}
         src={release.cover}
         alt={release.coverAlt}
-        width={large ? 640 : 96}
-        height={large ? 640 : 96}
-        sizes={large ? "(max-width: 768px) 100vw, 320px" : "96px"}
+        width={large ? 640 : 72}
+        height={large ? 640 : 72}
+        sizes={large ? "(max-width: 860px) 100vw, 280px" : "72px"}
         style={large ? { width: "100%", height: "auto" } : undefined}
       />
     );
@@ -84,10 +84,10 @@ function TrackList({ release, compact = false }) {
 
 function PanelCover({ release }) {
   if (!release.cover) return <Cover release={release} />;
-  // One Sanity rendition at about 2× the 340px panel. next/image here was
-  // the 96px row thumbnail (sizes="96px", lazy), stretched to the panel,
-  // so the small srcset candidate stayed on screen.
+  // One Sanity rendition at about 2× the 340px panel, loaded directly from
+  // the Sanity CDN. next/image would request a small srcset candidate.
   return (
+    // eslint-disable-next-line @next/next/no-img-element
     <img
       className="kp-cover"
       src={release.cover}
@@ -231,12 +231,12 @@ export function MusicReleasePage({ release, others = [] }) {
           <div className="release-gallery">
             {release.gallery.map((image) => (
               <figure key={image.src}>
-                <Image
+                <SanityImage
                   src={image.src}
                   alt={image.alt || ""}
                   width={image.width}
                   height={image.height}
-                  sizes="(max-width: 768px) 100vw, 420px"
+                  sizes="(max-width: 860px) 100vw, 420px"
                 />
                 {image.caption ? <figcaption>{image.caption}</figcaption> : null}
               </figure>
