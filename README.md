@@ -14,7 +14,7 @@ Live at [drewdella.com](https://drewdella.com).
 - Site search ranks title matches above body matches across pages, CMS documents and the stored videos.
 - A Hangouts-style chat widget that visitors can post to. It is rate limited on the server.
 - A map of live-show venues using Mapbox.
-- Content (releases, lyrics, blog posts, image gallery, social links, venues) lives in Sanity and is edited from the embedded Studio at `/studio`.
+- Content (releases, lyrics, blog posts, image gallery, social links, venues) lives in Sanity. The only Studio is the embedded one at [drewdella.com/studio](https://drewdella.com/studio). The separately hosted Studio at drewdella.sanity.studio is retired. Do not redeploy it.
 
 ## How the YouTube list works
 

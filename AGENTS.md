@@ -29,7 +29,7 @@ Sanity dataset is public-read — pages render without tokens. Content comes onl
 | `src/components/` | Shared UI (Header, NavTabs, SearchResults, HangoutsChat, Map, …) |
 | `src/lib/` | Content, search, SEO, Sanity client helpers |
 | `lib/` | Server helpers: chat, rate limit, YouTube cache |
-| `studio/` | Sanity schemas; Studio mounts at `/studio` |
+| `studio/` | Sanity schemas. The only Studio is the embedded one at `/studio` (drewdella.com/studio). The hosted Studio at drewdella.sanity.studio is retired; do not redeploy it. |
 | `app/globals.css` | Global styles; `--ui-zoom: 1.2` scales the public site |
 
 `/home` = old logo landing. `/` = All tab. Shop empty state is intentional (not a 404).
