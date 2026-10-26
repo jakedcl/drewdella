@@ -1,4 +1,4 @@
-import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
+import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter";
 import ImagesPage from "@/views/ImagesPage/ImagesPage.jsx";
 import SerpMessage from "@/components/SerpMessage/SerpMessage.jsx";
 import { getGallery } from "@/lib/content";
