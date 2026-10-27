@@ -23,7 +23,7 @@
     "@mui/styled-engine": "^9.5.0",
     "@sanity/client": "^8.11.0",
     "@sanity/image-url": "^2.1.1",
-    "@sanity/vision": "^4.22.0",
+    "@sanity/vision": "^6.20.0",
     "@turf/turf": "^7.4.0",
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
