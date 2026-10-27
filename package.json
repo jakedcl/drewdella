@@ -21,7 +21,7 @@
     "@mui/material": "^9.5.0",
     "@mui/material-nextjs": "^9.5.0",
     "@mui/styled-engine": "^9.5.0",
-    "@sanity/client": "^7.12.0",
+    "@sanity/client": "^8.11.0",
     "@sanity/image-url": "^2.1.1",
     "@sanity/vision": "^4.22.0",
     "@turf/turf": "^7.4.0",
