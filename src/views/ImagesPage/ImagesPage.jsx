@@ -68,9 +68,16 @@ function thumbProps(asset) {
   };
 }
 
-function ThumbImage({ asset, alt }) {
+function thumbAspectRatio(asset) {
+  const dims = asset?.metadata?.dimensions;
+  if (!dims?.width || !dims?.height) return undefined;
+  return `${dims.width} / ${dims.height}`;
+}
+
+function ThumbImage({ asset, alt, priority = false }) {
   const thumb = thumbProps(asset);
   if (!thumb) return null;
+  const aspectRatio = thumbAspectRatio(asset);
   return (
     <img
       src={thumb.src}
@@ -79,9 +86,11 @@ function ThumbImage({ asset, alt }) {
       width={thumb.width}
       height={thumb.height}
       alt={alt || "Gallery image"}
-      loading="lazy"
+      loading={priority ? "eager" : "lazy"}
+      fetchPriority={priority ? "high" : undefined}
       decoding="async"
       draggable={false}
+      style={aspectRatio ? { aspectRatio } : undefined}
     />
   );
 }
@@ -279,8 +288,16 @@ function ImagesPage({ images = [], elapsed = "0.12" }) {
           spacing={0.75}
           sx={{ ml: 0, mr: 0, width: "100%" }}
         >
-          {images.map((image) => (
-            <div key={imageKey(image)} className="images-result">
+          {images.map((image, index) => (
+            <div
+              key={imageKey(image)}
+              className="images-result"
+              style={
+                image.asset
+                  ? { aspectRatio: thumbAspectRatio(image.asset) || "4 / 3" }
+                  : undefined
+              }
+            >
               {image.asset && (
                 <button
                   type="button"
@@ -296,7 +313,11 @@ function ImagesPage({ images = [], elapsed = "0.12" }) {
                       : "Open image detail"
                   }
                 >
-                  <ThumbImage asset={image.asset} alt={image.alt} />
+                  <ThumbImage
+                    asset={image.asset}
+                    alt={image.alt}
+                    priority={index === 0}
+                  />
                 </button>
               )}
             </div>
