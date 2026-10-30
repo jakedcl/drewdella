@@ -3,7 +3,6 @@
   width: 100%;
   border-bottom: 1px solid #ebebeb;
   overflow: hidden;
-  view-transition-name: serp-nav;
 }
 
 .nav-tabs-scroller {
@@ -65,12 +64,16 @@
   left: 0;
   bottom: 0;
   height: 3px;
-  width: 0;
+  width: var(--nav-tab-indicator-w, 0);
   background: #1a73e8;
-  transform: translateX(0);
+  transform: translateX(var(--nav-tab-indicator-x, 0));
   pointer-events: none;
   z-index: 1;
   opacity: 0;
+}
+
+.nav-tabs-indicator--snap {
+  transition: none !important;
 }
 
 .nav-tabs-indicator--ready {

@@ -10,7 +10,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "seed:sanity": "node scripts/seed-sanity.mjs"
+    "seed:sanity": "node scripts/seed-sanity.mjs",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@sanity/client": "^8.11.0",
@@ -28,6 +29,7 @@
     "styled-components": "^6.6.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.56.1",
     "baseline-browser-mapping": "^2.11.32"
   }
 }

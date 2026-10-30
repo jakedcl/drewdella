@@ -60,19 +60,8 @@ body {
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  ::view-transition-old(serp-main) {
-    animation: 180ms ease both vt-out;
-  }
-
-  ::view-transition-new(serp-main) {
-    animation: 180ms ease both vt-in;
-  }
-
-  ::view-transition-old(serp-header),
-  ::view-transition-new(serp-header),
-  ::view-transition-old(serp-nav),
-  ::view-transition-new(serp-nav) {
-    animation: none;
+  .site-main.site-main--motion {
+    animation: serp-main-enter 180ms ease both;
   }
 
   html.serp-route-enter .serp-list > * {
@@ -112,15 +101,14 @@ body {
   }
 }
 
-@keyframes vt-out {
-  to {
-    opacity: 0;
-  }
-}
-
-@keyframes vt-in {
+@keyframes serp-main-enter {
   from {
-    opacity: 0;
+    opacity: 0.55;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
   }
 }
 
