@@ -63,9 +63,11 @@ export function formatListingDate(value) {
   const dayOnly = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
   const date = dayOnly
     ? new Date(
-        Number(dayOnly[1]),
-        Number(dayOnly[2]) - 1,
-        Number(dayOnly[3])
+        Date.UTC(
+          Number(dayOnly[1]),
+          Number(dayOnly[2]) - 1,
+          Number(dayOnly[3])
+        )
       )
     : new Date(value);
   if (Number.isNaN(date.getTime())) return "";
@@ -73,6 +75,7 @@ export function formatListingDate(value) {
     year: "numeric",
     month: "long",
     day: "numeric",
+    timeZone: "UTC",
   });
 }
 
