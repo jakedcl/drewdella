@@ -289,9 +289,9 @@ export default function AllPage({ feed = null }) {
     else mixedWithVideo.splice(firstBlogAt + 1, 0, videoEntry);
   }
 
-  const mixedListings = mixedWithVideo.map((entry, index) =>
+  const mixedListings = mixedWithVideo.map((entry) =>
     entry.kind === "video" ? (
-      <VideoResult key={entry.item.id} video={entry.item} priority={index === 0} />
+      <VideoResult key={entry.item.id} video={entry.item} />
     ) : (
       renderMixed(entry, entry.item._id)
     )
