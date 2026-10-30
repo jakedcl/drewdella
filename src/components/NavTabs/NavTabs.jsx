@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { flushSync } from "react-dom";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -33,11 +39,19 @@ function NavTabs() {
   const pathname = usePathname();
   const router = useRouter();
   const scrollerRef = useRef(null);
+  const indicatorRef = useRef(null);
+  const skipTransitionRef = useRef(true);
   const [fadeLeft, setFadeLeft] = useState(false);
   const [fadeRight, setFadeRight] = useState(true);
   const [pendingPath, setPendingPath] = useState(null);
+  const [indicatorReady, setIndicatorReady] = useState(false);
+  const [indicatorAnimating, setIndicatorAnimating] = useState(false);
 
   const activeIndicator = indicatorPath(pendingPath, pathname);
+
+  const prefersReducedMotion = useCallback(() => {
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  }, []);
 
   const measureFade = useCallback(() => {
     const scroller = scrollerRef.current;
@@ -48,10 +62,38 @@ function NavTabs() {
     setFadeRight(maxScroll > 1 && scrollLeft < maxScroll - 1);
   }, []);
 
+  const positionIndicator = useCallback(() => {
+    const scroller = scrollerRef.current;
+    const indicator = indicatorRef.current;
+    if (!scroller || !indicator) return;
+    const link = scroller.querySelector(
+      `a[data-tab-path="${activeIndicator}"]`
+    );
+    if (!link) return;
+
+    const instant = skipTransitionRef.current || prefersReducedMotion();
+    if (instant) {
+      indicator.style.transition = "none";
+    }
+
+    indicator.style.width = `${link.offsetWidth}px`;
+    indicator.style.transform = `translateX(${link.offsetLeft}px)`;
+
+    if (instant) {
+      void indicator.offsetWidth;
+      indicator.style.transition = "";
+      skipTransitionRef.current = false;
+    }
+
+    setIndicatorReady(true);
+  }, [activeIndicator, prefersReducedMotion]);
+
   const revealActive = useCallback(() => {
     const scroller = scrollerRef.current;
     if (!scroller) return;
-    const link = scroller.querySelector(`a[data-tab-path="${activeIndicator}"]`);
+    const link = scroller.querySelector(
+      `a[data-tab-path="${activeIndicator}"]`
+    );
     if (!link) return;
     const pad = 64;
     const left = link.offsetLeft;
@@ -64,24 +106,55 @@ function NavTabs() {
     }
   }, [activeIndicator]);
 
+  useLayoutEffect(() => {
+    positionIndicator();
+    revealActive();
+  }, [positionIndicator, revealActive, activeIndicator]);
+
   useEffect(() => {
     measureFade();
-    revealActive();
     const scroller = scrollerRef.current;
     if (!scroller) return undefined;
-    scroller.addEventListener("scroll", measureFade, { passive: true });
+
+    const onScroll = () => {
+      measureFade();
+      skipTransitionRef.current = true;
+      positionIndicator();
+    };
+
+    scroller.addEventListener("scroll", onScroll, { passive: true });
     const ro = new ResizeObserver(() => {
       measureFade();
+      skipTransitionRef.current = true;
+      positionIndicator();
       revealActive();
     });
     ro.observe(scroller);
-    window.addEventListener("resize", measureFade);
-    return () => {
-      scroller.removeEventListener("scroll", measureFade);
-      ro.disconnect();
-      window.removeEventListener("resize", measureFade);
+
+    const onResize = () => {
+      measureFade();
+      skipTransitionRef.current = true;
+      positionIndicator();
     };
-  }, [measureFade, revealActive, activeIndicator]);
+    window.addEventListener("resize", onResize);
+
+    let cancelled = false;
+    if (document.fonts?.ready) {
+      document.fonts.ready.then(() => {
+        if (cancelled) return;
+        skipTransitionRef.current = true;
+        positionIndicator();
+        revealActive();
+      });
+    }
+
+    return () => {
+      cancelled = true;
+      scroller.removeEventListener("scroll", onScroll);
+      ro.disconnect();
+      window.removeEventListener("resize", onResize);
+    };
+  }, [measureFade, positionIndicator, revealActive]);
 
   useEffect(() => {
     setPendingPath(null);
@@ -106,10 +179,19 @@ function NavTabs() {
       return;
     }
     event.preventDefault();
-    transitionTo(() => {
-      flushSync(() => setPendingPath(href));
-      router.push(href);
-    });
+    if (!prefersReducedMotion()) {
+      setIndicatorAnimating(true);
+    }
+    flushSync(() => setPendingPath(href));
+    transitionTo(() => router.push(href));
+  };
+
+  const onIndicatorTransitionEnd = (event) => {
+    if (event.target !== indicatorRef.current) return;
+    if (event.propertyName !== "transform" && event.propertyName !== "width") {
+      return;
+    }
+    setIndicatorAnimating(false);
   };
 
   const className = [
@@ -120,9 +202,23 @@ function NavTabs() {
     .filter(Boolean)
     .join(" ");
 
+  const indicatorClass = [
+    "nav-tabs-indicator",
+    indicatorReady ? "nav-tabs-indicator--ready" : "",
+    indicatorAnimating ? "nav-tabs-indicator--animating" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   return (
     <nav className={className} aria-label="Result types">
       <div className="nav-tabs-scroller" ref={scrollerRef}>
+        <span
+          ref={indicatorRef}
+          className={indicatorClass}
+          aria-hidden
+          onTransitionEnd={onIndicatorTransitionEnd}
+        />
         {PAGES.map((page) => {
           const current = isCurrent(page, pathname);
           const pending = pendingPath === page.path;
@@ -132,7 +228,6 @@ function NavTabs() {
           ]
             .filter(Boolean)
             .join(" ");
-          const showIndicator = page.path === activeIndicator;
           return (
             <Link
               key={page.path}
@@ -145,10 +240,7 @@ function NavTabs() {
               onTouchStart={() => warmRoute(page.path)}
               onFocus={() => warmRoute(page.path)}
             >
-              <span className="nav-tabs-label">
-                {page.label}
-                {showIndicator ? <span className="nav-tabs-indicator" /> : null}
-              </span>
+              <span className="nav-tabs-label">{page.label}</span>
             </Link>
           );
         })}
