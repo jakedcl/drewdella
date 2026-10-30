@@ -26,13 +26,6 @@ const nextConfig = {
       { protocol: "https", hostname: "cdn.sanity.io", pathname: "/images/**" },
     ],
   },
-  experimental: {
-    optimizePackageImports: [
-      "@mui/material",
-      "@mui/icons-material",
-      "@mui/lab",
-    ],
-  },
   async headers() {
     return [
       {
