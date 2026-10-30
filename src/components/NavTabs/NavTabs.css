@@ -47,6 +47,11 @@
   font-weight: 500;
 }
 
+.nav-tabs a.is-pending {
+  color: #1a73e8;
+  font-weight: 500;
+}
+
 .nav-tabs a:hover {
   color: #202124;
 }

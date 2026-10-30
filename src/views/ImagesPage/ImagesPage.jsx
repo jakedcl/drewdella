@@ -8,17 +8,56 @@ import React, {
   useRef,
 } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { Box } from "@mui/material";
-import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
-import OpenInNewRoundedIcon from "@mui/icons-material/OpenInNewRounded";
-import IosShareRoundedIcon from "@mui/icons-material/IosShareRounded";
-import BookmarkBorderRoundedIcon from "@mui/icons-material/BookmarkBorderRounded";
 import { urlFor } from "../../lib/imageUrl";
 import { SerpFooter } from "../../components/SearchResults/SearchResults.jsx";
 import SerpMessage from "../../components/SerpMessage/SerpMessage.jsx";
 import "./ImagesPage.css";
 
 const SOURCE_NAME = "drewdella.com";
+
+function IconClose({ className = "images-btn-icon" }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" width={20} height={20} aria-hidden>
+      <path
+        fill="currentColor"
+        d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
+      />
+    </svg>
+  );
+}
+
+function IconOpenInNew({ className = "images-btn-icon" }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" width={16} height={16} aria-hidden>
+      <path
+        fill="currentColor"
+        d="M19 19H5V5h7V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"
+      />
+    </svg>
+  );
+}
+
+function IconShare({ className = "images-btn-icon images-btn-icon--md" }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" width={18} height={18} aria-hidden>
+      <path
+        fill="currentColor"
+        d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7a3.27 3.27 0 0 0 0-1.54l7.02-4.11A2.99 2.99 0 1 0 15 5a2.99 2.99 0 0 0 .04.49L8.02 9.6a3 3 0 1 0 0 4.8l7.02 4.11c.28.74 1.01 1.27 1.86 1.27A3 3 0 1 0 18 16.08z"
+      />
+    </svg>
+  );
+}
+
+function IconBookmark({ className = "images-btn-icon images-btn-icon--md" }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" width={18} height={18} aria-hidden>
+      <path
+        fill="currentColor"
+        d="M17 3H7a2 2 0 0 0-2 2v16l7-3 7 3V5a2 2 0 0 0-2-2zm0 15-5-2.18L7 18V5h10v13z"
+      />
+    </svg>
+  );
+}
 
 function imageKey(image) {
   return image?.id || image?.asset?._id || "";
@@ -260,7 +299,7 @@ function ImagesPage({ images = [], elapsed = "0.12" }) {
 
   if (!images.length) {
     return (
-      <Box p={2}>
+      <div className="images-empty">
         <SerpMessage
           title="No images to show yet."
           detail="Photos will show up here when they’re ready."
@@ -269,7 +308,7 @@ function ImagesPage({ images = [], elapsed = "0.12" }) {
             { to: "/videos", label: "Videos" },
           ]}
         />
-      </Box>
+      </div>
     );
   }
 
@@ -343,7 +382,7 @@ function ImagesPage({ images = [], elapsed = "0.12" }) {
                 onClick={closePanel}
                 aria-label="Close"
               >
-                <CloseRoundedIcon fontSize="small" />
+                <IconClose />
               </button>
             </div>
 
@@ -377,7 +416,7 @@ function ImagesPage({ images = [], elapsed = "0.12" }) {
                   onClick={handleVisit}
                 >
                   Visit
-                  <OpenInNewRoundedIcon sx={{ fontSize: 16 }} />
+                  <IconOpenInNew />
                 </button>
               </div>
 
@@ -388,14 +427,14 @@ function ImagesPage({ images = [], elapsed = "0.12" }) {
                   onClick={handleVisit}
                 >
                   Visit
-                  <OpenInNewRoundedIcon sx={{ fontSize: 16 }} />
+                  <IconOpenInNew />
                 </button>
                 <button
                   type="button"
                   className="images-btn images-btn--secondary"
                   onClick={handleShare}
                 >
-                  <IosShareRoundedIcon sx={{ fontSize: 18 }} />
+                  <IconShare />
                   Share
                 </button>
                 <button
@@ -403,7 +442,7 @@ function ImagesPage({ images = [], elapsed = "0.12" }) {
                   className="images-btn images-btn--secondary"
                   onClick={handleSave}
                 >
-                  <BookmarkBorderRoundedIcon sx={{ fontSize: 18 }} />
+                  <IconBookmark />
                   Save
                 </button>
               </div>

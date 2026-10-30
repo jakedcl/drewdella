@@ -1,5 +1,7 @@
 let resolvePending = null;
 
+const VT_MAX_MS = 120;
+
 export function navigationFinished() {
   const resolve = resolvePending;
   resolvePending = null;
@@ -22,14 +24,16 @@ export function transitionTo(navigate) {
   document.startViewTransition(
     () =>
       new Promise((resolve) => {
-        resolvePending = resolve;
+        let settled = false;
+        const finish = () => {
+          if (settled) return;
+          settled = true;
+          if (resolvePending === finish) resolvePending = null;
+          resolve();
+        };
+        resolvePending = finish;
         navigate();
-        window.setTimeout(() => {
-          if (resolvePending === resolve) {
-            resolvePending = null;
-            resolve();
-          }
-        }, 700);
+        window.setTimeout(finish, VT_MAX_MS);
       })
   );
 }
