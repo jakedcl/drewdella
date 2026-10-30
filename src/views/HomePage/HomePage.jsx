@@ -27,20 +27,25 @@ function HomePage({ luckyPaths = [], shop }) {
       style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}
     >
       <HeaderHome shop={shop} />
-      <h1 className="sr-only">Drew Della</h1>
-      <div style={{ flex: 2 }} />
-      <div className="home-div">
-        <div className="home-hero">
-          <GoogleLogo style={googleLogoStyles} animateOnLoad />
-          <SearchBar
-            suggestions={searchSuggestions}
-            showActions
-            luckyPaths={luckyPaths}
-          />
+      <main
+        id="main-content"
+        style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}
+      >
+        <h1 className="sr-only">Drew Della</h1>
+        <div style={{ flex: 2 }} />
+        <div className="home-div">
+          <div className="home-hero">
+            <GoogleLogo style={googleLogoStyles} animateOnLoad />
+            <SearchBar
+              suggestions={searchSuggestions}
+              showActions
+              luckyPaths={luckyPaths}
+            />
+          </div>
         </div>
-      </div>
-      <div style={{ flex: 3 }} />
-      <Footer />
+        <div style={{ flex: 3 }} />
+        <Footer />
+      </main>
     </div>
   );
 }

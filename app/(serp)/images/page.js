@@ -2,15 +2,22 @@ import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter";
 import ImagesPage from "@/views/ImagesPage/ImagesPage.jsx";
 import SerpMessage from "@/components/SerpMessage/SerpMessage.jsx";
 import { getGallery } from "@/lib/content";
-import { pageMetadata } from "@/lib/seo";
+import { pageMetadataAsync, shareImageUrl } from "@/lib/seo";
 
 export const revalidate = 3600;
 
-export const metadata = pageMetadata({
-  title: "Images",
-  description: "Photos of Drew Della.",
-  path: "/images",
-});
+export async function generateMetadata() {
+  const { images } = await getGallery().catch(() => ({ images: [] }));
+  const lead = images?.[0];
+  const asset = lead?.asset;
+  return pageMetadataAsync({
+    title: "Images",
+    description: "Photos of Drew Della.",
+    path: "/images",
+    imageUrl: asset ? shareImageUrl(asset) : undefined,
+    imageAlt: lead?.alt || asset?.alt || "Photos of Drew Della",
+  });
+}
 
 export default async function Page() {
   try {

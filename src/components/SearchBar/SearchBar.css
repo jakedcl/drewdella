@@ -47,6 +47,11 @@
   box-shadow: none;
 }
 
+.searchbar-input:focus-visible {
+  outline: 2px solid #1a73e8;
+  outline-offset: 2px;
+}
+
 .searchbar-container--open .searchbar-input {
   border-radius: 22px 22px 0 0;
 }

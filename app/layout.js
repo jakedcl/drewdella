@@ -1,35 +1,52 @@
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import JsonLd from "@/components/JsonLd.jsx";
-import { getSocials } from "@/lib/content";
-import { siteJsonLd } from "@/lib/seo";
+import { getSiteShareImageAsset, getSocials } from "@/lib/content";
+import { OG_IMAGE_SIZE, shareImageUrl, siteJsonLd } from "@/lib/seo";
 import "./globals.css";
-
-export const metadata = {
-  metadataBase: new URL("https://drewdella.com"),
-  title: {
-    default: "Drew Della",
-    template: "%s — Drew Della",
-  },
-  description:
-    "Drew Della — artist, musician, creator. Explore music, lyrics, videos, blog posts, and more.",
-  applicationName: "Drew Della",
-  authors: [{ name: "Drew Della", url: "https://drewdella.com" }],
-  openGraph: {
-    type: "website",
-    siteName: "Drew Della",
-    locale: "en_US",
-  },
-  twitter: {
-    card: "summary_large_image",
-  },
-};
 
 export const viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
 };
+
+export async function generateMetadata() {
+  const asset = await getSiteShareImageAsset().catch(() => null);
+  const imageUrl = asset ? shareImageUrl(asset) : "";
+  const ogImage = imageUrl
+    ? [
+        {
+          url: imageUrl,
+          width: OG_IMAGE_SIZE.width,
+          height: OG_IMAGE_SIZE.height,
+          alt: asset?.alt || "Drew Della",
+        },
+      ]
+    : undefined;
+
+  return {
+    metadataBase: new URL("https://drewdella.com"),
+    title: {
+      default: "Drew Della",
+      template: "%s — Drew Della",
+    },
+    description:
+      "Drew Della — artist, musician, creator. Explore music, lyrics, videos, blog posts, and more.",
+    applicationName: "Drew Della",
+    authors: [{ name: "Drew Della", url: "https://drewdella.com" }],
+    openGraph: {
+      type: "website",
+      siteName: "Drew Della",
+      locale: "en_US",
+      ...(ogImage ? { images: ogImage } : {}),
+    },
+    twitter: {
+      card: "summary_large_image",
+      ...(imageUrl ? { images: [imageUrl] } : {}),
+    },
+  };
+}
 
 export default async function RootLayout({ children }) {
   const socials = await getSocials().catch(() => []);

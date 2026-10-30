@@ -1,6 +1,6 @@
 const TITLES = {
-  "/": "Drew Della",
-  "/all": "Drew Della",
+  "/": "All results",
+  "/all": "All results",
   "/music": "Music",
   "/images": "Images",
   "/videos": "Videos",

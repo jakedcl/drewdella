@@ -29,7 +29,6 @@ function VintagePopup({ title, lines, cta, href }) {
     ? { href: safe }
     : { href: safe, target: "_blank", rel: "noopener noreferrer" };
   const CtaTag = isInternal ? Link : "a";
-  const tucked = phase === "peek";
 
   useEffect(() => {
     let hide;
@@ -43,24 +42,26 @@ function VintagePopup({ title, lines, cta, href }) {
     };
   }, []);
 
+  if (phase === "peek") {
+    return (
+      <button
+        type="button"
+        className="win-popup-dock is-peek"
+        style={{ bottom: dockBottom }}
+        onClick={() => setPhase("open")}
+        aria-label="Show congratulations"
+      >
+        <span className="win-popup-peek-tab" aria-hidden>
+          {title}
+        </span>
+      </button>
+    );
+  }
+
   return (
     <div
       className={`win-popup-dock is-${phase}`}
       style={{ bottom: dockBottom }}
-      onClick={tucked ? () => setPhase("open") : undefined}
-      role={tucked ? "button" : undefined}
-      tabIndex={tucked ? 0 : undefined}
-      aria-label={tucked ? "Show congratulations" : undefined}
-      onKeyDown={
-        tucked
-          ? (e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                setPhase("open");
-              }
-            }
-          : undefined
-      }
     >
       <div className="win-popup">
         <div className="win-popup-bar">
@@ -142,6 +143,7 @@ function ImagesOneBox({ images }) {
                   height={68}
                   sizes="(max-width: 768px) 72px, 90px"
                   priority={index === 0}
+                  fetchPriority={index === 0 ? "high" : undefined}
                 />
               </Link>
             );

@@ -8,7 +8,6 @@ import React, {
   useRef,
 } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { Masonry } from "@mui/lab";
 import { Box } from "@mui/material";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import OpenInNewRoundedIcon from "@mui/icons-material/OpenInNewRounded";
@@ -68,9 +67,16 @@ function thumbProps(asset) {
   };
 }
 
-function ThumbImage({ asset, alt }) {
+function thumbAspectRatio(asset) {
+  const dims = asset?.metadata?.dimensions;
+  if (!dims?.width || !dims?.height) return undefined;
+  return `${dims.width} / ${dims.height}`;
+}
+
+function ThumbImage({ asset, alt, priority = false }) {
   const thumb = thumbProps(asset);
   if (!thumb) return null;
+  const aspectRatio = thumbAspectRatio(asset);
   return (
     <img
       src={thumb.src}
@@ -79,9 +85,11 @@ function ThumbImage({ asset, alt }) {
       width={thumb.width}
       height={thumb.height}
       alt={alt || "Gallery image"}
-      loading="lazy"
+      loading={priority ? "eager" : "lazy"}
+      fetchPriority={priority ? "high" : undefined}
       decoding="async"
       draggable={false}
+      style={aspectRatio ? { aspectRatio } : undefined}
     />
   );
 }
@@ -274,13 +282,17 @@ function ImagesPage({ images = [], elapsed = "0.12" }) {
           About {images.length.toLocaleString("en-US")} result
           {images.length === 1 ? "" : "s"} ({elapsed} seconds)
         </p>
-        <Masonry
-          columns={{ xs: 3, sm: 4, md: 5, lg: 6, xl: 7 }}
-          spacing={0.75}
-          sx={{ ml: 0, mr: 0, width: "100%" }}
-        >
-          {images.map((image) => (
-            <div key={imageKey(image)} className="images-result">
+        <div className="images-masonry-grid">
+          {images.map((image, index) => (
+            <div
+              key={imageKey(image)}
+              className="images-result"
+              style={
+                image.asset
+                  ? { aspectRatio: thumbAspectRatio(image.asset) || "4 / 3" }
+                  : undefined
+              }
+            >
               {image.asset && (
                 <button
                   type="button"
@@ -296,12 +308,16 @@ function ImagesPage({ images = [], elapsed = "0.12" }) {
                       : "Open image detail"
                   }
                 >
-                  <ThumbImage asset={image.asset} alt={image.alt} />
+                  <ThumbImage
+                    asset={image.asset}
+                    alt={image.alt}
+                    priority={index === 0}
+                  />
                 </button>
               )}
             </div>
           ))}
-        </Masonry>
+        </div>
         <div className="images-serp-footer">
           <SerpFooter />
         </div>
@@ -400,7 +416,7 @@ function ImagesPage({ images = [], elapsed = "0.12" }) {
 
             {suggested.length > 0 && heroReady && (
               <div className="images-panel-suggested">
-                <Masonry columns={2} spacing={1.5}>
+                <div className="images-suggested-grid">
                   {suggested.map((image) => (
                     <div key={imageKey(image)} className="images-suggested-card">
                       <button
@@ -420,7 +436,7 @@ function ImagesPage({ images = [], elapsed = "0.12" }) {
                       </p>
                     </div>
                   ))}
-                </Masonry>
+                </div>
               </div>
             )}
           </aside>

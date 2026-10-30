@@ -1,15 +1,17 @@
 import ConnectPage from "@/views/ConnectPage/ConnectPage.jsx";
 import SerpMessage from "@/components/SerpMessage/SerpMessage.jsx";
 import { getContactEmail, getSocials } from "@/lib/content";
-import { pageMetadata } from "@/lib/seo";
+import { pageMetadataAsync } from "@/lib/seo";
 
 export const revalidate = 3600;
 
-export const metadata = pageMetadata({
-  title: "Socials",
-  description: "Find Drew Della on Instagram, YouTube, Bandcamp, and more.",
-  path: "/connect",
-});
+export async function generateMetadata() {
+  return pageMetadataAsync({
+    title: "Socials",
+    description: "Find Drew Della on Instagram, YouTube, Bandcamp, and more.",
+    path: "/connect",
+  });
+}
 
 export default async function Page() {
   try {

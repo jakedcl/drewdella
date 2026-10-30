@@ -1,14 +1,16 @@
 import MapPage from "@/views/MapPage/MapPage.jsx";
 import { getMapLocations } from "@/lib/content";
-import { pageMetadata } from "@/lib/seo";
+import { pageMetadataAsync } from "@/lib/seo";
 
 export const revalidate = 3600;
 
-export const metadata = pageMetadata({
-  title: "Maps",
-  description: "Venues that have hosted Drew Della.",
-  path: "/maps",
-});
+export async function generateMetadata() {
+  return pageMetadataAsync({
+    title: "Maps",
+    description: "Venues that have hosted Drew Della.",
+    path: "/maps",
+  });
+}
 
 export default async function Page() {
   try {

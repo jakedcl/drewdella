@@ -67,6 +67,34 @@
 .win-popup-dock.is-peek {
   transform: translate(calc(100% - 34px), 0);
   cursor: pointer;
+  padding: 0;
+  border: none;
+  background: transparent;
+  text-align: left;
+}
+
+.win-popup-peek-tab {
+  display: block;
+  width: 34px;
+  min-height: 120px;
+  padding: 8px 6px;
+  box-sizing: border-box;
+  background: #0054e3;
+  color: #fff;
+  font-family: Tahoma, "Segoe UI", sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  border-radius: 6px 0 0 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.win-popup-dock.is-peek:focus-visible {
+  outline: 2px solid #1a73e8;
+  outline-offset: 2px;
 }
 
 .win-popup {

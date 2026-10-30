@@ -2,16 +2,18 @@ import MusicPage from "@/views/MusicPage/MusicPage.jsx";
 import JsonLd from "@/components/JsonLd.jsx";
 import SerpMessage from "@/components/SerpMessage/SerpMessage.jsx";
 import { getReleases, featuredRelease } from "@/lib/content";
-import { albumJsonLd, pageMetadata } from "@/lib/seo";
+import { albumJsonLd, pageMetadataAsync } from "@/lib/seo";
 
 export const revalidate = 3600;
 
-export const metadata = pageMetadata({
-  title: "Music",
-  description:
-    "Music by Drew Della. Albums, EPs, tracklists, and listen links, including Thx4itall.",
-  path: "/music",
-});
+export async function generateMetadata() {
+  return pageMetadataAsync({
+    title: "Music",
+    description:
+      "Music by Drew Della. Albums, EPs, tracklists, and listen links, including Thx4itall.",
+    path: "/music",
+  });
+}
 
 export default async function Page() {
   try {

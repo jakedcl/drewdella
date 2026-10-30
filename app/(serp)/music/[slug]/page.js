@@ -2,8 +2,8 @@ import { notFound } from "next/navigation";
 import { MusicReleasePage } from "@/views/MusicPage/MusicPage.jsx";
 import JsonLd from "@/components/JsonLd.jsx";
 import SerpMessage from "@/components/SerpMessage/SerpMessage.jsx";
-import { getRelease, getReleases } from "@/lib/content";
-import { albumJsonLd, pageMetadata } from "@/lib/seo";
+import { getRelease, getReleaseShareImageAsset, getReleases } from "@/lib/content";
+import { albumJsonLd, pageMetadataAsync, shareImageUrl } from "@/lib/seo";
 
 export const revalidate = 3600;
 
@@ -18,7 +18,7 @@ export async function generateMetadata({ params }) {
   const { slug } = await params;
   const release = await getRelease(slug).catch(() => null);
   if (!release) {
-    return pageMetadata({
+    return pageMetadataAsync({
       title: "Music",
       description: "Music by Drew Della.",
       path: "/music",
@@ -28,10 +28,13 @@ export async function generateMetadata({ params }) {
     release.subtitle ||
     release.description ||
     `${release.title} by Drew Della.`;
-  return pageMetadata({
+  const asset = await getReleaseShareImageAsset(slug).catch(() => null);
+  return pageMetadataAsync({
     title: release.title,
     description,
     path: release.href,
+    imageUrl: asset ? shareImageUrl(asset) : undefined,
+    imageAlt: release.coverAlt || release.title,
   });
 }
 

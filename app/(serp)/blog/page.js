@@ -1,15 +1,17 @@
 import BlogPage from "@/views/BlogPage/BlogPage.jsx";
 import SerpMessage from "@/components/SerpMessage/SerpMessage.jsx";
 import { getBlogList } from "@/lib/content";
-import { pageMetadata } from "@/lib/seo";
+import { pageMetadataAsync } from "@/lib/seo";
 
 export const revalidate = 3600;
 
-export const metadata = pageMetadata({
-  title: "Blog",
-  description: "Blog posts by Drew Della.",
-  path: "/blog",
-});
+export async function generateMetadata() {
+  return pageMetadataAsync({
+    title: "Blog",
+    description: "Blog posts by Drew Della.",
+    path: "/blog",
+  });
+}
 
 export default async function Page() {
   try {
