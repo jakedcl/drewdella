@@ -6,8 +6,7 @@ export const revalidate = 3600;
 
 export async function generateMetadata() {
   return pageMetadataAsync({
-    title: "Drew Della",
-    absoluteTitle: true,
+    title: "All results",
     description:
       "Drew Della — artist, musician, creator. Music, lyrics, videos, blog posts, photos, and live shows.",
     path: "/",
