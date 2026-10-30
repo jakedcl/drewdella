@@ -34,13 +34,7 @@
   padding: 8px 8px 40px;
 }
 
-.images-page .MuiMasonry-root {
-  width: 100%;
-  margin-left: 0;
-  margin-right: 0;
-}
-
-.images-masonry-grid {
+.images-stats {
   column-count: 3;
   column-gap: 6px;
 }
