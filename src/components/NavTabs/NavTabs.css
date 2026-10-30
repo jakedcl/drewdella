@@ -63,11 +63,37 @@
 .nav-tabs-indicator {
   position: absolute;
   left: 0;
-  right: 0;
   bottom: 0;
   height: 3px;
+  width: 0;
   background: #1a73e8;
-  view-transition-name: serp-tab;
+  transform: translateX(0);
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0;
+}
+
+.nav-tabs-indicator--ready {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .nav-tabs-indicator--ready {
+    transition:
+      transform 250ms cubic-bezier(0.2, 0, 0, 1),
+      width 250ms cubic-bezier(0.2, 0, 0, 1),
+      opacity 120ms ease;
+  }
+
+  .nav-tabs-indicator--animating {
+    will-change: transform;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-tabs-indicator--ready {
+    opacity: 1;
+  }
 }
 
 .nav-tabs::before,
@@ -115,19 +141,5 @@
 
   .nav-tabs::after {
     opacity: 1;
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  ::view-transition-group(serp-tab) {
-    animation-duration: 200ms;
-    animation-timing-function: ease;
-  }
-
-  ::view-transition-old(serp-tab),
-  ::view-transition-new(serp-tab) {
-    animation: none;
-    mix-blend-mode: normal;
-    height: 100%;
   }
 }
