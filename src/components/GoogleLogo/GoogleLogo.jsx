@@ -6,16 +6,27 @@ import { usePathname } from "next/navigation";
 import { WORDMARK_LETTERS, WORDMARK_VIEWBOX } from "./wordmark";
 import "./GoogleLogo.css";
 
+const WORDMARK_SEEN_KEY = "dd-wordmark-seen";
+
 function GoogleLogo({ style, animateOnLoad = false }) {
   const pathname = usePathname();
   const [run, setRun] = useState(0);
   const [playing, setPlaying] = useState(false);
+  const [markSeenOnEnd, setMarkSeenOnEnd] = useState(false);
 
   useEffect(() => {
     if (!animateOnLoad) return undefined;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       return undefined;
     }
+    try {
+      if (window.localStorage.getItem(WORDMARK_SEEN_KEY) === "1") {
+        return undefined;
+      }
+    } catch {
+      return undefined;
+    }
+    setMarkSeenOnEnd(true);
     setPlaying(true);
     return undefined;
   }, [animateOnLoad]);
@@ -24,6 +35,16 @@ function GoogleLogo({ style, animateOnLoad = false }) {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     setPlaying(true);
     setRun((n) => n + 1);
+  };
+
+  const onLetterAnimationEnd = (index) => {
+    if (!markSeenOnEnd || index !== WORDMARK_LETTERS.length - 1) return;
+    setMarkSeenOnEnd(false);
+    try {
+      window.localStorage.setItem(WORDMARK_SEEN_KEY, "1");
+    } catch {
+      /* storage unavailable */
+    }
   };
 
   const onClick = (event) => {
@@ -64,6 +85,7 @@ function GoogleLogo({ style, animateOnLoad = false }) {
               fill={glyph.fill}
               fillRule="evenodd"
               style={{ animationDelay: `${index * 0.11}s` }}
+              onAnimationEnd={() => onLetterAnimationEnd(index)}
             />
           ))}
         </svg>
