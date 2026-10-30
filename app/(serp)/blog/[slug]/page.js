@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
 import BlogPage from "@/views/BlogPage/BlogPage.jsx";
 import JsonLd from "@/components/JsonLd.jsx";
-import { getBlogList, getBlogPost } from "@/lib/content";
-import { articleJsonLd, pageMetadata } from "@/lib/seo";
+import { getBlogList, getBlogPost, getBlogPostShareImageAsset } from "@/lib/content";
+import { articleJsonLd, pageMetadataAsync, shareImageUrl } from "@/lib/seo";
 
 export const revalidate = 3600;
 
@@ -18,7 +18,7 @@ export async function generateMetadata({ params }) {
   const { slug } = await params;
   const post = await getBlogPost(slug).catch(() => null);
   if (!post) {
-    return pageMetadata({
+    return pageMetadataAsync({
       title: "Blog",
       description: "Blog posts by Drew Della.",
       path: "/blog",
@@ -29,10 +29,13 @@ export async function generateMetadata({ params }) {
       .replace(/\s+/g, " ")
       .trim()
       .slice(0, 160) || `${post.title} — a post by Drew Della.`;
-  return pageMetadata({
+  const asset = await getBlogPostShareImageAsset(slug).catch(() => null);
+  return pageMetadataAsync({
     title: post.title,
     description,
     path: `/blog/${slug}`,
+    imageUrl: asset ? shareImageUrl(asset) : undefined,
+    imageAlt: asset?.alt || post.title,
   });
 }
 

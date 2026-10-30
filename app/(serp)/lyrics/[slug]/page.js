@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import LyricsPage from "@/views/LyricsPage/LyricsPage.jsx";
 import { getLyric, getLyricsList } from "@/lib/content";
-import { pageMetadata } from "@/lib/seo";
+import { pageMetadataAsync } from "@/lib/seo";
 
 export const revalidate = 3600;
 
@@ -17,7 +17,7 @@ export async function generateMetadata({ params }) {
   const { slug } = await params;
   const song = await getLyric(slug).catch(() => null);
   if (!song) {
-    return pageMetadata({
+    return pageMetadataAsync({
       title: "Lyrics",
       description: "Lyrics by Drew Della.",
       path: "/lyrics",
@@ -26,7 +26,7 @@ export async function generateMetadata({ params }) {
   const description = song.album
     ? `${song.title} lyrics from ${song.album} by Drew Della.`
     : `${song.title} lyrics by Drew Della.`;
-  return pageMetadata({
+  return pageMetadataAsync({
     title: `${song.title} lyrics`,
     description,
     path: `/lyrics/${slug}`,

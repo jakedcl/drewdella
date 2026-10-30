@@ -1,16 +1,18 @@
 import AllPage from "@/views/AllPage/AllPage.jsx";
 import { getAllFeed } from "@/lib/content";
-import { pageMetadata } from "@/lib/seo";
+import { pageMetadataAsync } from "@/lib/seo";
 
 export const revalidate = 3600;
 
-export const metadata = pageMetadata({
-  title: "Drew Della",
-  absoluteTitle: true,
-  description:
-    "Drew Della — artist, musician, creator. Music, lyrics, videos, blog posts, photos, and live shows.",
-  path: "/",
-});
+export async function generateMetadata() {
+  return pageMetadataAsync({
+    title: "Drew Della",
+    absoluteTitle: true,
+    description:
+      "Drew Della — artist, musician, creator. Music, lyrics, videos, blog posts, photos, and live shows.",
+    path: "/",
+  });
+}
 
 const EMPTY_FEED = {
   data: {

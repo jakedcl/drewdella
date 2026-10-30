@@ -1,12 +1,44 @@
+import { urlFor } from "./imageUrl";
+
 export const SITE_URL = "https://drewdella.com";
+
+export const OG_IMAGE_SIZE = { width: 1200, height: 630 };
+
+export function shareImageUrl(source) {
+  if (!source?._id) return "";
+  try {
+    return urlFor(source)
+      .width(OG_IMAGE_SIZE.width)
+      .height(OG_IMAGE_SIZE.height)
+      .fit("crop")
+      .auto("format")
+      .quality(80)
+      .url();
+  } catch {
+    return "";
+  }
+}
 
 export function pageMetadata({
   title,
   description,
   path,
   absoluteTitle = false,
+  imageUrl,
+  imageAlt,
 }) {
   const url = `${SITE_URL}${path || "/"}`;
+  const ogImages = imageUrl
+    ? [
+        {
+          url: imageUrl,
+          width: OG_IMAGE_SIZE.width,
+          height: OG_IMAGE_SIZE.height,
+          alt: imageAlt || title,
+        },
+      ]
+    : undefined;
+
   return {
     title: absoluteTitle ? { absolute: title } : title,
     description,
@@ -17,13 +49,31 @@ export function pageMetadata({
       url,
       type: "website",
       siteName: "Drew Della",
+      ...(ogImages ? { images: ogImages } : {}),
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
+      ...(imageUrl ? { images: [imageUrl] } : {}),
     },
   };
+}
+
+export async function pageMetadataAsync(options) {
+  let imageUrl = options.imageUrl;
+  let imageAlt = options.imageAlt;
+
+  if (!imageUrl) {
+    const { getSiteShareImageAsset } = await import("./content");
+    const asset = await getSiteShareImageAsset().catch(() => null);
+    if (asset?._id) {
+      imageUrl = shareImageUrl(asset);
+      imageAlt = imageAlt || asset.alt || options.title;
+    }
+  }
+
+  return pageMetadata({ ...options, imageUrl, imageAlt });
 }
 
 export function siteJsonLd(sameAs = []) {

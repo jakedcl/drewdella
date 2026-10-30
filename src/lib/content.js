@@ -245,6 +245,37 @@ export const getContactEmail = cache(async () => {
   return String(email || "").trim();
 });
 
+/** Sanity asset reference for sitewide og:image (1200×630 crop applied in seo.js). */
+export const getSiteShareImageAsset = cache(async () => {
+  const data = await client.fetch(`{
+    "custom": *[_type == "contact"][0].ogImage.asset->{ _id, metadata { dimensions }, alt },
+    "cover": *[_type == "musicRelease" && featured == true][0].cover.asset->{ _id, metadata { dimensions }, alt },
+    "coverAny": *[_type == "musicRelease"] | order(order asc)[0].cover.asset->{ _id, metadata { dimensions }, alt },
+    "header": *[_type == "imageGallery"][0].galleryImages[0].asset->{ _id, metadata { dimensions }, alt }
+  }`);
+  return data?.custom || data?.cover || data?.coverAny || data?.header || null;
+});
+
+export const getBlogPostShareImageAsset = cache(async (slug) => {
+  if (!slug) return null;
+  return client.fetch(
+    `*[_type == "blogPost" && slug.current == $slug][0].content[_type == "image"][0].asset->{
+      _id, metadata { dimensions }, alt
+    }`,
+    { slug }
+  );
+});
+
+export const getReleaseShareImageAsset = cache(async (slug) => {
+  if (!slug) return null;
+  return client.fetch(
+    `*[_type == "musicRelease" && slug.current == $slug][0].cover.asset->{
+      _id, metadata { dimensions }, alt
+    }`,
+    { slug }
+  );
+});
+
 export const getMapLocations = cache(async () => {
   return client.fetch(`*[_type == "mapLocation"] {
     _id, venueName, address, coordinates

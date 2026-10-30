@@ -1,14 +1,16 @@
 import VideosPage from "@/views/VideosPage/VideosPage.jsx";
 import { readStoredVideos } from "../../../lib/youtubeVideos.js";
-import { pageMetadata } from "@/lib/seo";
+import { pageMetadataAsync } from "@/lib/seo";
 
 export const revalidate = 3600;
 
-export const metadata = pageMetadata({
-  title: "Videos",
-  description: "Videos by Drew Della.",
-  path: "/videos",
-});
+export async function generateMetadata() {
+  return pageMetadataAsync({
+    title: "Videos",
+    description: "Videos by Drew Della.",
+    path: "/videos",
+  });
+}
 
 export default async function Page() {
   try {
