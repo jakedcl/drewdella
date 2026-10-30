@@ -1,6 +1,7 @@
 let resolvePending = null;
 
-const VT_MAX_MS = 120;
+/** Safety cap so RSC fetch never freezes the old snapshot (was 700ms in #34). */
+const VT_MAX_MS = 180;
 
 export function navigationFinished() {
   const resolve = resolvePending;

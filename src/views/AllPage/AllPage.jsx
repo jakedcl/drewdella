@@ -29,6 +29,7 @@ function VintagePopup({ title, lines, cta, href }) {
     ? { href: safe }
     : { href: safe, target: "_blank", rel: "noopener noreferrer" };
   const CtaTag = isInternal ? Link : "a";
+  const tucked = phase === "peek";
 
   useEffect(() => {
     let hide;
@@ -42,22 +43,6 @@ function VintagePopup({ title, lines, cta, href }) {
     };
   }, []);
 
-  if (phase === "peek") {
-    return (
-      <button
-        type="button"
-        className="win-popup-dock is-peek"
-        style={{ bottom: dockBottom }}
-        onClick={() => setPhase("open")}
-        aria-label="Show congratulations"
-      >
-        <span className="win-popup-peek-tab" aria-hidden>
-          {title}
-        </span>
-      </button>
-    );
-  }
-
   return (
     <div
       className={`win-popup-dock is-${phase}`}
@@ -65,7 +50,18 @@ function VintagePopup({ title, lines, cta, href }) {
     >
       <div className="win-popup">
         <div className="win-popup-bar">
-          <span className="win-popup-title">{title}</span>
+          {tucked ? (
+            <button
+              type="button"
+              className="win-popup-peek-expand"
+              onClick={() => setPhase("open")}
+              aria-label="Show congratulations"
+            >
+              <span className="win-popup-title">{title}</span>
+            </button>
+          ) : (
+            <span className="win-popup-title">{title}</span>
+          )}
           <button
             type="button"
             className="win-popup-x"
@@ -74,11 +70,17 @@ function VintagePopup({ title, lines, cta, href }) {
               setPhase("peek");
             }}
             aria-label="Hide"
+            tabIndex={tucked ? -1 : 0}
+            aria-hidden={tucked}
           >
             ×
           </button>
         </div>
-        <div className="win-popup-body">
+        <div
+          className="win-popup-body"
+          aria-hidden={tucked}
+          inert={tucked}
+        >
           <div className="win-popup-msg">
             <Image
               className="win-popup-doodle"

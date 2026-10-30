@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { transitionTo } from "../../lib/viewTransition";
@@ -23,6 +24,11 @@ function isCurrent(page, pathname) {
   return pathname === page.path || pathname.startsWith(`${page.path}/`);
 }
 
+function indicatorPath(pendingPath, pathname) {
+  if (pendingPath) return pendingPath;
+  return PAGES.find((page) => isCurrent(page, pathname))?.path || "/";
+}
+
 function NavTabs() {
   const pathname = usePathname();
   const router = useRouter();
@@ -30,6 +36,8 @@ function NavTabs() {
   const [fadeLeft, setFadeLeft] = useState(false);
   const [fadeRight, setFadeRight] = useState(true);
   const [pendingPath, setPendingPath] = useState(null);
+
+  const activeIndicator = indicatorPath(pendingPath, pathname);
 
   const measureFade = useCallback(() => {
     const scroller = scrollerRef.current;
@@ -43,18 +51,18 @@ function NavTabs() {
   const revealActive = useCallback(() => {
     const scroller = scrollerRef.current;
     if (!scroller) return;
-    const active = scroller.querySelector("[aria-current='page']");
-    if (!active) return;
+    const link = scroller.querySelector(`a[data-tab-path="${activeIndicator}"]`);
+    if (!link) return;
     const pad = 64;
-    const left = active.offsetLeft;
-    const right = left + active.offsetWidth;
+    const left = link.offsetLeft;
+    const right = left + link.offsetWidth;
     const { scrollLeft, clientWidth } = scroller;
     if (left - pad < scrollLeft) {
       scroller.scrollLeft = Math.max(0, left - pad);
     } else if (right + pad > scrollLeft + clientWidth) {
       scroller.scrollLeft = right + pad - clientWidth;
     }
-  }, []);
+  }, [activeIndicator]);
 
   useEffect(() => {
     measureFade();
@@ -73,7 +81,7 @@ function NavTabs() {
       ro.disconnect();
       window.removeEventListener("resize", measureFade);
     };
-  }, [measureFade, revealActive, pathname]);
+  }, [measureFade, revealActive, activeIndicator]);
 
   useEffect(() => {
     setPendingPath(null);
@@ -98,8 +106,10 @@ function NavTabs() {
       return;
     }
     event.preventDefault();
-    setPendingPath(href);
-    transitionTo(() => router.push(href));
+    transitionTo(() => {
+      flushSync(() => setPendingPath(href));
+      router.push(href);
+    });
   };
 
   const className = [
@@ -122,10 +132,12 @@ function NavTabs() {
           ]
             .filter(Boolean)
             .join(" ");
+          const showIndicator = page.path === activeIndicator;
           return (
             <Link
               key={page.path}
               href={page.path}
+              data-tab-path={page.path}
               className={tabClass || undefined}
               aria-current={current ? "page" : undefined}
               onClick={(event) => onTabClick(event, page.path)}
@@ -135,9 +147,7 @@ function NavTabs() {
             >
               <span className="nav-tabs-label">
                 {page.label}
-                {current || pending ? (
-                  <span className="nav-tabs-indicator" />
-                ) : null}
+                {showIndicator ? <span className="nav-tabs-indicator" /> : null}
               </span>
             </Link>
           );

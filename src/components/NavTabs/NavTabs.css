@@ -60,7 +60,6 @@
   color: #1a73e8;
 }
 
-/* Sits on the tab-bar edge and is exactly as wide as the label. */
 .nav-tabs-indicator {
   position: absolute;
   left: 0;
@@ -100,7 +99,6 @@
 
 @media (max-width: 768px) {
   .nav-tabs-scroller {
-    /* Extra end padding so the last tab can scroll clear of the edge fade. */
     padding-right: 4.5rem;
   }
 
@@ -115,7 +113,6 @@
     width: 3rem;
   }
 
-  /* Hidden tabs stay discoverable before scroll measurement runs. */
   .nav-tabs::after {
     opacity: 1;
   }

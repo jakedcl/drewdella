@@ -20,18 +20,18 @@ export default function SerpShell({ children }) {
 
   useEffect(() => {
     navigationFinished();
-  }, [pathname]);
 
-  useEffect(() => {
-    const markEntered = () => {
-      document.documentElement.classList.add("serp-has-entered");
-    };
-    if (document.documentElement.classList.contains("serp-has-entered")) {
-      return undefined;
-    }
-    const id = window.setTimeout(markEntered, 280);
-    return () => window.clearTimeout(id);
-  }, []);
+    const root = document.documentElement;
+    root.classList.remove("serp-route-enter");
+    void root.offsetWidth;
+    root.classList.add("serp-route-enter");
+    const clearRoute = window.setTimeout(
+      () => root.classList.remove("serp-route-enter"),
+      720
+    );
+
+    return () => window.clearTimeout(clearRoute);
+  }, [pathname]);
 
   return (
     <div className={`site-layout${isMaps ? " site-layout--maps" : ""}`}>
