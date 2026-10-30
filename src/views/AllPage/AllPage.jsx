@@ -143,6 +143,7 @@ function ImagesOneBox({ images }) {
                   height={68}
                   sizes="(max-width: 768px) 72px, 90px"
                   priority={index === 0}
+                  fetchPriority={index === 0 ? "high" : undefined}
                 />
               </Link>
             );
@@ -288,9 +289,9 @@ export default function AllPage({ feed = null }) {
     else mixedWithVideo.splice(firstBlogAt + 1, 0, videoEntry);
   }
 
-  const mixedListings = mixedWithVideo.map((entry) =>
+  const mixedListings = mixedWithVideo.map((entry, index) =>
     entry.kind === "video" ? (
-      <VideoResult key={entry.item.id} video={entry.item} />
+      <VideoResult key={entry.item.id} video={entry.item} priority={index === 0} />
     ) : (
       renderMixed(entry, entry.item._id)
     )

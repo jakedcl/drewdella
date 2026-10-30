@@ -273,7 +273,7 @@ function videoDescriptionSnippet(description, title, max = 140) {
   return snippetFromPortableText(line, max);
 }
 
-export function VideoResult({ video }) {
+export function VideoResult({ video, priority = false }) {
   if (!video) return null;
 
   const href = `https://www.youtube.com/watch?v=${video.id}`;
@@ -306,6 +306,8 @@ export function VideoResult({ video }) {
             height={90}
             sizes="(max-width: 768px) 96px, 120px"
             unoptimized
+            priority={priority}
+            fetchPriority={priority ? "high" : undefined}
           />
         ) : null}
         <span className="video-result-play" aria-hidden />
