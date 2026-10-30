@@ -60,39 +60,67 @@ body {
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .site-main.site-main--motion {
-    animation: serp-main-enter 200ms ease both;
+  ::view-transition-old(serp-main) {
+    animation: 180ms ease both vt-out;
   }
 
-  html.serp-route-enter .serp-list > *:nth-child(-n + 4) {
-    animation: serp-rise 200ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  ::view-transition-new(serp-main) {
+    animation: 180ms ease both vt-in;
+  }
+
+  ::view-transition-old(serp-header),
+  ::view-transition-new(serp-header),
+  ::view-transition-old(serp-nav),
+  ::view-transition-new(serp-nav) {
+    animation: none;
+  }
+
+  html.serp-route-enter .serp-list > * {
+    animation: serp-rise 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
   html.serp-route-enter .serp-list > *:nth-child(1) {
-    animation-delay: 0ms;
+    animation-delay: 20ms;
   }
 
   html.serp-route-enter .serp-list > *:nth-child(2) {
-    animation-delay: 40ms;
+    animation-delay: 45ms;
   }
 
   html.serp-route-enter .serp-list > *:nth-child(3) {
-    animation-delay: 80ms;
+    animation-delay: 70ms;
   }
 
   html.serp-route-enter .serp-list > *:nth-child(4) {
+    animation-delay: 95ms;
+  }
+
+  html.serp-route-enter .serp-list > *:nth-child(5) {
     animation-delay: 120ms;
+  }
+
+  html.serp-route-enter .serp-list > *:nth-child(6) {
+    animation-delay: 145ms;
+  }
+
+  html.serp-route-enter .serp-list > *:nth-child(7) {
+    animation-delay: 170ms;
+  }
+
+  html.serp-route-enter .serp-list > *:nth-child(n + 8) {
+    animation-delay: 190ms;
   }
 }
 
-@keyframes serp-main-enter {
-  from {
-    opacity: 0.55;
-    transform: translateY(5px);
-  }
+@keyframes vt-out {
   to {
-    opacity: 1;
-    transform: none;
+    opacity: 0;
+  }
+}
+
+@keyframes vt-in {
+  from {
+    opacity: 0;
   }
 }
 

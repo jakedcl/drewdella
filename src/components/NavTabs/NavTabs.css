@@ -16,35 +16,6 @@
   position: relative;
 }
 
-.nav-tabs-slide {
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  height: 3px;
-  width: 0;
-  background: #1a73e8;
-  transform: translateX(0);
-  pointer-events: none;
-  z-index: 1;
-  opacity: 0;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .nav-tabs-slide--ready {
-    opacity: 1;
-    transition:
-      transform 250ms ease-out,
-      width 250ms ease-out,
-      opacity 120ms ease;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .nav-tabs-slide--ready {
-    opacity: 1;
-  }
-}
-
 .nav-tabs-scroller::-webkit-scrollbar {
   display: none;
 }
@@ -89,6 +60,16 @@
   color: #1a73e8;
 }
 
+.nav-tabs-indicator {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: #1a73e8;
+  view-transition-name: serp-tab;
+}
+
 .nav-tabs::before,
 .nav-tabs::after {
   content: "";
@@ -118,7 +99,6 @@
 
 @media (max-width: 768px) {
   .nav-tabs-scroller {
-    /* Extra end padding so the last tab can scroll clear of the edge fade. */
     padding-right: 4.5rem;
   }
 
@@ -133,8 +113,21 @@
     width: 3rem;
   }
 
-  /* Hidden tabs stay discoverable before scroll measurement runs. */
   .nav-tabs::after {
     opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-group(serp-tab) {
+    animation-duration: 200ms;
+    animation-timing-function: ease;
+  }
+
+  ::view-transition-old(serp-tab),
+  ::view-transition-new(serp-tab) {
+    animation: none;
+    mix-blend-mode: normal;
+    height: 100%;
   }
 }

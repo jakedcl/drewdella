@@ -1,12 +1,7 @@
 "use client";
 
-import React, {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { transitionTo } from "../../lib/viewTransition";
@@ -29,18 +24,20 @@ function isCurrent(page, pathname) {
   return pathname === page.path || pathname.startsWith(`${page.path}/`);
 }
 
+function indicatorPath(pendingPath, pathname) {
+  if (pendingPath) return pendingPath;
+  return PAGES.find((page) => isCurrent(page, pathname))?.path || "/";
+}
+
 function NavTabs() {
   const pathname = usePathname();
   const router = useRouter();
   const scrollerRef = useRef(null);
-  const slideRef = useRef(null);
   const [fadeLeft, setFadeLeft] = useState(false);
   const [fadeRight, setFadeRight] = useState(true);
   const [pendingPath, setPendingPath] = useState(null);
-  const [slideReady, setSlideReady] = useState(false);
 
-  const highlightPath =
-    pendingPath || PAGES.find((page) => isCurrent(page, pathname))?.path || "/";
+  const activeIndicator = indicatorPath(pendingPath, pathname);
 
   const measureFade = useCallback(() => {
     const scroller = scrollerRef.current;
@@ -51,21 +48,10 @@ function NavTabs() {
     setFadeRight(maxScroll > 1 && scrollLeft < maxScroll - 1);
   }, []);
 
-  const positionSlide = useCallback(() => {
-    const scroller = scrollerRef.current;
-    const slide = slideRef.current;
-    if (!scroller || !slide) return;
-    const link = scroller.querySelector(`a[data-tab-path="${highlightPath}"]`);
-    if (!link) return;
-    slide.style.width = `${link.offsetWidth}px`;
-    slide.style.transform = `translateX(${link.offsetLeft}px)`;
-    setSlideReady((ready) => ready || true);
-  }, [highlightPath]);
-
-  const revealHighlighted = useCallback(() => {
+  const revealActive = useCallback(() => {
     const scroller = scrollerRef.current;
     if (!scroller) return;
-    const link = scroller.querySelector(`a[data-tab-path="${highlightPath}"]`);
+    const link = scroller.querySelector(`a[data-tab-path="${activeIndicator}"]`);
     if (!link) return;
     const pad = 64;
     const left = link.offsetLeft;
@@ -76,36 +62,26 @@ function NavTabs() {
     } else if (right + pad > scrollLeft + clientWidth) {
       scroller.scrollLeft = right + pad - clientWidth;
     }
-  }, [highlightPath]);
-
-  useLayoutEffect(() => {
-    positionSlide();
-    revealHighlighted();
-  }, [positionSlide, revealHighlighted, highlightPath]);
+  }, [activeIndicator]);
 
   useEffect(() => {
     measureFade();
-    revealHighlighted();
+    revealActive();
     const scroller = scrollerRef.current;
     if (!scroller) return undefined;
-    const onScroll = () => {
-      measureFade();
-      positionSlide();
-    };
-    scroller.addEventListener("scroll", onScroll, { passive: true });
+    scroller.addEventListener("scroll", measureFade, { passive: true });
     const ro = new ResizeObserver(() => {
       measureFade();
-      positionSlide();
-      revealHighlighted();
+      revealActive();
     });
     ro.observe(scroller);
-    window.addEventListener("resize", onScroll);
+    window.addEventListener("resize", measureFade);
     return () => {
-      scroller.removeEventListener("scroll", onScroll);
+      scroller.removeEventListener("scroll", measureFade);
       ro.disconnect();
-      window.removeEventListener("resize", onScroll);
+      window.removeEventListener("resize", measureFade);
     };
-  }, [measureFade, positionSlide, revealHighlighted]);
+  }, [measureFade, revealActive, activeIndicator]);
 
   useEffect(() => {
     setPendingPath(null);
@@ -130,8 +106,10 @@ function NavTabs() {
       return;
     }
     event.preventDefault();
-    setPendingPath(href);
-    transitionTo(() => router.push(href));
+    transitionTo(() => {
+      flushSync(() => setPendingPath(href));
+      router.push(href);
+    });
   };
 
   const className = [
@@ -145,11 +123,6 @@ function NavTabs() {
   return (
     <nav className={className} aria-label="Result types">
       <div className="nav-tabs-scroller" ref={scrollerRef}>
-        <span
-          ref={slideRef}
-          className={`nav-tabs-slide${slideReady ? " nav-tabs-slide--ready" : ""}`}
-          aria-hidden
-        />
         {PAGES.map((page) => {
           const current = isCurrent(page, pathname);
           const pending = pendingPath === page.path;
@@ -159,6 +132,7 @@ function NavTabs() {
           ]
             .filter(Boolean)
             .join(" ");
+          const showIndicator = page.path === activeIndicator;
           return (
             <Link
               key={page.path}
@@ -171,7 +145,10 @@ function NavTabs() {
               onTouchStart={() => warmRoute(page.path)}
               onFocus={() => warmRoute(page.path)}
             >
-              <span className="nav-tabs-label">{page.label}</span>
+              <span className="nav-tabs-label">
+                {page.label}
+                {showIndicator ? <span className="nav-tabs-indicator" /> : null}
+              </span>
             </Link>
           );
         })}
