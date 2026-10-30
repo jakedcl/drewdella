@@ -10,7 +10,6 @@ import React, {
 import { flushSync } from "react-dom";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { transitionTo } from "../../lib/viewTransition";
 import "./NavTabs.css";
 
 const PAGES = [
@@ -35,12 +34,19 @@ function indicatorPath(pendingPath, pathname) {
   return PAGES.find((page) => isCurrent(page, pathname))?.path || "/";
 }
 
+function findTabLink(scroller, path) {
+  if (!scroller) return null;
+  return scroller.querySelector(`a[data-tab-path="${CSS.escape(path)}"]`);
+}
+
 function NavTabs() {
   const pathname = usePathname();
   const router = useRouter();
   const scrollerRef = useRef(null);
   const indicatorRef = useRef(null);
   const skipTransitionRef = useRef(true);
+  const fontsReadyRef = useRef(false);
+  const indicatorAnimatingRef = useRef(false);
   const [fadeLeft, setFadeLeft] = useState(false);
   const [fadeRight, setFadeRight] = useState(true);
   const [pendingPath, setPendingPath] = useState(null);
@@ -66,24 +72,41 @@ function NavTabs() {
     const scroller = scrollerRef.current;
     const indicator = indicatorRef.current;
     if (!scroller || !indicator) return;
-    const link = scroller.querySelector(
-      `a[data-tab-path="${activeIndicator}"]`
-    );
+    const link = findTabLink(scroller, activeIndicator);
     if (!link) return;
 
+    const left = link.offsetLeft;
+    const width = link.offsetWidth;
     const instant = skipTransitionRef.current || prefersReducedMotion();
-    if (instant) {
-      indicator.style.transition = "none";
-    }
 
-    indicator.style.width = `${link.offsetWidth}px`;
-    indicator.style.transform = `translateX(${link.offsetLeft}px)`;
+    const applyVars = (x, w) => {
+      indicator.style.setProperty("--nav-tab-indicator-x", `${x}px`);
+      indicator.style.setProperty("--nav-tab-indicator-w", `${w}px`);
+    };
 
     if (instant) {
+      indicator.classList.add("nav-tabs-indicator--snap");
+      applyVars(left, width);
       void indicator.offsetWidth;
-      indicator.style.transition = "";
+      indicator.classList.remove("nav-tabs-indicator--snap");
       skipTransitionRef.current = false;
+      setIndicatorReady(true);
+      return;
     }
+
+    const currentTx = new DOMMatrixReadOnly(
+      getComputedStyle(indicator).transform
+    ).m41;
+    const currentWidth =
+      indicator.offsetWidth ||
+      Number.parseFloat(getComputedStyle(indicator).width) ||
+      width;
+
+    indicator.classList.add("nav-tabs-indicator--snap");
+    applyVars(currentTx, currentWidth);
+    void indicator.offsetWidth;
+    indicator.classList.remove("nav-tabs-indicator--snap");
+    applyVars(left, width);
 
     setIndicatorReady(true);
   }, [activeIndicator, prefersReducedMotion]);
@@ -91,9 +114,7 @@ function NavTabs() {
   const revealActive = useCallback(() => {
     const scroller = scrollerRef.current;
     if (!scroller) return;
-    const link = scroller.querySelector(
-      `a[data-tab-path="${activeIndicator}"]`
-    );
+    const link = findTabLink(scroller, activeIndicator);
     if (!link) return;
     const pad = 64;
     const left = link.offsetLeft;
@@ -112,24 +133,19 @@ function NavTabs() {
   }, [positionIndicator, revealActive, activeIndicator]);
 
   useEffect(() => {
+    indicatorAnimatingRef.current = indicatorAnimating;
+  }, [indicatorAnimating]);
+
+  useEffect(() => {
     measureFade();
     const scroller = scrollerRef.current;
     if (!scroller) return undefined;
 
     const onScroll = () => {
       measureFade();
-      skipTransitionRef.current = true;
-      positionIndicator();
     };
 
     scroller.addEventListener("scroll", onScroll, { passive: true });
-    const ro = new ResizeObserver(() => {
-      measureFade();
-      skipTransitionRef.current = true;
-      positionIndicator();
-      revealActive();
-    });
-    ro.observe(scroller);
 
     const onResize = () => {
       measureFade();
@@ -138,23 +154,38 @@ function NavTabs() {
     };
     window.addEventListener("resize", onResize);
 
-    let cancelled = false;
-    if (document.fonts?.ready) {
-      document.fonts.ready.then(() => {
-        if (cancelled) return;
-        skipTransitionRef.current = true;
-        positionIndicator();
-        revealActive();
-      });
-    }
-
     return () => {
-      cancelled = true;
       scroller.removeEventListener("scroll", onScroll);
-      ro.disconnect();
       window.removeEventListener("resize", onResize);
     };
   }, [measureFade, positionIndicator, revealActive]);
+
+  useEffect(() => {
+    if (fontsReadyRef.current) return undefined;
+    let cancelled = false;
+
+    const settleFonts = () => {
+      if (cancelled || fontsReadyRef.current || indicatorAnimatingRef.current) {
+        return;
+      }
+      fontsReadyRef.current = true;
+      skipTransitionRef.current = true;
+      positionIndicator();
+      revealActive();
+    };
+
+    if (document.fonts?.status === "loaded") {
+      settleFonts();
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    document.fonts?.ready.then(settleFonts);
+    return () => {
+      cancelled = true;
+    };
+  }, [positionIndicator, revealActive]);
 
   useEffect(() => {
     setPendingPath(null);
@@ -179,11 +210,13 @@ function NavTabs() {
       return;
     }
     event.preventDefault();
+    skipTransitionRef.current = false;
     if (!prefersReducedMotion()) {
+      indicatorAnimatingRef.current = true;
       setIndicatorAnimating(true);
     }
     flushSync(() => setPendingPath(href));
-    transitionTo(() => router.push(href));
+    router.push(href);
   };
 
   const onIndicatorTransitionEnd = (event) => {
@@ -192,6 +225,7 @@ function NavTabs() {
       return;
     }
     setIndicatorAnimating(false);
+    indicatorAnimatingRef.current = false;
   };
 
   const className = [

@@ -12,7 +12,6 @@
 
 .site-main {
   margin: 1rem;
-  view-transition-name: serp-main;
 }
 
 .site-main--maps {
@@ -21,8 +20,4 @@
   display: flex;
   flex-direction: column;
   margin: 0;
-}
-
-.header {
-  view-transition-name: serp-header;
 }
