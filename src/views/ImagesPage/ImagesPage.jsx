@@ -8,7 +8,6 @@ import React, {
   useRef,
 } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { Masonry } from "@mui/lab";
 import { Box } from "@mui/material";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import OpenInNewRoundedIcon from "@mui/icons-material/OpenInNewRounded";
@@ -283,11 +282,7 @@ function ImagesPage({ images = [], elapsed = "0.12" }) {
           About {images.length.toLocaleString("en-US")} result
           {images.length === 1 ? "" : "s"} ({elapsed} seconds)
         </p>
-        <Masonry
-          columns={{ xs: 3, sm: 4, md: 5, lg: 6, xl: 7 }}
-          spacing={0.75}
-          sx={{ ml: 0, mr: 0, width: "100%" }}
-        >
+        <div className="images-masonry-grid">
           {images.map((image, index) => (
             <div
               key={imageKey(image)}
@@ -322,7 +317,7 @@ function ImagesPage({ images = [], elapsed = "0.12" }) {
               )}
             </div>
           ))}
-        </Masonry>
+        </div>
         <div className="images-serp-footer">
           <SerpFooter />
         </div>
@@ -421,7 +416,7 @@ function ImagesPage({ images = [], elapsed = "0.12" }) {
 
             {suggested.length > 0 && heroReady && (
               <div className="images-panel-suggested">
-                <Masonry columns={2} spacing={1.5}>
+                <div className="images-suggested-grid">
                   {suggested.map((image) => (
                     <div key={imageKey(image)} className="images-suggested-card">
                       <button
@@ -441,7 +436,7 @@ function ImagesPage({ images = [], elapsed = "0.12" }) {
                       </p>
                     </div>
                   ))}
-                </Masonry>
+                </div>
               </div>
             )}
           </aside>

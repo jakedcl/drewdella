@@ -40,9 +40,41 @@
   margin-right: 0;
 }
 
+.images-masonry-grid {
+  column-count: 3;
+  column-gap: 6px;
+}
+
+@media (min-width: 600px) {
+  .images-masonry-grid {
+    column-count: 4;
+  }
+}
+
+@media (min-width: 900px) {
+  .images-masonry-grid {
+    column-count: 5;
+  }
+}
+
+@media (min-width: 1200px) {
+  .images-masonry-grid {
+    column-count: 6;
+  }
+}
+
+@media (min-width: 1536px) {
+  .images-masonry-grid {
+    column-count: 7;
+  }
+}
+
 .images-result {
   width: 100%;
   min-width: 0;
+  display: inline-block;
+  break-inside: avoid;
+  margin: 0 0 6px;
 }
 
 .images-thumb {
@@ -292,6 +324,12 @@
 
 .images-panel-suggested {
   padding: 8px 12px 28px;
+}
+
+.images-suggested-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
 }
 
 .images-suggested-card {
