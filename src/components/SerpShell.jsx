@@ -22,6 +22,17 @@ export default function SerpShell({ children }) {
     navigationFinished();
   }, [pathname]);
 
+  useEffect(() => {
+    const markEntered = () => {
+      document.documentElement.classList.add("serp-has-entered");
+    };
+    if (document.documentElement.classList.contains("serp-has-entered")) {
+      return undefined;
+    }
+    const id = window.setTimeout(markEntered, 280);
+    return () => window.clearTimeout(id);
+  }, []);
+
   return (
     <div className={`site-layout${isMaps ? " site-layout--maps" : ""}`}>
       <Header currentPath={pathname} />

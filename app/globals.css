@@ -61,11 +61,11 @@ body {
 
 @media (prefers-reduced-motion: no-preference) {
   ::view-transition-old(serp-main) {
-    animation: 180ms ease both vt-out;
+    animation: 120ms ease both vt-out;
   }
 
   ::view-transition-new(serp-main) {
-    animation: 180ms ease both vt-in;
+    animation: 120ms ease both vt-in;
   }
 
   ::view-transition-old(serp-header),
@@ -75,18 +75,26 @@ body {
     animation: none;
   }
 
-  .serp-list > * {
-    animation: serp-rise 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  html:not(.serp-has-entered) .serp-list > * {
+    animation: serp-rise 150ms cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
-  .serp-list > *:nth-child(1) { animation-delay: 20ms; }
-  .serp-list > *:nth-child(2) { animation-delay: 45ms; }
-  .serp-list > *:nth-child(3) { animation-delay: 70ms; }
-  .serp-list > *:nth-child(4) { animation-delay: 95ms; }
-  .serp-list > *:nth-child(5) { animation-delay: 120ms; }
-  .serp-list > *:nth-child(6) { animation-delay: 145ms; }
-  .serp-list > *:nth-child(7) { animation-delay: 170ms; }
-  .serp-list > *:nth-child(n + 8) { animation-delay: 190ms; }
+  html:not(.serp-has-entered) .serp-list > *:nth-child(1) {
+    animation-delay: 0ms;
+  }
+
+  html:not(.serp-has-entered) .serp-list > *:nth-child(2) {
+    animation-delay: 40ms;
+  }
+
+  html:not(.serp-has-entered) .serp-list > *:nth-child(3) {
+    animation-delay: 80ms;
+  }
+
+  html:not(.serp-has-entered) .serp-list > *:nth-child(n + 4) {
+    animation-delay: 0ms;
+    animation: none;
+  }
 }
 
 @keyframes vt-out {
