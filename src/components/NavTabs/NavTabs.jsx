@@ -29,6 +29,7 @@ function NavTabs() {
   const scrollerRef = useRef(null);
   const [fadeLeft, setFadeLeft] = useState(false);
   const [fadeRight, setFadeRight] = useState(true);
+  const [pendingPath, setPendingPath] = useState(null);
 
   const measureFade = useCallback(() => {
     const scroller = scrollerRef.current;
@@ -44,8 +45,6 @@ function NavTabs() {
     if (!scroller) return;
     const active = scroller.querySelector("[aria-current='page']");
     if (!active) return;
-    // Layout pixels, same space as offsetLeft/clientWidth. Clears the 3rem edge fade
-    // even if this runs before the tab stylesheet is applied.
     const pad = 64;
     const left = active.offsetLeft;
     const right = left + active.offsetWidth;
@@ -76,6 +75,18 @@ function NavTabs() {
     };
   }, [measureFade, revealActive, pathname]);
 
+  useEffect(() => {
+    setPendingPath(null);
+  }, [pathname]);
+
+  const warmRoute = useCallback(
+    (href) => {
+      if (!href || href === pathname) return;
+      router.prefetch(href);
+    },
+    [pathname, router]
+  );
+
   const onTabClick = (event, href) => {
     if (
       event.metaKey ||
@@ -87,6 +98,7 @@ function NavTabs() {
       return;
     }
     event.preventDefault();
+    setPendingPath(href);
     transitionTo(() => router.push(href));
   };
 
@@ -103,18 +115,29 @@ function NavTabs() {
       <div className="nav-tabs-scroller" ref={scrollerRef}>
         {PAGES.map((page) => {
           const current = isCurrent(page, pathname);
+          const pending = pendingPath === page.path;
+          const tabClass = [
+            current ? "is-active" : "",
+            pending && !current ? "is-pending" : "",
+          ]
+            .filter(Boolean)
+            .join(" ");
           return (
             <Link
               key={page.path}
               href={page.path}
-              className={current ? "is-active" : undefined}
+              className={tabClass || undefined}
               aria-current={current ? "page" : undefined}
-              prefetch={false}
               onClick={(event) => onTabClick(event, page.path)}
+              onPointerEnter={() => warmRoute(page.path)}
+              onTouchStart={() => warmRoute(page.path)}
+              onFocus={() => warmRoute(page.path)}
             >
               <span className="nav-tabs-label">
                 {page.label}
-                {current ? <span className="nav-tabs-indicator" /> : null}
+                {current || pending ? (
+                  <span className="nav-tabs-indicator" />
+                ) : null}
               </span>
             </Link>
           );
